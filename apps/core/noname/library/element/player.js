@@ -5233,8 +5233,8 @@ export class Player extends HTMLDivElement {
 					break;
 			}
 		}
-		// 要手牌或者特殊牌时需要区分 glows
-		const needGlowsCheck = hasH || hasS;
+		// 只有同时要手牌和特殊牌时才需要区分 glows
+		const needGlowsCheck = !hasH || !hasS;
 
 		// 一些简单的去重
 		let handDone = false;
