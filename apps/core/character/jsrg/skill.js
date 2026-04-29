@@ -8850,30 +8850,23 @@ const skills = {
 			return player.invisibleSkills.includes(skill) && lib.skill.sbyingmen.getSkills(player.getStorage("sbyingmen"), player).includes(skill);
 		},
 		async content(event, trigger, player) {
-			let result;
-			// step 0
-			let visitors = player.getStorage("sbyingmen").slice(0);
-			let drawers = visitors.filter(function (name) {
+			const visitors = player.getStorage("sbyingmen").slice(0);
+			const drawers = visitors.filter(function (name) {
 				return get.character(name).skills?.includes(get.sourceSkillFor(trigger));
 			});
 			event.drawers = drawers;
-			if (visitors.length == 1) {
-				result = { bool: true, links: visitors };
-			} else {
-				let dialog = ["评鉴：请选择移去一张“访客”"];
-				if (drawers.length) {
-					dialog.push('<div class="text center">如果移去' + get.translation(drawers) + "，则你摸一张牌</div>");
-				}
-				dialog.push([visitors, "character"]);
-				result = await player.chooseButton(dialog, true).forResult();
+			const dialog = ["评鉴：请选择移去一张“访客”"];
+			if (drawers.length) {
+				dialog.push('<div class="text center">如果移去' + get.translation(drawers) + "，则你摸一张牌</div>");
 			}
-			// step 1
-			if (result.bool) {
+			dialog.push([visitors, "character"]);
+			const result = await player.chooseButton(dialog, true).set("direct", true).forResult();
+			if (result?.bool) {
 				lib.skill.sbyingmen.removeVisitors(result.links, player);
 				game.log(player, "移去了", "#y" + get.translation(result.links[0]));
 				if (event.drawers.includes(result.links[0])) {
 					player.addTempSkill("sbpingjian_draw");
-					player.storage.sbpingjian_draw.push(trigger.skill);
+					player.markAuto("sbpingjian_draw", [trigger.skill]);
 				}
 			}
 		},
@@ -8881,11 +8874,6 @@ const skills = {
 		subSkill: {
 			draw: {
 				charlotte: true,
-				init(player, skill) {
-					if (!player.storage[skill]) {
-						player.storage[skill] = [];
-					}
-				},
 				onremove: true,
 				trigger: { player: ["useSkillAfter", "logSkill"] },
 				forced: true,
@@ -8894,10 +8882,10 @@ const skills = {
 					return player.getStorage("sbpingjian_draw").includes(event.skill);
 				},
 				async content(event, trigger, player) {
-					player.storage.sbpingjian_draw.remove(trigger.skill);
+					player.unmarkAuto(event.name, [trigger.skill]);
 					await player.draw();
-					if (!player.storage.sbpingjian_draw.length) {
-						player.removeSkill("sbpingjian_draw");
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
 					}
 				},
 			},
@@ -8925,44 +8913,46 @@ const skills = {
 					if (get.info(trigger.skill).silent) {
 						return;
 					} else {
-						let info = get.info(trigger.skill);
-						let event = trigger,
-							trigger = event._trigger;
+						const info = get.info(trigger.skill);
+						// 这里的trigger（event._trigger）即是content.createTrigger的event
+						const evt = trigger,
+							evtTrigger = evt._trigger;
 						let str;
 						let check = info.check;
+						// 照抄content.createTrigger的技能提示部分
 						if (info.prompt) {
 							str = info.prompt;
 						} else {
 							if (typeof info.logTarget == "string") {
-								str = get.prompt(event.skill, trigger[info.logTarget], player);
+								str = get.prompt(evt.skill, evtTrigger[info.logTarget], player);
 							} else if (typeof info.logTarget == "function") {
-								let logTarget = info.logTarget(trigger, player, trigger.triggername, trigger.indexedData);
+								const logTarget = info.logTarget(evtTrigger, player, evt.triggername, evt.indexedData);
 								if (get.itemtype(logTarget)?.indexOf("player") == 0) {
-									str = get.prompt(event.skill, logTarget, player);
+									str = get.prompt(evt.skill, logTarget, player);
 								}
 							} else {
-								str = get.prompt(event.skill, null, player);
+								str = get.prompt(evt.skill, null, player);
 							}
 						}
 						if (typeof str == "function") {
-							str = str(trigger, player, trigger.triggername, trigger.indexedData);
+							str = str(evtTrigger, player, evt.triggername, evt.indexedData);
 						}
 						let next = player.chooseBool("评鉴：" + str);
-						next.set("yes", !info.check || info.check(trigger, player, trigger.triggername, trigger.indexedData));
-						next.set("hsskill", event.skill);
+						next.set("yes", !info.check || info.check(evtTrigger, player, evt.triggername, evt.indexedData));
+						next.set("hsskill", evt.skill);
 						next.set("forceDie", true);
 						next.set("ai", function () {
 							return _status.event.yes;
 						});
 						if (typeof info.prompt2 == "function") {
-							next.set("prompt2", info.prompt2(trigger, player, trigger.triggername, trigger.indexedData));
+							next.set("prompt2", info.prompt2(evtTrigger, player, evt.triggername, evt.indexedData));
 						} else if (typeof info.prompt2 == "string") {
 							next.set("prompt2", info.prompt2);
 						} else if (info.prompt2 != false) {
-							if (lib.dynamicTranslate[event.skill]) {
-								next.set("prompt2", lib.dynamicTranslate[event.skill](player, event.skill));
-							} else if (lib.translate[event.skill + "_info"]) {
-								next.set("prompt2", lib.translate[event.skill + "_info"]);
+							if (lib.dynamicTranslate[evt.skill]) {
+								next.set("prompt2", lib.dynamicTranslate[evt.skill](player, evt.skill));
+							} else if (lib.translate[evt.skill + "_info"]) {
+								next.set("prompt2", lib.translate[evt.skill + "_info"]);
 							}
 						}
 						if (trigger.skillwarn) {
@@ -8974,7 +8964,7 @@ const skills = {
 						}
 						result = await next.forResult();
 					}
-					if (result.bool) {
+					if (result?.bool) {
 						if (!get.info(trigger.skill).cost) {
 							trigger.revealed = true;
 						}
@@ -8985,9 +8975,7 @@ const skills = {
 				},
 			},
 		},
-		ai: {
-			combo: "sbyingmen",
-		},
+		ai: { combo: "sbyingmen" },
 	},
 	jsrgchaozheng: {
 		audio: 4,
