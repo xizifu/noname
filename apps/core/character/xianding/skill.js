@@ -6836,9 +6836,12 @@ const skills = {
 				};
 			}
 		},
-		prompt() {
-			const { hongceEvts: evts } = get.event();
-			const link = evts[0].link;
+		prompt(event, player) {
+			// 起许劭【评荐】互动
+			if (event.name == "phase") {
+				return get.prompt('dcsbhongce', null, player);
+			}
+			const link = event.hongceEvts?.[0]?.link;
 			switch (link) {
 				case "sha": {
 					return "令一名角色将半数手牌替换为伤害牌，视为使用一张【杀】";
