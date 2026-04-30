@@ -6838,7 +6838,7 @@ const skills = {
 			}
 		},
 		prompt(event, player) {
-			// 起许劭【评荐】互动
+			// 起许劭【评荐】询问发动触发技时会读技能的prompt以生成“是否发动某某技能”的技能提示，使用trigger和enable一起写的写法时需要注意prompt里分类讨论
 			if (event.name == "phase") {
 				return get.prompt('dcsbhongce', null, player);
 			}
