@@ -1611,12 +1611,12 @@ const skills = {
 							nature: "fire",
 							isCard: true,
 						},
-						"请选择火【杀】的目标（" + (i === 8 ? "⑨" : i + 1) + "/9）",
+						"平襄：请选择火【杀】的目标（" + (i === 8 ? "⑨" : i + 1) + "/9）",
 						false
 					)
 					.forResult();
 
-				if (!result.bool) {
+				if (!result?.bool) {
 					break;
 				}
 			}
@@ -1648,6 +1648,7 @@ const skills = {
 			},
 			combo: "tianren",
 		},
+		derivation: ["jiufa"],
 		subSkill: {
 			effect: {
 				marktext: "襄",
