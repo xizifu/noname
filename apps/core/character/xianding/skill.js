@@ -1753,7 +1753,7 @@ const skills = {
 				cards2 = result.cards;
 			} else {
 				if (cards.length > 0) {
-					const evt = target.randomDiscard(round);
+					const evt = target.randomDiscard(round, "h");
 					await evt;
 					cards2 = evt.done.cards2;
 				}
