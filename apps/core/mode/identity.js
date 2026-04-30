@@ -4509,15 +4509,16 @@ export default () => {
 			},
 		},
 		skill: {
+			// 谋攻模式
 			stratagem_gain: {
-				silent: true,
-				charlotte: true,
-				ruleSkill: true,
 				trigger: {
 					player: ["phaseBegin", "damageEnd"],
 				},
-				content: () => {
-					player.changeFury(trigger.name == "damage" ? trigger.num : 1, true);
+				charlotte: true,
+				ruleSkill: true,
+				silent: true,
+				async content(_event, trigger, player) {
+					player.changeFury(trigger.name === "damage" ? trigger.num : 1, true);
 				},
 			},
 			stratagem_insight: {
@@ -4525,43 +4526,45 @@ export default () => {
 					source: "damageSource",
 					global: "loseHpEnd",
 				},
-				filter: (event, player) => {
+				charlotte: true,
+				ruleSkill: true,
+				prompt2(event) {
+					return `消耗1点怒气，洞察${get.translation(event.player)}的身份`;
+				},
+				filter(event, player) {
 					if (!player.storage.stratagem_fury) {
 						return false;
 					}
 					const target = event.player;
-					if (target == player || !target.isIn() || target.identityShown) {
+					if (target === player || !target.isIn() || target.identityShown) {
 						return false;
 					}
 					let source = event.source;
-					if (event.name == "loseHp") {
-						const trigger = event.getParent()._trigger;
-						if (trigger) {
+					if (event.name === "loseHp") {
+						const trigger = event.getParent()?._trigger;
+						if (trigger != null) {
 							source = trigger.source;
 						}
 					}
-					return player == source;
+					return player === source;
 				},
-				logTarget: "player",
-				prompt2: event => `消耗1点怒气，洞察${get.translation(event.player)}的身份`,
-				check: (event, player) => {
-					const storage = player.storage,
-						zhibi = storage.zhibi;
-					if (zhibi && zhibi.includes(event.player)) {
+				check(event, player) {
+					const storage = player.storage;
+					const zhibi = storage.zhibi;
+					if (zhibi?.includes(event.player)) {
 						return false;
 					}
 					const stratagemExpose = storage.stratagem_expose;
-					if (stratagemExpose && stratagemExpose.includes(event.player)) {
+					if (stratagemExpose?.includes(event.player)) {
 						return false;
 					}
-					if (get.population("zhong") == 0 && player.identity == "fan") {
+					if (get.population("zhong") === 0 && player.identity === "fan") {
 						return false;
 					}
 					return Math.abs(get.attitude(player, event.player)) <= 1;
 				},
-				charlotte: true,
-				ruleSkill: true,
-				content: () => {
+				logTarget: "player",
+				async content(_event, trigger, player) {
 					player.changeFury(-1, true);
 					player.insightInto(trigger.player);
 				},
@@ -4571,29 +4574,26 @@ export default () => {
 					player: ["dying", "phaseZhunbeiBegin"],
 					global: "dieAfter",
 				},
-				forced: true,
-				priority: 100,
-				popup: false,
-				unique: true,
-				firstDo: true,
-				silent: true,
 				charlotte: true,
 				ruleSkill: true,
-				filter: (event, player, name) => {
-					if (player.storage.stratagem_monarchy || player.identity != "zhu") {
+				priority: 100,
+				firstDo: true,
+				unique: true,
+				silent: true,
+				popup: false,
+				filter(_event, player, name) {
+					if (player.storage.stratagem_monarchy || player.identity !== "zhu") {
 						return false;
 					}
-					if (name == "dieAfter") {
+					if (name === "dieAfter") {
 						return game.dead.length >= Math.max(Math.round(get.population() / 3), 2);
 					}
-					return name == "dying" || game.roundNumber >= Math.max(Math.round(get.population() / 2), 3);
+					return name === "dying" || game.roundNumber >= Math.max(Math.round(get.population() / 2), 3);
 				},
-				content: () => {
-					"step 0";
+				async content(event, _trigger, player) {
 					if (event.triggername == "dying") {
-						game.delayx();
+						await game.delayx();
 					}
-					"step 1";
 					player.storage.stratagem_monarchy = true;
 					game.broadcastAll(clientPlayer => {
 						if (!game.zhu) {
@@ -4604,11 +4604,11 @@ export default () => {
 						clientPlayer.setIdentity();
 						clientPlayer.isZhu = true;
 						clientPlayer.node.identity.classList.remove("guessing");
-						var config = lib.config;
+						const config = lib.config;
 						if (config.animation && !config.low_performance) {
 							clientPlayer.$legend();
 						}
-						var clickingIdentity = _status.clickingidentity;
+						const clickingIdentity = _status.clickingidentity;
 						if (!clickingIdentity || clickingIdentity[0] != clientPlayer) {
 							return;
 						}
@@ -4619,25 +4619,23 @@ export default () => {
 						delete _status.clickingidentity;
 					}, player);
 					game.addVideo("showIdentity", player, "zhu");
-					game.delay(2);
 					player.playerfocus(1000);
-					event.trigger("zhuUpdate");
-					"step 2";
-					player.recover();
-					player.draw();
-					"step 3";
+					await game.delay(2);
+					await event.trigger("zhuUpdate");
+					await player.recover();
+					await player.draw();
 					const skills = player.getStockSkills(true, true).filter(stockSkill => {
 						if (player.hasSkill(stockSkill)) {
-							return;
+							return false;
 						}
-						var info = get.info(stockSkill);
-						if (!info || !info.zhuSkill) {
-							return;
+						const info = get.info(stockSkill);
+						if (!info?.zhuSkill) {
+							return false;
 						}
 						return true;
 					});
 					if (skills.length) {
-						player.addSkills(skills);
+						await player.addSkills(skills);
 					}
 				},
 			},
@@ -4645,19 +4643,16 @@ export default () => {
 				trigger: {
 					player: "dying",
 				},
-				forced: true,
-				unique: true,
-				silent: true,
 				charlotte: true,
 				ruleSkill: true,
-				filter: (event, player) => {
+				unique: true,
+				silent: true,				
+				filter(_event, player) {
 					const storage = player.storage;
 					return !storage.stratagem_revitalization && player.ai.stratagemCamouflage && game.dead.length < Math.max(Math.round(get.population() / 6), 1) && storage.stratagem_fury >= 2;
 				},
-				content: () => {
-					"step 0";
-					game.delayx();
-					"step 1";
+				async content(_event, _trigger, player) {
+					await game.delayx();
 					player.storage.stratagem_revitalization = true;
 					game.broadcastAll(clientPlayer => {
 						clientPlayer.identityShown = true;
@@ -4669,30 +4664,31 @@ export default () => {
 						}
 					}, player);
 					game.addVideo("showIdentity", player, "fan");
-					game.delay(2);
 					player.playerfocus(800);
-					"step 2";
+					await game.delay(2);
 					player.changeFury(-player.storage.stratagem_fury, true);
-					player.discard(player.getCards("hej"));
-					player.link(false);
-					player.turnOver(false);
-					player.recover(2 - player.hp);
-					player.draw(3);
+					await player.discard(player.getCards("hej"));
+					await player.link(false);
+					await player.turnOver(false);
+					await player.recover(2 - player.hp);
+					await player.draw(3);
 				},
 			},
 			stratagem_expose: {
-				trigger: { player: "useCard" },
+				trigger: {
+					player: "useCard",
+				},
 				forced: true,
 				silent: true,
 				popup: false,
-				filter: (event, player) => {
+				filter(event, player) {
 					const targets = event.targets;
-					if (targets.length != 1) {
+					if (targets.length !== 1) {
 						return false;
 					}
 					const target = targets[0];
 					return (
-						target == player &&
+						target === player &&
 						(target.identityShown ||
 							player.storage.zhibi.includes(target) ||
 							game.hasPlayer2(current => {
@@ -4704,11 +4700,9 @@ export default () => {
 							}))
 					);
 				},
-				content: () => {
-					var storage = trigger.targets[0].storage;
-					if (!storage.stratagem_expose) {
-						storage.stratagem_expose = [];
-					}
+				async content(_event, trigger, player) {
+					const storage = trigger.targets[0].storage;
+					storage.stratagem_expose ??= [];
 					storage.stratagem_expose.add(player);
 				},
 			},
