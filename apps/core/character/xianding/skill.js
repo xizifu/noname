@@ -7488,7 +7488,7 @@ const skills = {
 		trigger: { global: "phaseUseBegin" },
 		round: 1,
 		filter(event, player) {
-			return player.countDiscardableCards(player, "h") > 0;
+			return player.countDiscardableCards(player, "h") > 0 && event.player != player;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player

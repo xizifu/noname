@@ -4526,10 +4526,11 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			target.chooseUseTarget(new lib.element.VCard({ name: "sha", storage: { olzongluan: true }, isCard: true }), true, false).set("selectTarget", [1, Infinity]);
-			const num = game.countPlayer2(c => c.hasHistory("damage", evt => evt.getParent(4).name == "olzongluan"), true);
+			const next = target.chooseUseTarget(new lib.element.VCard({ name: "sha", storage: { olzongluan: true }, isCard: true }), true, false).set("selectTarget", [1, Infinity]);
+			await next;
+			const num = game.countPlayer2(current => current.hasHistory("damage", evt => evt.getParent(3) == next), true);
 			if (num > 0) {
-				await player.chooseToDiscard(num, true, "he");
+				await player.chooseToDiscard(num, true, "he", "allowChooseAll");
 			}
 		},
 		init(player, skill) {
