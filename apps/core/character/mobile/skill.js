@@ -7974,8 +7974,10 @@ const skills = {
 		locked: true,
 		async content(event, trigger, player) {
 			const card = game.createCard2("xuanjian", "spade", 9);
-			await player.gain([card], "gain2");
-			await player.chooseUseTarget(card, true, false);
+			await player.gain(card, "gain2");
+			if (player.hasUseTarget(card) && player.getCards("h").includes(card)) {
+				await player.chooseUseTarget(card, true, false);
+			}
 		},
 		group: "friendxiaxing_gain",
 		subSkill: {

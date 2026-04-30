@@ -6622,9 +6622,10 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
+			const [card] = event.cards;
 			await player.showCards(event.cards);
-			if (player.hasUseTarget(event.cards[0])) {
-				await player.chooseUseTarget(event.cards[0], true, false);
+			if (player.hasUseTarget(card) && player.getCards("h").includes(card)) {
+				await player.chooseUseTarget(card, true, false);
 			}
 		},
 	},
