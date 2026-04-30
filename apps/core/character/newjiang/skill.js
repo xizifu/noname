@@ -7476,7 +7476,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets } = event;
 			const num = targets.length;
-			const list = [`摸${get.cnNumber(4 - num)}张牌并复原武将牌`, `${num > 1 ? `弃置${get.cnNumber(num - 1)}张牌然后` : ""}回复一点体力`];
+			const list = [`摸${get.cnNumber(4 - num)}张牌并复原武将牌`, `${num > 1 ? `弃置${get.cnNumber(num - 1)}张牌，然后` : ""}回复1点体力`];
 			if (player.getHistory("damage").length > num) {
 				list.push(`依次执行以上两项，然后非锁定失效直到你下个回合开始`);
 			}
@@ -7487,22 +7487,21 @@ const skills = {
 					.set("prompt", "雀颂：请选择一项")
 					.set("ai", () => {
 						const { num, player } = get.event();
-						return get.effect(player, { name: "draw" }, player, player) * (4 - num) >=
-							get.effect(player, { name: "guohe_copy2" }, player, player) + get.recoverEffect(player, player, player)
-							? 0
-							: 1;
+						return get.effect(player, { name: "draw" }, player, player) * (4 - num) >= get.effect(player, { name: "guohe_copy2" }, player, player) + get.recoverEffect(player, player, player) ? 0 : 1;
 					})
 					.set("num", num)
 					.forResult();
-				if (typeof result.index == "number") {
+				if (typeof result?.index == "number") {
 					const { index } = result;
 					if (index % 2 == 0) {
 						await target.draw(4 - num);
 						await target.link(false);
 						await target.turnOver(false);
 					}
-					if (index > 0 && num > 1) {
-						await target.chooseToDiscard(num - 1, "he", true);
+					if (index > 0) {
+						if (num > 1) {
+							await target.chooseToDiscard(num - 1, "he", true);
+						}
 						await target.recover();
 					}
 					if (index == 2) {
