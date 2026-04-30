@@ -2922,12 +2922,15 @@ export default () => {
 					}
 					return this;
 				},
-				yexinbilu: function () {
-					game.broadcastAll(function (player) {
+				/**
+				 * 3v3v2模型展示野心
+				 */
+				async yexinbilu() {
+					game.broadcastAll(player => {
 						player.showIdentity();
 					}, this);
-					this.gainMaxHp();
-					this.recover();
+					await this.gainMaxHp();
+					await this.recover();
 				},
 				$dieAfter: function () {
 					if (_status.video) {
@@ -4706,29 +4709,25 @@ export default () => {
 					storage.stratagem_expose.add(player);
 				},
 			},
+			// 3v3v2
 			yexinbilu: {
 				enable: "phaseUse",
-				filter: function (event, player) {
-					return player.identity == "rYe" || player.identity == "bYe";
-				},
 				charlotte: true,
 				ruleSkill: true,
 				skillAnimation: "legend",
 				animationColor: "thunder",
-				content: function () {
+				filter(event, player) {
+					return player.identity === "rYe" || player.identity === "bYe";
+				},
+				async content(_event, _trigger, player) {
 					game.removeGlobalSkill("yexinbilu");
-					player.yexinbilu();
+					await player.yexinbilu();
 				},
 				ai: {
 					order: 10,
 					result: {
-						player: function (player) {
-							return (
-								1 -
-								game.countPlayer(function (current) {
-									return current != player && (current.identity == "rYe" || current.identity == "bYe") && (current == game.me || current.isOnline());
-								})
-							);
+						player(player) {
+							return 1 - game.countPlayer(current => current !== player && (current.identity === "rYe" || current.identity === "bYe") && (current === game.me || current.isOnline()));
 						},
 					},
 				},
