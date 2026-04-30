@@ -13144,7 +13144,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			target.addMark("suizheng_effect", 1, false);
+			target.addMark("suizheng_effect", 2, false);
 			target.markAuto("suizheng_source", [player]);
 			target.addTempSkill("suizheng_effect", {
 				player: player === target ? "phaseJieshuBefore" : "phaseAfter",
@@ -13162,7 +13162,7 @@ const skills = {
 					},
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
-							return num + 2 * player.countMark("suizheng_effect");
+							return num + player.countMark("suizheng_effect");
 						}
 					},
 				},
@@ -13213,7 +13213,7 @@ const skills = {
 					delete player.storage.suizheng_effect;
 					delete player.storage.suizheng_source;
 				},
-				intro: { content: (storage = 0, player) => `使用【杀】无距离限制且次数上限+${2 * storage}` },
+				intro: { content: `使用【杀】无距离限制且次数上限+#` },
 			},
 		},
 	},
