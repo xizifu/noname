@@ -1998,9 +1998,7 @@ const skills = {
 	},
 	hefeixianjian: {
 		audio: 2,
-		trigger: {
-			player: "useCardToPlayered",
-		},
+		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return event.card.name == "sha" && event.targets?.length == 1;
 		},
@@ -2071,9 +2069,9 @@ const skills = {
 			);
 			if (link == "draw") {
 				await player.draw();
-				const num = Math.min(target.countDiscardableCards("he"), Math.max(1, target.countCards("ej")));
+				const num = Math.min(target.countDiscardableCards(target, "he"), Math.max(1, target.countCards("ej")));
 				if (num > 0) {
-					await target.chooseToDiscard(num, "he", true);
+					await target.chooseToDiscard(num, "he", true, "allowChooseAll");
 				}
 			} else {
 				player

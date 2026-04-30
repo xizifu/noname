@@ -35759,7 +35759,7 @@ const skills = {
 		},
 		filterCard: true,
 		filterTarget(card, player, target) {
-			return player.inRange(target) && target.countDiscardableCards("he");
+			return player.inRange(target) && target.countDiscardableCards(target, "he");
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
