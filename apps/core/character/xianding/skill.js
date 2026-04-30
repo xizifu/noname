@@ -6663,15 +6663,10 @@ const skills = {
 		mark: true,
 		intro: {
 			content(storage, player) {
-				if (storage) {
-					return `每个回合结束时，若本回合有角色失去手牌数大于剩余手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，弃置体力值张手牌。`;
-				}
-				return `每个回合结束时，若本回合有角色失去手牌数大于剩余手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，摸体力值张牌（至多摸五）。`;
+				return `每个回合结束时，若本回合有角色失去手牌数不小于其当前手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，${storage ? "其弃置体力值张手牌" : "摸体力值张牌（至多摸五）"}。`;
 			},
 		},
-		trigger: {
-			global: "phaseEnd",
-		},
+		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			return get.info("dcsbyinmou").getTargets().length > 0;
 		},
@@ -6683,7 +6678,7 @@ const skills = {
 						cards.addArray(evt.hs);
 					}
 				});
-				return cards.length > target.countCards("h");
+				return cards.length >= target.countCards("h");
 			});
 		},
 		prompt2(event, player) {
@@ -6708,7 +6703,7 @@ const skills = {
 					createDialog: [`寅谋：将一张牌交给一名角色`, cards],
 					targets: targets,
 					filterTarget(card, player, target) {
-						return get.event().targets.includes(target);
+						return get.event().targets?.includes(target);
 					},
 					bool: bool,
 					forced: true,
