@@ -4732,62 +4732,59 @@ export default () => {
 					},
 				},
 			},
+			// 特殊身份
 			identity_junshi: {
 				name: "军师",
-				mark: true,
-				intro: {
-					content: "准备阶段开始时，可以观看牌堆顶的三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底",
+				trigger: {
+					player: "phaseZhunbeiBegin"
 				},
-				trigger: { player: "phaseZhunbeiBegin" },
-				silent: true,
 				charlotte: true,
-				content: function () {
-					"step 0";
-					var cards = get.cards(3);
-					game.cardsGotoOrdering(cards);
-					var next = player.chooseToMove();
-					next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
-					next.set("prompt", "观星：点击或拖动将牌移动到牌堆顶或牌堆底");
-					next.processAI = function (list) {
-						var cards = list[0][1],
-							player = _status.event.player;
-						var top = [];
-						var judges = player.getCards("j");
-						var stopped = false;
-						if (!player.hasWuxie()) {
-							for (var i = 0; i < judges.length; i++) {
-								var judge = get.judge(judges[i]);
-								cards.sort(function (a, b) {
-									return judge(b) - judge(a);
-								});
-								if (judge(cards[0]) < 0) {
-									stopped = true;
-									break;
-								} else {
-									top.unshift(cards.shift());
+				silent: true,
+				async content(event, trigger, player) {
+					const cards = get.cards(3);
+					await game.cardsGotoOrdering(cards);
+					const result = await player
+						.chooseToMove({
+							prompt: "观星：点击或拖动将牌移动到牌堆顶或牌堆底",
+							list: [["牌堆顶", cards], ["牌堆底"]],
+							processAI(list) {
+								const player = get.player();
+								const cards = list[0][1];
+								const judges = player.getCards("j");
+
+								const top = [];
+								let stopped = false;
+								if (!player.hasWuxie()) {
+									for (const card of judges) {
+										const judge = get.judge(card);
+										cards.sort((a, b) => judge(b) - judge(a));
+										if (judge(cards[0]) < 0) {
+											stopped = true;
+											break;
+										} else {
+											top.unshift(cards.shift());
+										}
+									}
 								}
-							}
-						}
-						var bottom;
-						if (!stopped) {
-							cards.sort(function (a, b) {
-								return get.value(b, player) - get.value(a, player);
-							});
-							while (cards.length) {
-								if (get.value(cards[0], player) <= 5) {
-									break;
+								if (!stopped) {
+									cards.sort((a, b) => get.value(b, player) - get.value(a, player));
+									while (cards.length) {
+										if (get.value(cards[0], player) <= 5) {
+											break;
+										}
+										top.unshift(cards.shift());
+									}
 								}
-								top.unshift(cards.shift());
-							}
-						}
-						bottom = cards;
-						return [top, bottom];
-					};
-					"step 1";
-					var top = result.moved[0];
-					var bottom = result.moved[1];
+								const bottom = cards;
+								return [top, bottom];
+							},
+						})
+						.forResult();
+
+					const top = result.moved[0];
+					const bottom = result.moved[1];
 					top.reverse();
-					game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+					await game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
 						if (event.top_cards.includes(card)) {
 							return ui.cardPile.firstChild;
 						}
@@ -4796,61 +4793,65 @@ export default () => {
 					player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");
 					game.log(player, "将" + get.cnNumber(top.length) + "张牌置于牌堆顶");
 					game.updateRoundNumber();
-					game.delayx();
+					await game.delayx();
+				},
+				mark: true,
+				intro: {
+					content: "准备阶段开始时，可以观看牌堆顶的三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底",
 				},
 			},
 			identity_dajiang: {
 				name: "大将",
+				charlotte: true,
 				mark: true,
 				intro: {
 					content: "手牌上限+1",
 				},
 				mod: {
-					maxHandcard: function (player, num) {
+					maxHandcard(player, num) {
 						return num + 1;
 					},
 				},
-				charlotte: true,
 			},
 			identity_zeishou: {
 				name: "贼首",
+				charlotte: true,
 				mark: true,
 				intro: {
 					content: "手牌上限-1",
 				},
 				mod: {
-					maxHandcard: function (player, num) {
+					maxHandcard(player, num) {
 						return num - 1;
 					},
 				},
-				charlotte: true,
 			},
+			// 四象标记
 			sixiang_zhuque: {
-				mark: true,
-				markimage: "image/mode/identity/mark/sixiang_zhuque.jpg",
-				intro: {
-					content: "出牌阶段，你可以弃置一张非基本牌，对一名角色造成1点伤害，以此法杀死反贼不执行奖惩。",
-				},
 				enable: "phaseUse",
+				charlotte: true,
+				prompt: "弃置一张非基本牌，对一名角色造成1点伤害",
 				filter(event, player) {
-					return player.hasCard(card => {
-						return get.type(card, null, player) !== "basic";
-					}, "he");
+					return player.hasCard(card => get.type(card, null, player) !== "basic", "he");
 				},
 				filterCard(card, player) {
 					return get.type(card, null, player) !== "basic";
 				},
 				position: "he",
 				filterTarget: true,
-				prompt: "弃置一张非基本牌，对一名角色造成1点伤害",
 				check(card) {
 					return 7 - get.value(card);
 				},
-				charlotte: true,
-				async content(event, trigger, player) {
+				async content(event, _trigger, player) {
 					player.removeSkill("sixiang_zhuque");
 					player.addTempSkill("sixiang_zhuque_cancel", "phaseUseEnd");
 					await event.target.damage("nocard");
+				},
+				group: "sixiang_remove",
+				mark: true,
+				markimage: "image/mode/identity/mark/sixiang_zhuque.jpg",
+				intro: {
+					content: "出牌阶段，你可以弃置一张非基本牌，对一名角色造成1点伤害，以此法杀死反贼不执行奖惩。",
 				},
 				ai: {
 					order: 0.6,
@@ -4865,7 +4866,6 @@ export default () => {
 						},
 					},
 				},
-				group: "sixiang_remove",
 				subSkill: {
 					cancel: {
 						trigger: {
@@ -4873,66 +4873,63 @@ export default () => {
 						},
 						filter(event, player) {
 							const evt = event.getParent();
-							if (!evt || !evt.player) {
+							if (!evt?.player) {
 								return false;
 							}
 							return evt.name === "die" && evt.player.identity === "fan" && event.getParent(4).name === "sixiang_zhuque";
 						},
-						silent: true,
-						forceDie: true,
 						charlotte: true,
-						content() {
+						forceDie: true,
+						silent: true,
+						async content(_event, trigger) {
 							trigger.cancel();
 						},
 					},
 				},
 			},
 			sixiang_xuanwu: {
-				mark: true,
-				markimage: "image/mode/identity/mark/sixiang_xuanwu.jpg",
-				intro: {
-					content: "你可以将一张牌当【桃】使用。",
-				},
 				enable: "chooseToUse",
+				charlotte: true,
+				prompt: "将一张牌当【桃】使用",
 				filter(event, player) {
-					return player.countCards("hes");
+					return player.hasCard(true, "hes");
 				},
-				filterCard: true,
-				position: "hes",
 				viewAs: {
 					name: "tao",
 				},
-				prompt: "将一张牌当【桃】使用",
+				filterCard: true,
+				position: "hes",
 				check(card) {
 					if (get.tag(card, "recover")) {
 						return 0;
 					}
 					return 9 - get.value(card);
 				},
-				charlotte: true,
-				precontent() {
+				async precontent(_event, _trigger, player) {
 					player.removeSkill("sixiang_xuanwu");
 				},
 				group: "sixiang_remove",
+				mark: true,
+				markimage: "image/mode/identity/mark/sixiang_xuanwu.jpg",
+				intro: {
+					content: "你可以将一张牌当【桃】使用。",
+				},
 			},
 			sixiang_qinglong: {
-				mark: true,
-				markimage: "image/mode/identity/mark/sixiang_qinglong.jpg",
-				intro: {
-					content: "回合开始时，你可以弃置两张牌，弃置你判定区的【乐不思蜀】或【兵粮寸断】。",
-				},
 				trigger: {
 					player: "phaseBegin",
 				},
-				filter: function (event, player) {
+				charlotte: true,
+				filter(event, player) {
 					if (!player.hasJudge("lebu") && !player.hasJudge("bingliang")) {
 						return false;
 					}
 					return player.countCards("he") > 1;
 				},
 				async cost(event, trigger, player) {
-					const lebu = player.hasJudge("lebu"),
-						bingliang = player.hasJudge("bingliang");
+					const lebu = player.hasJudge("lebu");
+					const bingliang = player.hasJudge("bingliang");
+
 					let info = "弃置两张牌，然后弃置判定区内的";
 					if (lebu) {
 						info += "【乐不思蜀】";
@@ -4944,15 +4941,20 @@ export default () => {
 						info += "【兵粮寸断】";
 					}
 					event.result = await player
-						.chooseToDiscard("he", 2, get.prompt(event.skill), info)
-						.set("logSkill", event.skill)
-						.set("ai", function (card) {
-							const goon = get.event().goon;
-							if (goon) {
-								return goon - get.value(card);
-							}
-							return 0;
+						.chooseToDiscard({
+							prompt: get.prompt(event.skill),
+							prompt2: info,
+							selectCard: 2,
+							position: "he",
+							ai(card) {
+								const goon = get.event().goon;
+								if (goon) {
+									return goon - get.value(card);
+								}
+								return 0;
+							},
 						})
+						.set("logSkill", event.skill)
 						.set(
 							"goon",
 							(() => {
@@ -4983,21 +4985,24 @@ export default () => {
 						.forResult();
 					event.result.skill_popup = false;
 				},
-				charlotte: true,
 				async content(event, trigger, player) {
 					const lebu = player.getCards("j", j => {
 						return j.viewAs === "lebu" || j.name === "lebu";
-					}),
-						bingliang = player.getCards("j", j => {
-							return j.viewAs === "bingliang" || j.name === "bingliang";
-						});
+					});
+					const bingliang = player.getCards("j", j => {
+						return j.viewAs === "bingliang" || j.name === "bingliang";
+					});
 					player.removeSkill("sixiang_qinglong");
 					let control;
 					if (lebu.length && bingliang.length) {
 						control = (await player
-							.chooseControl("lebu", "bingliang")
-							.set("prompt", "请选择要弃置的牌")
-							.set("ai", () => get.event().control)
+							.chooseControl({
+								prompt: "请选择要弃置的牌",
+								controls: ["lebu", "bingliang"],
+								ai() {
+									return get.event().control;
+								}
+							})
 							.set(
 								"control",
 								(() => {
@@ -5037,24 +5042,32 @@ export default () => {
 					}
 				},
 				group: "sixiang_remove",
+				mark: true,
+				markimage: "image/mode/identity/mark/sixiang_qinglong.jpg",
+				intro: {
+					content: "回合开始时，你可以弃置两张牌，弃置你判定区的【乐不思蜀】或【兵粮寸断】。",
+				},
 			},
 			sixiang_baihu: {
+				enable: ["chooseToUse", "chooseToRespond"],
+				charlotte: true,
+				prompt: "将一张牌当【杀】使用或打出",
+				viewAs: {
+					name: "sha",
+				},
+				filterCard: true,
+				position: "hes",
+				check(card) {
+					return 5 - get.value(card);
+				},
+				async precontent(_event, _trigger, player) {
+					player.removeSkill("sixiang_baihu");
+				},
+				group: ["sixiang_baihu_shan", "sixiang_remove"],
 				mark: true,
 				markimage: "image/mode/identity/mark/sixiang_baihu.jpg",
 				intro: {
 					content: "你可以将一张牌当【杀】或【闪】使用或打出。",
-				},
-				enable: ["chooseToUse", "chooseToRespond"],
-				filterCard: true,
-				position: "hes",
-				viewAs: { name: "sha" },
-				prompt: "将一张牌当【杀】使用或打出",
-				check(card) {
-					return 5 - get.value(card);
-				},
-				charlotte: true,
-				precontent() {
-					player.removeSkill("sixiang_baihu");
 				},
 				ai: {
 					respondSha: true,
@@ -5064,18 +5077,20 @@ export default () => {
 						},
 					},
 				},
-				group: ["sixiang_baihu_shan", "sixiang_remove"],
 				subSkill: {
 					shan: {
 						enable: ["chooseToUse", "chooseToRespond"],
-						filterCard: true,
-						viewAs: { name: "shan" },
-						position: "hes",
+						charlotte: true,
 						prompt: "将一张牌当【闪】使用或打出",
+						viewAs: {
+							name: "shan",
+						},
+						filterCard: true,
+						position: "hes",
 						check(card) {
 							return 5 - get.value(card);
 						},
-						precontent() {
+						async precontent(_event, _trigger, player) {
 							player.removeSkill("sixiang_baihu");
 						},
 						ai: {
@@ -5103,9 +5118,9 @@ export default () => {
 				filter(event, player) {
 					return !game.hasPlayer(cur => cur.identity === "fan");
 				},
-				silent: true,
 				charlotte: true,
-				content() {
+				silent: true,
+				async content(_event, _trigger, player) {
 					player.removeSkill(["sixiang_zhuque", "sixiang_xuanwu", "sixiang_qinglong", "sixiang_baihu"]);
 				},
 				sub: true,
