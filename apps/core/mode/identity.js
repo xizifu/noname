@@ -572,7 +572,12 @@ export default () => {
 				}
 				last.style.paddingBottom = "8px";
 			},
-			getIdentityList: function (player) {
+			/**
+			 * 获取某角色可能的身份对象
+			 *
+			 * @param {Player} player
+			 */
+			getIdentityList(player) {
 				if (player.identityShown) {
 					return;
 				}
@@ -657,7 +662,13 @@ export default () => {
 					}
 				}
 			},
-			getIdentityList2: function (list) {
+			/**
+			 * 将`game.getIdentityList`返回对象的身份名变完整
+			 *
+			 * @param {object} list
+			 * @returns {void}
+			 */
+			getIdentityList2(list) {
 				for (var i in list) {
 					switch (i) {
 						case "fan":
@@ -700,12 +711,17 @@ export default () => {
 					}
 				}
 			},
-			getVideoName: function () {
-				var str = get.translation(game.me.name);
+			/**
+			 * 获取当前局势生成的录像名字
+			 *
+			 * @returns {[playerName: string, gameName: string]}
+			 */
+			getVideoName() {
+				let str = get.translation(game.me.name);
 				if (game.me.name2) {
 					str += "/" + get.translation(game.me.name2);
 				}
-				var str2;
+				let str2 = "";
 				if (game.identityVideoName) {
 					str2 = game.identityVideoName;
 				} else {
@@ -723,14 +739,19 @@ export default () => {
 							str2 = get.cnNumber(get.playerNumber()) + "人" + get.translation(lib.config.mode) + " - " + lib.translate[game.me.identity + "2"];
 					}
 				}
-				var name = [str, str2];
-				return name;
+				return [str, str2];
 			},
-			addRecord: function (bool) {
+			/**
+			 * 为当前对局增加战绩记录
+			 *
+			 * @param {Boolean} bool - 当前对局是否胜利
+			 */
+			async addRecord(bool) {
 				if (typeof bool == "boolean") {
-					var data = lib.config.gameRecord.identity.data;
-					var identity = game.me.identity;
-					if (identity == "mingzhong") {
+					const data = lib.config.gameRecord.identity.data;
+
+					let identity = game.me.identity;
+					if (identity === "mingzhong") {
 						identity = "zhong";
 					}
 					if (!data[identity]) {
@@ -741,15 +762,15 @@ export default () => {
 					} else {
 						data[identity][1]++;
 					}
-					var list = ["zhu", "zhong", "nei", "fan", "commoner"];
-					var str = "";
-					for (var i = 0; i < list.length; i++) {
-						if (data[list[i]]) {
-							str += lib.translate[list[i] + "2"] + "：" + data[list[i]][0] + "胜" + " " + data[list[i]][1] + "负<br>";
+					const identities = ["zhu", "zhong", "nei", "fan", "commoner"];
+					let str = "";
+					for (const identity of identities) {
+						if (data[identity]) {
+							str += lib.translate[identity + "2"] + "：" + data[identity][0] + "胜" + " " + data[identity][1] + "负<br>";
 						}
 					}
 					lib.config.gameRecord.identity.str = str;
-					game.saveConfig("gameRecord", lib.config.gameRecord);
+					await game.promises.saveConfig("gameRecord", lib.config.gameRecord);
 				}
 			},
 			showIdentity: function (me) {
@@ -2922,9 +2943,9 @@ export default () => {
 			player: {
 				/**
 				 * 洞察一名角色的阵营（友方/敌方）
-				 * 
+				 *
 				 * @this {Player}
-				 * @param {Player} target 
+				 * @param {Player} target
 				 * @returns {GameEvent}
 				 */
 				insightInto(target) {
@@ -2936,9 +2957,9 @@ export default () => {
 				},
 				/**
 				 * 增加暴露值
-				 * 
+				 *
 				 * 暴露值越高，AI越容易透视身份
-				 * 
+				 *
 				 * @this {Player}
 				 * @param {number} num - 添加的暴露值；暴露值最大不超过0.95
 				 * @returns {Player}
@@ -2957,7 +2978,7 @@ export default () => {
 				},
 				/**
 				 * 3v3v2模型展示野心
-				 * 
+				 *
 				 * @this {Player}
 				 */
 				async yexinbilu() {
@@ -3445,12 +3466,10 @@ export default () => {
 						} else if (event.isOnline()) {
 							player.send(afterInsight, target);
 						}
-					}
+					},
 				],
 				async stratagemCamouflage(event) {
-					const targets = game.players
-						.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage)
-						.randomGets(Math.max(Math.round(get.population() / 6), 1));
+					const targets = game.players.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage).randomGets(Math.max(Math.round(get.population() / 6), 1));
 
 					for (const target of targets) {
 						target.ai.stratagemCamouflage = true;
