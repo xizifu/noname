@@ -465,60 +465,77 @@ export default () => {
 			},
 		],
 		game: {
-			canReplaceViewpoint: () => true,
-			getState: function () {
-				var state = {};
-				for (var i in lib.playerOL) {
-					var player = lib.playerOL[i];
-					state[i] = { identity: player.identity };
+			/**
+			 * 是否能在菜单中切换角色（换人）
+			 * 
+			 * @returns {boolean}
+			 */
+			canReplaceViewpoint() {
+				return true;
+			},
+			// 联机相关
+			/**
+			 * 联机中获取当前所有玩家的状态对象
+			 */
+			getState() {
+				const state = {};
+				for (const id in lib.playerOL) {
+					const player = lib.playerOL[id];
+					state[id] = { identity: player.identity };
 					if (player == game.zhu) {
-						state[i].zhu = true;
+						state[id].zhu = true;
 					}
 					if (player == game.zhong) {
-						state[i].zhong = true;
+						state[id].zhong = true;
 					}
 					if (player.isZhu) {
-						state[i].isZhu = true;
+						state[id].isZhu = true;
 					}
 					if (player.special_identity) {
-						state[i].special_identity = player.special_identity;
+						state[id].special_identity = player.special_identity;
 					}
-					state[i].shown = player.ai.shown;
+					state[id].shown = player.ai.shown;
 					//state[i].group=player.group;
 				}
 				return state;
 			},
-			updateState: function (state) {
-				for (var i in state) {
-					var player = lib.playerOL[i];
+			/**
+			 * 联机中通过状态对象更新场上玩家的状态
+			 */
+			updateState(state) {
+				for (const id in state) {
+					const player = lib.playerOL[id];
 					if (player) {
-						player.identity = state[i].identity;
-						if (state[i].identity == "rZhu" || state[i].identity == "bZhu") {
-							game[state[i].identity] = player;
+						player.identity = state[id].identity;
+						if (state[id].identity == "rZhu" || state[id].identity == "bZhu") {
+							game[state[id].identity] = player;
 						}
-						if (state[i].special_identity) {
-							player.special_identity = state[i].special_identity;
+						if (state[id].special_identity) {
+							player.special_identity = state[id].special_identity;
 							if (player.node.dieidentity) {
-								player.node.dieidentity.innerHTML = get.translation(state[i].special_identity);
-								player.node.identity.firstChild.innerHTML = get.translation(state[i].special_identity + "_bg");
+								player.node.dieidentity.innerHTML = get.translation(state[id].special_identity);
+								player.node.identity.firstChild.innerHTML = get.translation(state[id].special_identity + "_bg");
 							}
 						}
-						if (state[i].zhu) {
+						if (state[id].zhu) {
 							game.zhu = player;
 						}
-						if (state[i].isZhu) {
+						if (state[id].isZhu) {
 							player.isZhu = true;
 						}
-						if (state[i].zhong) {
+						if (state[id].zhong) {
 							game.zhong = player;
 						}
-						player.ai.shown = state[i].shown;
+						player.ai.shown = state[id].shown;
 						//player.group=state[i].group;
 						//player.node.name.dataset.nature=get.groupnature(player.group);
 					}
 				}
 			},
-			getRoomInfo: function (uiintro) {
+			/**
+			 * 给“房间信息”界面填充身份模式的联机房间配置
+			 */
+			getRoomInfo(uiintro) {
 				uiintro.add('<div class="text chat">游戏模式：' + (lib.configOL.identity_mode == "zhong" ? "明忠" : "标准"));
 				uiintro.add('<div class="text chat">双将模式：' + (lib.configOL.double_character ? "开启" : "关闭"));
 				if (lib.configOL.identity_mode != "zhong") {
@@ -546,7 +563,7 @@ export default () => {
 				} else {
 					uiintro.add('<div class="text chat">卡牌替换：' + (lib.configOL.zhong_card ? "开启" : "关闭"));
 				}
-				var last = uiintro.add('<div class="text chat">出牌时限：' + lib.configOL.choose_timeout + "秒");
+				let last = uiintro.add('<div class="text chat">出牌时限：' + lib.configOL.choose_timeout + "秒");
 				if (lib.configOL.banned.length) {
 					last = uiintro.add('<div class="text chat">禁用武将：' + get.translation(lib.configOL.banned));
 				}
