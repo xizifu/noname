@@ -3447,54 +3447,59 @@ export default () => {
 						}
 					}
 				],
-				stratagemCamouflage: () => {
-					"step 0";
-					var camouflaged = (event.targets = game.players.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage).randomGets(Math.max(Math.round(get.population() / 6), 1)));
-					camouflaged.forEach(current => (current.ai.stratagemCamouflage = true));
-					var me = game.me;
-					if (event.players.includes(me) && me.identity == "nei") {
+				async stratagemCamouflage(event) {
+					const targets = game.players
+						.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage)
+						.randomGets(Math.max(Math.round(get.population() / 6), 1));
+
+					for (const target of targets) {
+						target.ai.stratagemCamouflage = true;
+					}
+
+					let choosing = null;
+					const me = game.me;
+					if (event.players.includes(me) && me.identity === "nei") {
 						event.videoId = lib.status.videoId++;
-						var rebel = get.translation("fan2"),
-							dialog = ui.create.dialog(`${get.translation(camouflaged)}是${rebel}<br>`, "forcebutton");
+						const rebel = get.translation("fan2");
+						const dialog = ui.create.dialog(`${get.translation(targets)}是${rebel}<br>`, "forcebutton");
 						ui.create.spinningIdentityCard("fan", dialog);
 						dialog.videoId = event.videoId;
-						camouflaged.forEach(victim => {
-							var classList = victim.classList,
-								nonCamouflageFlashing = classList.contains("flash-animation-iteration-count-infinite");
+						for (const victim of targets) {
+							const classList = victim.classList;
+							const nonCamouflageFlashing = classList.contains("flash-animation-iteration-count-infinite");
 							if (nonCamouflageFlashing) {
 								victim.nonCamouflageFlashing = true;
 							} else {
 								classList.add("flash-animation-iteration-count-infinite");
 							}
 							victim.prompt(rebel, "fan");
-						});
-						me.chooseControl("ok").set("dialog", dialog);
+						}
+						choosing = me.chooseControl("ok").set("dialog", dialog);
 					}
-					game.filterPlayer(current => {
-						if (current.identity != "nei") {
-							return;
-						}
-						var storage = current.storage;
-						if (!storage.zhibi) {
-							storage.zhibi = [];
-						}
-						storage.zhibi.addArray(camouflaged);
-					});
-					("step 1");
-					targets.forEach(current => {
+					for (const current of game.filterPlayer(current => current === "nei")) {
+						const storage = current.storage;
+						storage.zhibi ??= [];
+						storage.zhibi.addArray(targets);
+					}
+
+					if (choosing != null) {
+						await choosing;
+					}
+
+					for (const current of targets) {
 						if (game.me.identity == "nei" && get.config("nei_auto_mark_camouflage")) {
 							current.setIdentity();
 						}
 						current.unprompt();
 						if (current.nonCamouflageFlashing) {
 							delete current.nonCamouflageFlashing;
-							return;
+							continue;
 						}
-						var classList = current.classList;
+						const classList = current.classList;
 						if (classList.contains("flash-animation-iteration-count-infinite")) {
 							classList.remove("flash-animation-iteration-count-infinite");
 						}
-					});
+					}
 				},
 				stratagemCamouflageOL: () => {
 					"step 0";
