@@ -2923,6 +2923,7 @@ export default () => {
 				/**
 				 * 洞察一名角色的阵营（友方/敌方）
 				 * 
+				 * @this {Player}
 				 * @param {Player} target 
 				 * @returns {GameEvent}
 				 */
@@ -2933,7 +2934,16 @@ export default () => {
 					next.setContent("stratagemInsight");
 					return next;
 				},
-				addExpose: function (num) {
+				/**
+				 * 增加暴露值
+				 * 
+				 * 暴露值越高，AI越容易透视身份
+				 * 
+				 * @this {Player}
+				 * @param {number} num - 添加的暴露值；暴露值最大不超过0.95
+				 * @returns {Player}
+				 */
+				addExpose(num) {
 					if (!game.zhu || !game.zhu.isZhu || !game.zhu.identityShown) {
 						return;
 					}
@@ -2947,6 +2957,8 @@ export default () => {
 				},
 				/**
 				 * 3v3v2模型展示野心
+				 * 
+				 * @this {Player}
 				 */
 				async yexinbilu() {
 					game.broadcastAll(player => {
