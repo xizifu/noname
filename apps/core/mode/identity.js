@@ -467,7 +467,7 @@ export default () => {
 		game: {
 			/**
 			 * 是否能在菜单中切换角色（换人）
-			 * 
+			 *
 			 * @returns {boolean}
 			 */
 			canReplaceViewpoint() {
@@ -974,7 +974,7 @@ export default () => {
 				next.setContent(function () {
 					"step 0";
 					ui.arena.classList.add("choose-character");
-					"step 1";
+					("step 1");
 					var list = ["rZhu", "rZhong", "rNei", "rYe"];
 					var list2 = ["bZhu", "bZhong", "bNei", "bYe"];
 					list.randomSort();
@@ -1016,7 +1016,7 @@ export default () => {
 					for (var i = 0; i < players.length; i++) {
 						players[i].seatNum = i;
 					}
-					"step 2";
+					("step 2");
 					var map = {};
 					var map_zhu = {};
 					event.mapNum = {};
@@ -1075,7 +1075,7 @@ export default () => {
 							return _status.event.choice;
 						})
 						.set("choice", event.list.randomGet());
-					"step 3";
+					("step 3");
 					event.bZhu = result.control;
 					event.list.remove(event.bZhu);
 					game.rZhu
@@ -1085,7 +1085,7 @@ export default () => {
 							return _status.event.choice;
 						})
 						.set("choice", event.list.randomGet());
-					"step 4";
+					("step 4");
 					event.rZhu = result.control;
 					var players = [game.rZhu, game.bZhu];
 					var list = [];
@@ -1109,7 +1109,7 @@ export default () => {
 							}
 						}
 					});
-					"step 5";
+					("step 5");
 					for (var i in result) {
 						if (result[i] == "ai" || !result[i] || !result[i].links) {
 							result[i] = event.map[i].randomGet();
@@ -1150,7 +1150,7 @@ export default () => {
 							player.init(result.links[0]);
 						}
 					});
-					"step 6";
+					("step 6");
 					for (var i in result) {
 						if (result[i] == "ai" || !result[i] || !result[i].links) {
 							result[i] = event.map[i].randomGet();
@@ -1185,7 +1185,7 @@ export default () => {
 					ui.arena.classList.add("choose-character");
 					game.no_continue_game = true;
 					lib.init.onfree();
-					"step 1";
+					("step 1");
 					var list = ["rZhu", "rZhong", "rNei", "rYe"];
 					var list2 = ["bZhu", "bZhong", "bNei", "bYe"];
 					list.randomSort();
@@ -1216,7 +1216,7 @@ export default () => {
 					for (var i = 0; i < players.length; i++) {
 						players[i].seatNum = i;
 					}
-					"step 2";
+					("step 2");
 					var map = {};
 					var map_zhu = {};
 					var list = [];
@@ -1262,7 +1262,7 @@ export default () => {
 							return _status.event.choice;
 						})
 						.set("choice", event.list.randomGet());
-					"step 3";
+					("step 3");
 					event.bZhu = result.control;
 					event.list.remove(event.bZhu);
 					game.rZhu
@@ -1272,7 +1272,7 @@ export default () => {
 							return _status.event.choice;
 						})
 						.set("choice", event.list.randomGet());
-					"step 4";
+					("step 4");
 					event.rZhu = result.control;
 					if (game.me == game.rZhu || game.me == game.bZhu) {
 						event.isZhu = true;
@@ -1282,7 +1282,7 @@ export default () => {
 						}
 						game.me.chooseButton(true, ["请选择您的武将牌", [list, "character"]]);
 					}
-					"step 5";
+					("step 5");
 					if (event.isZhu) {
 						event.map[event[game.me.identity]].remove(result.links[0]);
 						game.me.init(result.links[0]);
@@ -1319,7 +1319,7 @@ export default () => {
 						var group = game.me.identity.indexOf("r") == 0 ? event.rZhu : event.bZhu;
 						game.me.chooseButton(true, ["请选择您的武将牌", [event.map[group].randomRemove(5), "character"]]);
 					}
-					"step 6";
+					("step 6");
 					if (!event.isZhu) {
 						game.me.init(result.links[0]);
 					}
@@ -1329,7 +1329,7 @@ export default () => {
 							current.init(event.map[group].randomRemove(1)[0]);
 						}
 					});
-					"step 7";
+					("step 7");
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
@@ -1458,7 +1458,7 @@ export default () => {
 					}
 					_status.characterlist = list4.slice(0);
 					list = list3.randomGets(5);
-					"step 1";
+					("step 1");
 					var list = [];
 					var selectButton = lib.configOL.double_character ? 2 : 1;
 
@@ -1473,7 +1473,7 @@ export default () => {
 							player.init(result.links[0], result.links[1]);
 						}
 					});
-					"step 2";
+					("step 2");
 					var shen = [];
 					for (var i in result) {
 						if (result[i] && result[i].links) {
@@ -1525,7 +1525,7 @@ export default () => {
 					} else {
 						event._result = {};
 					}
-					"step 3";
+					("step 3");
 					if (!result) {
 						result = {};
 					}
@@ -2334,7 +2334,7 @@ export default () => {
 							ui.create.cheat2();
 						}
 					}
-					"step 1";
+					("step 1");
 					if (ui.cheat) {
 						ui.cheat.close();
 						delete ui.cheat;
@@ -2368,7 +2368,7 @@ export default () => {
 					if (groups.length) {
 						game.me.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true).set("direct", true);
 					}
-					"step 2";
+					("step 2");
 					if (result.links?.length) {
 						event.group = result.links[0][2].slice(6);
 					}
@@ -2392,7 +2392,7 @@ export default () => {
 							event.ai(game.players[i], event.list.splice(0, get.config("choice_" + game.players[i].identity)), null, event.list);
 						}
 					}
-					"step 3";
+					("step 3");
 					if (event.group) {
 						game.me.group = event.group;
 						game.me.node.name.dataset.nature = get.groupnature(game.me.group);
@@ -2403,7 +2403,7 @@ export default () => {
 						_status.characterlist.remove(game.players[i].name1);
 						_status.characterlist.remove(game.players[i].name2);
 					}
-					"step 4";
+					("step 4");
 					if (event.stratagemMode) {
 						["stratagem_gain", "stratagem_insight", "stratagem_expose"].forEach(globalSkill => game.addGlobalSkill(globalSkill));
 						game.players.forEach(i => {
@@ -2635,7 +2635,7 @@ export default () => {
 					next.set("ai", function (button) {
 						return Math.random();
 					});
-					"step 1";
+					("step 1");
 					if (!game.zhu.name) {
 						game.zhu.init(result.links[0], result.links[1]);
 					}
@@ -2684,10 +2684,10 @@ export default () => {
 					} else {
 						event.goto(3);
 					}
-					"step 2";
+					("step 2");
 					var name = result.links[0][2].slice(6);
 					game.zhu.changeGroup(name);
-					"step 3";
+					("step 3");
 					var list = [];
 					var selectButton = lib.configOL.double_character ? 2 : 1;
 
@@ -2717,7 +2717,7 @@ export default () => {
 							player.init(result.links[0], result.links[1]);
 						}
 					});
-					"step 4";
+					("step 4");
 					var shen = [];
 					for (var i in result) {
 						if (result[i] && result[i].links) {
@@ -2771,7 +2771,7 @@ export default () => {
 					} else {
 						event._result = {};
 					}
-					"step 5";
+					("step 5");
 					if (!result) {
 						result = {};
 					}
@@ -2920,8 +2920,14 @@ export default () => {
 		},
 		element: {
 			player: {
-				insightInto: function (target) {
-					var next = game.createEvent("stratagemInsight");
+				/**
+				 * 洞察一名角色的阵营（友方/敌方）
+				 * 
+				 * @param {Player} target 
+				 * @returns {GameEvent}
+				 */
+				insightInto(target) {
+					const next = game.createEvent("stratagemInsight");
 					next.player = this;
 					next.target = target;
 					next.setContent("stratagemInsight");
@@ -3335,93 +3341,100 @@ export default () => {
 				},
 			},
 			content: {
-				stratagemInsight: () => {
-					"step 0";
-					game.log(player, "洞察了", target, "与其的阵营关系");
-					"step 1";
-					var storage = player.storage;
-					if (!storage.zhibi) {
-						storage.zhibi = [];
-					}
-					var zhibi = storage.zhibi;
-					if (!zhibi.includes(target)) {
-						zhibi.push(target);
-					}
-					var insightResult = (event.insightResult = get.insightResult(player, target));
-					event.videoId = lib.status.videoId++;
-					var send = (clientTarget, clientInsightResult, id) => {
-						var classList = clientTarget.classList,
-							nonStratagemInsightFlashing = classList.contains("flash-animation-iteration-count-infinite");
-						if (nonStratagemInsightFlashing) {
-							clientTarget.nonStratagemInsightFlashing = true;
-						} else {
-							classList.add("flash-animation-iteration-count-infinite");
+				stratagemInsight: [
+					async (event, _trigger, player) => {
+						const { target } = event;
+
+						game.log(player, "洞察了", target, "与其的阵营关系");
+
+						const storage = player.storage;
+						storage.zhibi ??= [];
+
+						const zhibi = storage.zhibi;
+						if (!zhibi.includes(target)) {
+							zhibi.push(target);
 						}
-						var identity = get.translation(`${clientInsightResult}2`);
-						clientTarget.prompt(identity, clientInsightResult);
-						var dialog = ui.create.dialog(`${get.translation(clientTarget)}是${identity}<br>`, "forcebutton");
-						ui.create.spinningIdentityCard(clientInsightResult, dialog);
-						var control = ui.create.control("ok", () => {
-							dialog.close();
-							control.close();
-							_status.imchoosing = false;
-							_status.event._result = {
-								bool: true,
-							};
-							game.resume();
-						});
-						dialog.videoId = id;
-						game.pause();
-						game.countChoose();
-					};
-					game.broadcastAll(
-						(clientPlayer, clientTarget, id) => {
-							if (clientPlayer != game.me) {
-								ui.create.dialog(`${get.translation(clientPlayer)}正在洞察${get.translation(clientTarget)}的阵营...<br>`).videoId = id;
+						const insightResult = (event.insightResult = get.insightResult(player, target));
+						event.videoId = lib.status.videoId++;
+
+						const send = (clientTarget, clientInsightResult, id) => {
+							const classList = clientTarget.classList;
+							const nonStratagemInsightFlashing = classList.contains("flash-animation-iteration-count-infinite");
+							if (nonStratagemInsightFlashing) {
+								clientTarget.nonStratagemInsightFlashing = true;
+							} else {
+								classList.add("flash-animation-iteration-count-infinite");
 							}
-						},
-						player,
-						target,
-						event.videoId
-					);
-					if (event.isMine()) {
-						send(target, insightResult, event.videoId);
-					} else if (event.isOnline()) {
-						player.send(send, target, insightResult, event.videoId);
-						player.wait();
-						game.pause();
-					}
-					"step 2";
-					game.broadcastAll("closeDialog", event.videoId);
-					if (!_status.connectMode && get.config("auto_mark_identity") && !target.node.identity.firstChild.innerHTML.length) {
+							const identity = get.translation(`${clientInsightResult}2`);
+							clientTarget.prompt(identity, clientInsightResult);
+							const dialog = ui.create.dialog(`${get.translation(clientTarget)}是${identity}<br>`, "forcebutton");
+							ui.create.spinningIdentityCard(clientInsightResult, dialog);
+							const control = ui.create.control("ok", () => {
+								dialog.close();
+								control.close();
+								_status.imchoosing = false;
+								_status.event._result = {
+									bool: true,
+								};
+								game.resume();
+							});
+							dialog.videoId = id;
+							game.pause();
+							game.countChoose();
+						};
 						game.broadcastAll(
-							(clientPlayer, clientTarget, insightResult) => {
-								if (clientPlayer.isUnderControl(true)) {
-									clientTarget.setIdentity(insightResult);
+							(clientPlayer, clientTarget, id) => {
+								if (clientPlayer != game.me) {
+									ui.create.dialog(`${get.translation(clientPlayer)}正在洞察${get.translation(clientTarget)}的阵营...<br>`).videoId = id;
 								}
 							},
 							player,
 							target,
-							event.insightResult
+							event.videoId
 						);
-					}
-					var afterInsight = clientTarget => {
-						clientTarget.unprompt();
-						if (clientTarget.nonStratagemInsightFlashing) {
-							delete clientTarget.nonStratagemInsightFlashing;
-							return;
+						if (event.isMine()) {
+							send(target, insightResult, event.videoId);
+							game.pause();
+						} else if (event.isOnline()) {
+							player.send(send, target, insightResult, event.videoId);
+							player.wait();
+							game.pause();
 						}
-						var classList = clientTarget.classList;
-						if (classList.contains("flash-animation-iteration-count-infinite")) {
-							classList.remove("flash-animation-iteration-count-infinite");
+					},
+					async (event, _trigger, player) => {
+						const { target } = event;
+
+						game.broadcastAll("closeDialog", event.videoId);
+						if (!_status.connectMode && get.config("auto_mark_identity") && !target.node.identity.firstChild.innerHTML.length) {
+							game.broadcastAll(
+								(clientPlayer, clientTarget, currentInsightResult) => {
+									if (clientPlayer.isUnderControl(true)) {
+										clientTarget.setIdentity(currentInsightResult);
+									}
+								},
+								player,
+								target,
+								event.insightResult
+							);
 						}
-					};
-					if (event.isMine()) {
-						afterInsight(target);
-					} else if (event.isOnline()) {
-						player.send(afterInsight, target);
+						const afterInsight = clientTarget => {
+							clientTarget.unprompt();
+							if (clientTarget.nonStratagemInsightFlashing) {
+								delete clientTarget.nonStratagemInsightFlashing;
+								return;
+							}
+							const classList = clientTarget.classList;
+							if (classList.contains("flash-animation-iteration-count-infinite")) {
+								classList.remove("flash-animation-iteration-count-infinite");
+							}
+						};
+						if (event.isMine()) {
+							afterInsight(target);
+						} else if (event.isOnline()) {
+							player.send(afterInsight, target);
+						}
 					}
-				},
+				],
 				stratagemCamouflage: () => {
 					"step 0";
 					var camouflaged = (event.targets = game.players.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage).randomGets(Math.max(Math.round(get.population() / 6), 1)));
@@ -3455,7 +3468,7 @@ export default () => {
 						}
 						storage.zhibi.addArray(camouflaged);
 					});
-					"step 1";
+					("step 1");
 					targets.forEach(current => {
 						if (game.me.identity == "nei" && get.config("nei_auto_mark_camouflage")) {
 							current.setIdentity();
@@ -3544,32 +3557,35 @@ export default () => {
 					}
 					aiTargets.randomSort();
 					new Promise(resolve => setTimeout(resolve, Math.ceil(3000 + 5000 * Math.random()))).then(() => {
-						var interval = setInterval(() => {
-							aiTargets.shift();
-							if (aiTargets.length) {
-								return;
-							}
-							clearInterval(interval);
-							if (event.withAI) {
-								game.resume();
-							}
-						}, Math.ceil(500 + 500 * Math.random()));
+						var interval = setInterval(
+							() => {
+								aiTargets.shift();
+								if (aiTargets.length) {
+									return;
+								}
+								clearInterval(interval);
+								if (event.withAI) {
+									game.resume();
+								}
+							},
+							Math.ceil(500 + 500 * Math.random())
+						);
 					});
-					"step 1";
+					("step 1");
 					if (event.withMe) {
 						game.me.unwait(result);
 					}
-					"step 2";
+					("step 2");
 					if (event.withOL && !event.resultOL) {
 						game.pause();
 					}
-					"step 3";
+					("step 3");
 					if (!event.aiTargets.length) {
 						return;
 					}
 					event.withAI = true;
 					game.pause();
-					"step 4";
+					("step 4");
 					game.broadcastAll("closeDialog", event.videoId);
 					event.players.forEach(current => current.hideTimer());
 					var afterCamouflage = clientCamouflaged =>
@@ -4666,7 +4682,7 @@ export default () => {
 				charlotte: true,
 				ruleSkill: true,
 				unique: true,
-				silent: true,				
+				silent: true,
 				filter(_event, player) {
 					const storage = player.storage;
 					return !storage.stratagem_revitalization && player.ai.stratagemCamouflage && game.dead.length < Math.max(Math.round(get.population() / 6), 1) && storage.stratagem_fury >= 2;
@@ -4753,7 +4769,7 @@ export default () => {
 			identity_junshi: {
 				name: "军师",
 				trigger: {
-					player: "phaseZhunbeiBegin"
+					player: "phaseZhunbeiBegin",
 				},
 				charlotte: true,
 				silent: true,
@@ -5012,43 +5028,45 @@ export default () => {
 					player.removeSkill("sixiang_qinglong");
 					let control;
 					if (lebu.length && bingliang.length) {
-						control = (await player
-							.chooseControl({
-								prompt: "请选择要弃置的牌",
-								controls: ["lebu", "bingliang"],
-								ai() {
-									return get.event().control;
-								}
-							})
-							.set(
-								"control",
-								(() => {
-									if (
-										get.effect(
-											player,
-											{
-												name: "lebu",
-												cards: lebu,
-											},
-											player,
-											player
-										) >
-										get.effect(
-											player,
-											{
-												name: "bingliang",
-												cards: bingliang,
-											},
-											player,
-											player
-										)
-									) {
-										return "bingliang";
-									}
-									return "lebu";
-								})()
-							)
-							.forResult()).control;
+						control = (
+							await player
+								.chooseControl({
+									prompt: "请选择要弃置的牌",
+									controls: ["lebu", "bingliang"],
+									ai() {
+										return get.event().control;
+									},
+								})
+								.set(
+									"control",
+									(() => {
+										if (
+											get.effect(
+												player,
+												{
+													name: "lebu",
+													cards: lebu,
+												},
+												player,
+												player
+											) >
+											get.effect(
+												player,
+												{
+													name: "bingliang",
+													cards: bingliang,
+												},
+												player,
+												player
+											)
+										) {
+											return "bingliang";
+										}
+										return "lebu";
+									})()
+								)
+								.forResult()
+						).control;
 					} else if (lebu) {
 						control = "lebu";
 					} else if (bingliang) {
@@ -5146,28 +5164,8 @@ export default () => {
 		help: {
 			身份模式: '<div style="margin:10px">选项</div><ul style="margin-top:0"><li>加强主公<br>反贼人数多于2时主公会额外增加一个技能（每个主公的额外技能固定，非常备主公增加天命）' + '<li>特殊身份<br><ul style="padding-left:20px;padding-top:5px"><li>军师：忠臣身份。只要军师存活，主公在准备阶段开始时，可以观看牌堆顶的三张牌，然后将这些牌以任意顺序置于牌堆顶或牌堆底<li>大将：忠臣身份。只要大将存活，主公手牌上限+1<li>贼首：反贼身份，只要贼首存活，主公手牌上限-1</ul></ul>' + "<li>平民身份<br>英盗版三国杀于2017标准版中提出的新概念。平民的获胜条件为：当其他身份的角色达成了其获胜条件，且你存活，你也获胜；同时内奸的获胜条件改为：主公死亡时，场上所有忠臣和反贼均已死亡。即内奸可以和与平民共同胜利。杀死平民的角色的奖惩为：摸两张牌。" + "<li>年机制<br>英盗版三国杀于2019标准版中提出的新概念。“年”是一个全局概念，游戏开始时为第一年，当牌堆洗牌时，年数+1。一局游戏的限定年数为本局游戏开始时玩家总数。当年数增加后，若当前年数已超过限定年数，则主忠方直接获胜，若平民存活则平民也获胜。",
 			明忠模式: '<div style="margin:10px">明忠模式（忠胆英杰）</div><ul style="margin-top:0"><li>本模式需要8名玩家进行游戏，使用的身份牌为：1主公、2忠臣、4反贼和1内奸。游戏开始时，每名玩家随机获得一个身份，由系统随机选择一名忠臣身份的玩家亮出身份（将忠臣牌正面朝上放在面前），其他身份（包括主公）的玩家不亮出身份。<li>' + "首先由亮出身份的忠臣玩家随机获得六张武将牌，挑选一名角色，并将选好的武将牌展示给其他玩家。之后其余每名玩家随机获得三张武将牌，各自从其中挑选一张同时亮出<li>" + "亮出身份牌的忠臣增加1点体力上限。角色濒死和死亡的结算及胜利条件与普通身份局相同。",
-			谋攻模式:
-				'<div style="margin:10px">模式命名由来</div><ul style="margin-top:0"><li>《谋攻篇》一词出自《孙子兵法·谋攻篇》，是春秋时期兵法家孙武创作的一篇散文。《谋攻篇》故知胜有五：知可以战与不可以战者胜，识众寡之用者胜，上下同欲者胜，以虞待不虞者胜，将能而君不御者胜。</ul>' +
-				'<div style="margin:10px">游戏规则</div><ul style="margin-top:0"><li>谋攻篇模式为六名玩家参与的全暗身份模式，引入新机制“怒气”，玩家可以消耗怒气探查其他角色的身份是敌人或者队友，或使用怒气强化手牌，以达到识别出队友并击杀敌人的目标。' +
-				"<li>各身份玩家的胜利条件与身份局中对应身份的胜利条件一致，且该模式下没有奖惩。" +
-				"<li>当主公进入濒死、场上有两名角色阵亡、第三轮的主公准备阶段，主公将会翻开身份牌，回复1点体力并摸一张牌，并获得武将牌上的主公技。" +
-				"<li>内奸在游戏开始时将会得知一名反贼的身份，并令该反贼被“伪装”。本局游戏内，被“伪装”的反贼在被任何人探查身份时，结果都提示为“敌人”。作为补偿，其第一次进入濒死时，若场上没有角色死亡且其怒气值不小于2，其弃置区域内所有牌，重置武将牌，将体力回复至2点并摸三张牌。" +
-				"<li>特殊地，内奸在被所有角色探查时，都提示为“队友”；内奸在进行探查时，直接得知目标的身份。</ul>" +
-				'<div style="margin:10px">新机制“怒气”</div><ul style="margin-top:0"><li>一名角色在回合开始时或受到1点伤害后，将获得1点怒气；怒气上限为3。<li>一名角色令其他角色扣减体力后，该角色可以消耗1点怒气，查探扣减体力的角色是敌或友。</ul>' +
-				'<div style="margin:10px">强化卡牌规则</div><ul style="margin-top:0"><li>在第二轮游戏开始后，当你需要使用一张“强化表”内的牌时，你可以通过消耗怒气将此牌强化。' +
-				'<li>可强化卡牌<br><ul style="padding-left:20px;padding-top:5px">' +
-				"<li>【杀】：消耗1点怒气进行强化，你令响应此杀所需使用的【闪】数+1" +
-				"<li>【闪】：消耗1点怒气进行强化，使用时视为两张【闪】的效果" +
-				"<li>【决斗】：消耗2点怒气进行强化，对此牌的目标造成伤害时，伤害+1" +
-				"<li>【火攻】：消耗2点怒气进行强化，造成的伤害+1" +
-				"<li>【桃】：消耗3点怒气进行强化，回复的体力+1</ul></ul>",
-			"3v3v2":
-				'<div style="margin:10px">3v3v2模式</div><ul style="margin-top:0"><li>游戏准备<br>本模式需要8名玩家进行游戏。游戏开始前，所有玩家随机分成两组，每组四人，分别称为「冷色阵营」和「暖色阵营」，然后分发身份牌，抽取到「主帅」身份的玩家亮出身份牌。' +
-				"<li>身份牌<br>每组的身份分为四种。<br>主帅（主）和前锋（忠）：联合对方阵营的细作，击杀己方细作，对方阵营的主帅和前锋以及所有的野心家。<br>细作（内）：帮助对方阵营的主帅和前锋，击杀对方细作，己方阵营的主帅和前锋以及所有的野心家。<br>野心家（野）：联合对方阵营中的野心家，击杀所有其他角色，成为最后的生还者。<br>" +
-				"<li>胜负判定<br>冷色主帅，先锋和暖色细作在所有野心家和对方主帅全部阵亡后视为胜利，在冷色主帅阵亡后视为游戏失败。<br>暖色主帅，先锋和冷色细作在所有野心家和对方主帅阵亡后视为胜利，在暖色主帅阵亡后视为失败。<br>野心家在所有不为野心家的角色阵亡后视为胜利，在双方主帅全部阵亡而有非野心家角色存活时失败。<br>当有角色阵亡后，若有角色满足胜利条件，游戏结束。若所有角色均满足失败条件，则游戏平局。若一名角色满足失败条件，即使其满足胜利条件，也视为游戏失败。<br>" +
-				"<li>游戏流程<br>在「游戏准备」中的工作完成后，冷色主帅选择一个势力，然后暖色主帅选择一个其他势力，作为双方各自的势力将池。<br>双方主帅从各自的势力将池中获得两张常备主公武将牌和四张非常备主公武将牌，然后选择一张作为武将牌，将其他的武将牌放回势力将池并洗混。然后双方的其他玩家从各自的势力将池中随机获得五张武将牌，选择一张作为自己的武将牌。<br>暖色主帅成为游戏的一号位，双方主帅各加1点体力和体力上限。七号位和八号位的起始手牌+1。<br>当场上第一次有玩家死亡时，野心家确认彼此的身份牌，然后获得技能〖野心毕露〗：出牌阶段，你可以明置身份牌，加1点体力上限和体力值。若如此做，所有的野心家失去技能〖野心毕露〗<br>" +
-				"<li>击杀奖惩<br>杀死颜色不同的主帅的角色回复1点体力，杀死颜色不同的先锋的角色摸两张牌，杀死颜色相同的细作的角色摸三张牌，杀死颜色相同的先锋的主帅弃置所有手牌。<br>" +
-				"<li>制作团队<br>游戏出品：紫星居<br>游戏设计：食茸貳拾肆<br>游戏开发：食茸貳拾肆、紫髯的小乔、聆星Mine、空城琴音依旧弥漫、丽景原同志、雪之彩翼、拉普拉斯、明月照沟渠<br>程序化：无名杀<br>鸣谢：荆哲、魔风、萨巴鲁酱、这就是秋夜</ul></ul>",
+			谋攻模式: '<div style="margin:10px">模式命名由来</div><ul style="margin-top:0"><li>《谋攻篇》一词出自《孙子兵法·谋攻篇》，是春秋时期兵法家孙武创作的一篇散文。《谋攻篇》故知胜有五：知可以战与不可以战者胜，识众寡之用者胜，上下同欲者胜，以虞待不虞者胜，将能而君不御者胜。</ul>' + '<div style="margin:10px">游戏规则</div><ul style="margin-top:0"><li>谋攻篇模式为六名玩家参与的全暗身份模式，引入新机制“怒气”，玩家可以消耗怒气探查其他角色的身份是敌人或者队友，或使用怒气强化手牌，以达到识别出队友并击杀敌人的目标。' + "<li>各身份玩家的胜利条件与身份局中对应身份的胜利条件一致，且该模式下没有奖惩。" + "<li>当主公进入濒死、场上有两名角色阵亡、第三轮的主公准备阶段，主公将会翻开身份牌，回复1点体力并摸一张牌，并获得武将牌上的主公技。" + "<li>内奸在游戏开始时将会得知一名反贼的身份，并令该反贼被“伪装”。本局游戏内，被“伪装”的反贼在被任何人探查身份时，结果都提示为“敌人”。作为补偿，其第一次进入濒死时，若场上没有角色死亡且其怒气值不小于2，其弃置区域内所有牌，重置武将牌，将体力回复至2点并摸三张牌。" + "<li>特殊地，内奸在被所有角色探查时，都提示为“队友”；内奸在进行探查时，直接得知目标的身份。</ul>" + '<div style="margin:10px">新机制“怒气”</div><ul style="margin-top:0"><li>一名角色在回合开始时或受到1点伤害后，将获得1点怒气；怒气上限为3。<li>一名角色令其他角色扣减体力后，该角色可以消耗1点怒气，查探扣减体力的角色是敌或友。</ul>' + '<div style="margin:10px">强化卡牌规则</div><ul style="margin-top:0"><li>在第二轮游戏开始后，当你需要使用一张“强化表”内的牌时，你可以通过消耗怒气将此牌强化。' + '<li>可强化卡牌<br><ul style="padding-left:20px;padding-top:5px">' + "<li>【杀】：消耗1点怒气进行强化，你令响应此杀所需使用的【闪】数+1" + "<li>【闪】：消耗1点怒气进行强化，使用时视为两张【闪】的效果" + "<li>【决斗】：消耗2点怒气进行强化，对此牌的目标造成伤害时，伤害+1" + "<li>【火攻】：消耗2点怒气进行强化，造成的伤害+1" + "<li>【桃】：消耗3点怒气进行强化，回复的体力+1</ul></ul>",
+			"3v3v2": '<div style="margin:10px">3v3v2模式</div><ul style="margin-top:0"><li>游戏准备<br>本模式需要8名玩家进行游戏。游戏开始前，所有玩家随机分成两组，每组四人，分别称为「冷色阵营」和「暖色阵营」，然后分发身份牌，抽取到「主帅」身份的玩家亮出身份牌。' + "<li>身份牌<br>每组的身份分为四种。<br>主帅（主）和前锋（忠）：联合对方阵营的细作，击杀己方细作，对方阵营的主帅和前锋以及所有的野心家。<br>细作（内）：帮助对方阵营的主帅和前锋，击杀对方细作，己方阵营的主帅和前锋以及所有的野心家。<br>野心家（野）：联合对方阵营中的野心家，击杀所有其他角色，成为最后的生还者。<br>" + "<li>胜负判定<br>冷色主帅，先锋和暖色细作在所有野心家和对方主帅全部阵亡后视为胜利，在冷色主帅阵亡后视为游戏失败。<br>暖色主帅，先锋和冷色细作在所有野心家和对方主帅阵亡后视为胜利，在暖色主帅阵亡后视为失败。<br>野心家在所有不为野心家的角色阵亡后视为胜利，在双方主帅全部阵亡而有非野心家角色存活时失败。<br>当有角色阵亡后，若有角色满足胜利条件，游戏结束。若所有角色均满足失败条件，则游戏平局。若一名角色满足失败条件，即使其满足胜利条件，也视为游戏失败。<br>" + "<li>游戏流程<br>在「游戏准备」中的工作完成后，冷色主帅选择一个势力，然后暖色主帅选择一个其他势力，作为双方各自的势力将池。<br>双方主帅从各自的势力将池中获得两张常备主公武将牌和四张非常备主公武将牌，然后选择一张作为武将牌，将其他的武将牌放回势力将池并洗混。然后双方的其他玩家从各自的势力将池中随机获得五张武将牌，选择一张作为自己的武将牌。<br>暖色主帅成为游戏的一号位，双方主帅各加1点体力和体力上限。七号位和八号位的起始手牌+1。<br>当场上第一次有玩家死亡时，野心家确认彼此的身份牌，然后获得技能〖野心毕露〗：出牌阶段，你可以明置身份牌，加1点体力上限和体力值。若如此做，所有的野心家失去技能〖野心毕露〗<br>" + "<li>击杀奖惩<br>杀死颜色不同的主帅的角色回复1点体力，杀死颜色不同的先锋的角色摸两张牌，杀死颜色相同的细作的角色摸三张牌，杀死颜色相同的先锋的主帅弃置所有手牌。<br>" + "<li>制作团队<br>游戏出品：紫星居<br>游戏设计：食茸貳拾肆<br>游戏开发：食茸貳拾肆、紫髯的小乔、聆星Mine、空城琴音依旧弥漫、丽景原同志、雪之彩翼、拉普拉斯、明月照沟渠<br>程序化：无名杀<br>鸣谢：荆哲、魔风、萨巴鲁酱、这就是秋夜</ul></ul>",
 		},
 	};
 };
