@@ -11360,12 +11360,12 @@ const skills = {
 			sha: {
 				mod: {
 					cardname(card, player, name) {
-						if (card.hasGaintag("dcsbjunmou_sha")) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("dcsbjunmou_sha")) {
 							return "sha";
 						}
 					},
 					cardnature(card, player, nature) {
-						if (card.hasGaintag("dcsbjunmou_sha")) {
+						if (get.itemtype(card) == "card" && card.hasGaintag("dcsbjunmou_sha")) {
 							return "fire";
 						}
 					},
