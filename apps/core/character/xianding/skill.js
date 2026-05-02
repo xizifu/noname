@@ -10357,21 +10357,26 @@ const skills = {
 				filter(event, player) {
 					return player.hasMark("dcjunhe_effect");
 				},
-				//forced: true,
-				//popup: false,
 				async cost(event, trigger, player) {
 					if (event.triggername == "damageBegin1") {
 						const list = player.getStorage("dcjunhe_shown");
+						const target = trigger.player;
 						event.result = await player
-							.chooseToDiscard(`军合：是否弃置一张符合条件的牌并令此伤害+1？`, "he", (card, player) => {
+							.chooseToDiscard(get.prompt(event.skill, target), `弃置一张符合条件的牌并令${get.translation(trigger.player)}即将受到来自你的${trigger.num}点伤害+1`, "he", (card, player) => {
 								const { list } = get.event();
 								const type = get.type2(card);
 								const color = get.color(card);
 								return list.includes(type) || list.includes(color);
 							})
 							.set("list", list)
-							.set("target", trigger.player)
-							.set("ai", card => {})
+							.set("goon", get.damageEffect(trigger.player, player, player) > 0)
+							.set("ai", card => {
+								const { goon } = get.event();
+								if (!goon) {
+									return 0;
+								}
+								return 7 - get.value(card);
+							})
 							.set("chooseonly", true)
 							.forResult();
 					} else {
