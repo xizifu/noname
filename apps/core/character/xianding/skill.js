@@ -11549,6 +11549,9 @@ const skills = {
 					ai1(card) {
 						return 10 - get.value(card);
 					},
+					ai2(target) {
+						return 1;
+					},
 				});
 				nextx.set(
 					"targetprompt2",
