@@ -1898,19 +1898,22 @@ const skills = {
 				const { debateResult: result } = event;
 				const { bool, opinion, targets, opinions } = result;
 				if (opinion == "red") {
-					await player
-						.gain(result.red.map(i => i[1]))
-						.set("animate", event => {
-							var player = event.player,
-								cards = event.cards;
-							event.targets.forEach((target, index) => {
-								target.$give(cards[index], player);
-							});
-						})
-						.set(
-							"targets",
-							result.red.map(i => i[0]).filter(target => target != player)
-						);
+					const cards = result.red.flatMap(i => i[1]).filter(card => get.itemtype(card) == "card");
+					if (cards.length) {
+						await player
+							.gain(cards)
+							.set("animate", event => {
+								const player = event.player,
+									cards = event.cards;
+								event.targets.forEach((target, index) => {
+									target.$give(cards[index], player);
+								});
+							})
+							.set(
+								"targets",
+								result.red.map(i => i[0]).filter(target => target != player)
+							);
+					}
 				} else if (opinion == "black") {
 					const drawer = result.red
 						.map(i => i[0])
@@ -1919,6 +1922,10 @@ const skills = {
 					await game.asyncDraw([player].concat(drawer));
 				}
 			});
+		},
+		ai: {
+			order: 6,
+			result: { player: 1 },
 		},
 	},
 	olshuoyu: {
