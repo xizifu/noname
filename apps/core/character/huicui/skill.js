@@ -16487,54 +16487,32 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		filter(event, player) {
+			return game.hasPlayer(current => get.info('weimeng').filterTarget(null, player, current));
+		},
 		filterTarget(card, player, target) {
 			return player.hp > 0 && target != player && target.countGainableCards(player, "h") > 0;
 		},
 		async content(event, trigger, player) {
 			const { target } = event;
-			let result;
-			let num;
-
-			// step 0
-			result = await player.gainPlayerCard(target, "h", true, [1, player.hp]).forResult();
-			// step 1
-			if (result.bool && target.isIn()) {
-				num = result.cards.length;
-				const hs = player.getCards("he");
-				let numx = 0;
-				for (const i of result.cards) {
-					numx += get.number(i, player);
-				}
-				event.num = numx;
-				event.cards = result.cards;
-				if (!hs.length) {
-					return;
-				} else if (hs.length <= num) {
-					result = { bool: true, cards: hs };
-				} else {
-					result = await player
-						.chooseCard(
-							"he",
-							true,
-							"选择交给" + get.translation(target) + get.cnNumber(num) + "张牌",
-							"（已得到牌的点数和：" + numx + "）",
-							num
-						)
-						.forResult();
-				}
-			} else {
+			if (!target.countGainableCards(player, "h") || player.hp <= 0) {
 				return;
 			}
-			// step 2
-			await player.give(result.cards, target);
-			let numx = 0;
-			for (const i of result.cards) {
-				numx += get.number(i, player);
-			}
-			if (numx > num) {
-				await player.draw();
-			} else if (numx < num) {
-				await player.discardPlayerCard(target, true, "hej");
+			let result = await player.gainPlayerCard(target, "h", true, [1, player.hp]).forResult();
+			if (result?.bool && target.isIn()) {
+				const num = result.cards.length;
+				const number1 = result.cards.reduce((num, card) => (num += get.number(card, player)), 0);
+				event.number1 = number1;
+				result = await player.chooseToGive(target, "he", true, `危盟：选择交给${get.translation(target)}${get.cnNumber(num)}张牌`, `（已得到牌的点数和：${number1}）`, num).forResult();
+				if (result?.bool) {
+					const number2 = result.cards.reduce((num, card) => (num += get.number(card, player)), 0);
+					event.number2 = number2;
+					if (number1 > number2) {
+						await player.draw();
+					} else if (number1 < number2) {
+						await player.discardPlayerCard(target, true, "hej");
+					}
+				}
 			}
 		},
 		ai: {
