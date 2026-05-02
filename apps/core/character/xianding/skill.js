@@ -5755,8 +5755,9 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
+					audio: "dcjuxi",
 					filterCard: () => false,
-					selectCard: 0,
+					selectCard: -1,
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
@@ -5778,9 +5779,7 @@ const skills = {
 		},
 		ai: {
 			order: 7,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		subSkill: {
 			clear: {
@@ -5792,9 +5791,7 @@ const skills = {
 				forced: true,
 				onremove: true,
 				charlotte: true,
-				trigger: {
-					global: ["loseAfter", "loseAsyncAfter", "equipAfter", "cardsDiscardAfter"],
-				},
+				trigger: { global: ["loseAfter", "loseAsyncAfter", "equipAfter", "cardsDiscardAfter"] },
 				filter(event, player) {
 					return event.getd()?.some(card => player.getStorage("dcjuxi_refresh").includes(get.name(card)));
 				},
@@ -5802,9 +5799,7 @@ const skills = {
 					player.removeSkill(event.name);
 					player.refreshSkill("dcjuxi");
 				},
-				intro: {
-					content: "$ 进入弃牌堆重置技能",
-				},
+				intro: { content: "$进入弃牌堆重置技能" },
 			},
 		},
 	},
@@ -5821,6 +5816,7 @@ const skills = {
 				}
 			},
 		},
+		locked: false,
 		trigger: { player: "useCard" },
 		filter(event, player) {
 			const { card } = event;
