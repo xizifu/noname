@@ -13789,10 +13789,7 @@ const skills = {
 	dcjilie: {
 		audio: 2,
 		enable: "phaseUse",
-		filterCard(card, player) {
-			return true;
-			//return !ui.selected.cards.some(cardx => get.suit(cardx, player) == get.suit(card, player));
-		},
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		selectCard() {
 			return get.player().getHp();
@@ -13812,13 +13809,13 @@ const skills = {
 			return 7 - value;
 		},
 		async content(event, trigger, player) {
-			let num = event.cards.map(i => get.suit(i, player)).toUniqued().length * 2;
+			let num = event.cards.map(card => get.suit(card, player)).toUniqued().length * 2;
 			while (num > 0) {
 				num--;
 				const judgeEvent = player.judge(card => (card.name == "sha" ? 10 : -1));
 				judgeEvent.set("callback", async event => {
-					if (event.card.name == "sha" && player.hasUseTarget(event.card, false)) {
-						const next = player.chooseUseTarget(event.card, false, "nodistance");
+					if (event.card?.name == "sha" && player.hasUseTarget(event.card)) {
+						const next = player.chooseUseTarget(event.card, false);
 						next.set("oncard", () => {
 							_status.event.baseDamage += player.getHistory("useCard", evt => evt.card.name == "sha").length;
 						});
@@ -13830,9 +13827,7 @@ const skills = {
 		},
 		ai: {
 			order: 9,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	//威曹丕
