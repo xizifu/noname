@@ -20407,7 +20407,7 @@ const skills = {
 	},
 	dcwuxie: {
 		audio: 2,
-		trigger: { player: "phaseUseEnd" },
+		trigger: { player: "phaseEnd" },
 		filter(event, player) {
 			return game.hasPlayer(current => current != player && current.countCards("h"));
 		},
