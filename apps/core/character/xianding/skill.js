@@ -23476,13 +23476,19 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
+			if (!player.countCards("h")) {
+				return true;
+			}
 			return player.countCards("h") && player.countCards("h") == player.countDiscardableCards(player, "h");
 		},
 		skillAnimation: true,
 		animationColor: "thunder",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			await player.discard(player.getCards("h"));
+			if (player.countCards("h")) {
+				await player.modedDiscard(player.getCards("h"));
+			}
 			const evt = player.insertPhase();
 			player
 				.when("phaseBegin")
@@ -41093,7 +41099,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.addSkill(event.name + "_effect");
-			target.addMark(event.name + "_effect", 1);
+			event.target.addMark(event.name + "_effect", 1);
 		},
 		ai: {
 			order: 1,
