@@ -1250,7 +1250,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 		next.cards = [];
 		next.gaintag = [];
-		if (args.length === 1 && typeof params === "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next);
 		} else {
 			for (const arg of args) {
@@ -1284,7 +1284,7 @@ export class Player extends HTMLDivElement {
 		next.gaintag = [];
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params === "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -1816,8 +1816,7 @@ export class Player extends HTMLDivElement {
 		next.slots = [];
 
 		const args = [...arguments];
-
-		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -1866,7 +1865,7 @@ export class Player extends HTMLDivElement {
 		next.slots = [];
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -1914,7 +1913,7 @@ export class Player extends HTMLDivElement {
 		next.slots = [];
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -2162,7 +2161,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -3235,7 +3234,7 @@ export class Player extends HTMLDivElement {
 		const next = game.createEvent("chooseToEnable");
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params === "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (typeof next.selectButton === "number") {
 				next.selectButton = [next.selectButton, next.selectButton];
@@ -3267,7 +3266,7 @@ export class Player extends HTMLDivElement {
 		const next = game.createEvent("chooseToDisable");
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params === "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (typeof next.selectButton === "number") {
 				next.selectButton = [next.selectButton, next.selectButton];
@@ -5671,7 +5670,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 
 		const args = [...arguments];
-		if (arguments.length == 1 && get.objtype(params) == "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -5734,7 +5733,7 @@ export class Player extends HTMLDivElement {
 
 		let filter;
 		const args = [...arguments];
-		if (args.length == 1 && get.objtype(params) == "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params === "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (params.card != null) {
 				Reflect.deleteProperty(next, "card");
@@ -6088,7 +6087,7 @@ export class Player extends HTMLDivElement {
 		next.target = target;
 
 		const args = [...arguments].slice(1);
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -6116,7 +6115,7 @@ export class Player extends HTMLDivElement {
 		next.forced = true;
 
 		const args = [...arguments].slice(1);
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -6154,7 +6153,7 @@ export class Player extends HTMLDivElement {
 		let ai;
 
 		const args = [...arguments];
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			cards = params.cards;
 			prompt = params.prompt;
 			forced = params.forced;
@@ -6206,7 +6205,7 @@ export class Player extends HTMLDivElement {
 		let ai;
 
 		const args = [...arguments];
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			list = params.list;
 			prompt = params.prompt;
 			forced = params.forced;
@@ -6262,7 +6261,7 @@ export class Player extends HTMLDivElement {
 		const next = game.createEvent("chooseButton");
 
 		const args = [...arguments];
-		if (args.length == 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (typeof next.selectButton === "number") {
 				next.selectButton = [next.selectButton, next.selectButton];
@@ -6667,7 +6666,7 @@ export class Player extends HTMLDivElement {
 	 * @param {import("./Player/type.d").EventChooseControlListParams} [params]
 	 */
 	chooseControlList(params) {
-		if (arguments.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (arguments.length === 1 && get.is.object(params) && params != null && get.itemtype(params) == null) {
 			const controls = !params.forced ? ["cancel2"] : [];
 			return this.chooseControl({
 				controls,
@@ -6715,7 +6714,7 @@ export class Player extends HTMLDivElement {
 		next.controls = [];
 
 		const args = [...arguments];
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -6792,7 +6791,7 @@ export class Player extends HTMLDivElement {
 		next.gaintag = [];
 
 		const args = [...arguments];
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -7455,7 +7454,7 @@ export class Player extends HTMLDivElement {
 		next.num = 0;
 
 		const args = [...arguments];
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -7605,7 +7604,7 @@ export class Player extends HTMLDivElement {
 		next.num = 0;
 
 		const args = [...arguments];
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -7695,7 +7694,7 @@ export class Player extends HTMLDivElement {
 		// 就算是drawDeck项，由于已经判断了参数长度，不会出现不同的地方
 		if (args.length === 1 && typeof params === "number") {
 			next.num = params;
-		} else if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && get.itemtype(params) == null) {
+		} else if (args.length === 1 && typeof params === "object" && !Array.isArray(params) && params != null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (params.nodelay) {
 				delete next.nodelay;
@@ -8075,7 +8074,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 
 		const args = [...arguments];
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -8363,7 +8362,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 
 		const args = [...arguments];
-		if (args.length === 1 && get.is.object(params) && get.itemtype(params) == null) {
+		if (args.length == 1 && params != null && get.is.object(params) && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (params?.areaNames != null) {
 				delete next.areaNames;
@@ -8717,7 +8716,7 @@ export class Player extends HTMLDivElement {
 		const event = _status.event;
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (params.nosource) {
 				noSource = true;
@@ -8833,7 +8832,7 @@ export class Player extends HTMLDivElement {
 
 		const args = [...arguments];
 		const event = _status.event;
-		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 			if (params.nocard != null) {
 				delete next.nocard;
@@ -8947,7 +8946,7 @@ export class Player extends HTMLDivElement {
 		next.num = 1;
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -8973,7 +8972,7 @@ export class Player extends HTMLDivElement {
 		next.num = 1;
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
@@ -9603,7 +9602,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 
 		const args = [...arguments];
-		if (args.length === 1 && typeof params == "object" && get.itemtype(params) == null) {
+		if (args.length === 1 && typeof params == "object" && params !== null && get.itemtype(params) == null) {
 			Object.assign(next, params);
 		} else {
 			for (const arg of args) {
