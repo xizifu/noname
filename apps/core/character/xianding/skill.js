@@ -10815,9 +10815,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				audio: "dczhendu",
-				trigger: {
-					player: "phaseBegin",
-				},
+				trigger: { player: "phaseBegin" },
 				onremove: true,
 				forced: true,
 				charlotte: true,
@@ -10827,35 +10825,61 @@ const skills = {
 				async content(event, trigger, player) {
 					const cards = player.getStorage(event.name).slice();
 					player.removeSkill(event.name);
-					const func = card => {
-						return get.autoViewAs({
-							name: card.name,
-							nature: card.nature,
-							suit: card.suit,
-							number: card.number,
-							isCard: true,
-						});
-					};
 					player.addTempSkill("dczhendu_draw");
-					while (cards.some(card => ["basic", "trick"].includes(get.type(card)) && (player.hasUseTarget(func(card), false, false) || (get.info(func(card)).notarget && lib.filter.cardEnabled(func(card), player))))) {
+					while (
+						cards.some(card => {
+							if (!["basic", "trick"].includes(get.type(card))) {
+								return false;
+							}
+							const cardx = {
+								name: card.name,
+								nature: card.nature,
+								suit: card.suit,
+								number: card.number,
+								isCard: true,
+							};
+							return player.hasUseTarget(cardx, false, false);
+						})
+					) {
 						const result = await player
 							.chooseButton({
-								createDialog: [`酖毒：视为使用一张牌`, [cards, "vcard"]],
-								forced: true,
+								createDialog: [`酖毒：你可以视为使用其中一张牌`, [cards, "vcard"]],
 								ai(button) {
-									return get.order(get.event().func(button.link));
+									const player = get.player();
+									const card = button.link;
+									const cardx = {
+										name: card.name,
+										nature: card.nature,
+										suit: card.suit,
+										number: card.number,
+										isCard: true,
+									};
+									return player.getUseValue(cardx);
 								},
 								filterButton(button) {
-									const card = get.event().func(button.link);
-									return ["basic", "trick"].includes(get.type(card)) && (player.hasUseTarget(card, false, false) || (get.info(card).notarget && lib.filter.cardEnabled(card, player)));
+									const player = get.player();
+									const card = button.link;
+									const cardx = {
+										name: card.name,
+										nature: card.nature,
+										suit: card.suit,
+										number: card.number,
+										isCard: true,
+									};
+									return ["basic", "trick"].includes(get.type(card)) && player.hasUseTarget(cardx, false, false);
 								},
 							})
-							.set("func", func)
 							.forResult();
 						if (result?.links?.length) {
 							const [card] = result.links;
 							cards.remove(card);
-							const VCard = func(card);
+							const VCard = {
+								name: card.name,
+								nature: card.nature,
+								suit: card.suit,
+								number: card.number,
+								isCard: true,
+							};
 							await player.chooseUseTarget(VCard, true, false, "nodistance");
 						} else {
 							break;
