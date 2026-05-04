@@ -8428,12 +8428,10 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				trigger: { target: "useCardToTargeted" },
-				intro: {
-					content: "本轮其他角色使用牌指定你为目标后，你可将所有手牌交给一名其他角色并令此牌无效",
-				},
+				intro: { content: "本轮其他角色使用牌指定你为目标后，你可将所有手牌交给一名其他角色并令此牌无效" },
 				mark: true,
 				filter(event, player) {
-					if (!player.countCards("h")) {
+					if (!player.countCards("h") || !game.hasPlayer(current => current != player)) {
 						return false;
 					}
 					return event.player != player;
