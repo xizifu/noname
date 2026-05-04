@@ -41083,14 +41083,17 @@ const skills = {
 	zhafu: {
 		audio: 2,
 		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(current => current != player);
+		},
 		limited: true,
 		skillAnimation: true,
 		animationColor: "wood",
 		filterTarget: lib.filter.notMe,
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.addSkill("zhafu_hf");
-			target.addMark("zhafu_hf", 1);
+			player.addSkill(event.name + "_effect");
+			target.addMark(event.name + "_effect", 1);
 		},
 		ai: {
 			order: 1,
@@ -41136,29 +41139,32 @@ const skills = {
 			},
 		},
 		subSkill: {
-			hf: {
-				trigger: {
-					global: "phaseDiscardBegin",
+			effect: {
+				charlotte: true,
+				audio: "zhafu",
+				trigger: { global: "phaseDiscardBegin" },
+				filter(event, player) {
+					return event.player != player && event.player.hasMark("zhafu_effect");
 				},
 				forced: true,
-				charlotte: true,
-				filter(event, player) {
-					return event.player != player && event.player.hasMark("zhafu_hf");
-				},
-				content() {
-					"step 0";
-					var target = trigger.player;
-					event.target = target;
-					target.removeMark("zhafu_hf", 1);
+				logTarget: "player",
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					target.removeMark(event.name, 1);
 					if (target.countCards("h") <= 1) {
-						event.finish();
+						return;
 					}
-					"step 1";
-					target.chooseCard("h", true, "选择保留一张手牌，将其余的手牌交给" + get.translation(player)).set("ai", get.value);
-					"step 2";
-					var cards = target.getCards("h");
-					cards.remove(result.cards[0]);
-					target.give(cards, player);
+					const result = await target
+						.chooseCard("h", true, `选择保留一张手牌，将其余的手牌交给${get.translation(player)}`)
+						.set("ai", get.value)
+						.forResult();
+					if (result?.bool) {
+						const cards = target.getCards("h");
+						cards.remove(result.cards[0]);
+						if (cards.length) {
+							await target.give(cards, player);
+						}
+					}
 				},
 				intro: {
 					content: "mark",
