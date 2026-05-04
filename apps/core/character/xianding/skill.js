@@ -25065,7 +25065,6 @@ const skills = {
 			}
 			const total = Math.max(1, target.countCards("e"));
 			let count = 0,
-				forced = false,
 				used = [],
 				discard = false;
 			while (count < total) {
@@ -25076,9 +25075,8 @@ const skills = {
 					game.log("但是", target, "无牌可出！");
 					break;
 				}
-				const str = forced ? "视为使用一张基本牌" : "是否视为使用一张基本牌？";
 				const result = await target
-					.chooseButton([str, [basicList, "vcard"]], forced)
+					.chooseButton(["暖惠：是否视为使用一张基本牌？", [basicList, "vcard"]])
 					.set("ai", button => {
 						return get.player().getUseValue({
 							name: button.link[2],
@@ -25091,7 +25089,6 @@ const skills = {
 					game.log("但是", target, "不愿出牌！");
 					break;
 				}
-				forced = true;
 				const card = new lib.element.VCard({
 					name: result.links[0][2],
 					nature: result.links[0][3],
