@@ -34441,6 +34441,21 @@ const skills = {
 					card = get.cardPile2(card => {
 						return get.number(card, false) == event.numx;
 					});
+					if (!card) {
+						let closestNum;
+						for (let i = event.numx + 1; i <= 13; i++) {
+							card = get.cardPile2(card => {
+								return get.number(card, false) == numx;
+							});
+							if (card) {
+								closestNum = numx;
+								break;
+							}
+						}
+						if (closestNum) {
+							event.numx = closestNum;
+						}
+					}
 				}
 				if (!card) return;
 				event.card = card;
