@@ -35719,10 +35719,10 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			if (player == event.player || !event.player.countCards("h")) {
+			if (player == event.player) {
 				return false;
 			}
-			var num = 0;
+			let num = 0;
 			game.countPlayer(function (current) {
 				if (current == player || current.getSeatNum() == 1) {
 					current.getHistory("damage", function (evt) {
@@ -35742,9 +35742,11 @@ const skills = {
 				targets: [target],
 			} = event;
 			const cards = target.getCards("h");
-			game.log(player, "将", target, "的", get.cnNumber(cards.length), "张手牌置于牌堆顶");
-			target.$throw(cards.length, 1000);
-			await target.lose(cards, ui.cardPile, "insert");
+			if (cards.length) {
+				game.log(player, "将", target, "的", get.cnNumber(cards.length), "张手牌置于牌堆顶");
+				target.$throw(cards.length, 1000);
+				await target.lose(cards, ui.cardPile, "insert");
+			}
 			await game.delayx();
 			await player.chooseUseTarget({ name: "wugu", isCard: true }, true);
 		},
