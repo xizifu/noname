@@ -16636,14 +16636,13 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToDiscard(`###${get.prompt(event.skill)}###弃置一张牌，然后用牌堆中点数最大的牌拼点`, "he")
-				.set("ai", cardx => {
+				.set("ai", card => {
 					const player = get.player();
-					return !player.hasCard(function (card) {
-						var val = get.value(card);
-						return val < 0 || (val <= 4 && get.number(card) >= 11);
-					}, "h")
-						? 6 - get.value(cardx)
-						: 0;
+					const number = get.number(card);
+					if (number >= 11 || player.hasCard(card => get.number(card) >= 12, "h")) {
+						return 0;
+					}
+					return 7 - get.value(card);
 				})
 				.forResult();
 		},
@@ -16676,16 +16675,16 @@ const skills = {
 			}
 			return cards;
 		},
-		group: ["dcshenduan_2"],
+		group: ["dcshenduan_effect"],
 		subSkill: {
-			2: {
-				audio: 2,
+			effect: {
+				audio: "dcshenduan",
 				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
 				filter(event, player, name) {
 					if (event.preserve || event.result?.cancelled) {
 						return false;
 					}
-					if (!lib.skill.dcshenduan_2.logTarget(event, player).length) {
+					if (!lib.skill.dcshenduan_effect.logTarget(event, player).length) {
 						return false;
 					}
 					if (event.name == "compareMultiple") {
