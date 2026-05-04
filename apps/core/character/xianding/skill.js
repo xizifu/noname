@@ -35224,9 +35224,8 @@ const skills = {
 	dcpingxi: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		getNum() {
-			var num = 0;
+			let num = 0;
 			game.getGlobalHistory("cardMove", function (evt) {
 				if (evt.name == "lose" && evt.type == "discard") {
 					num += evt.cards2.length;
@@ -35235,63 +35234,31 @@ const skills = {
 			return num;
 		},
 		filter(event, player) {
-			return (
-				lib.skill.dcpingxi.getNum() > 0 &&
-				game.hasPlayer(function (current) {
-					return current != player;
-				})
-			);
+			return lib.skill.dcpingxi.getNum() > 0 && game.hasPlayer(current => current != player);
 		},
-		content() {
-			"step 0";
-			var num = lib.skill.dcpingxi.getNum();
-			player
-				.chooseTarget(
-					[1, num],
-					function (card, player, target) {
-						return target != player;
-					},
-					get.prompt("dcpingxi"),
-					"选择至多" + get.cnNumber(num) + "名其他角色。弃置这些角色的各一张牌，然后视为对这些角色使用一张【杀】"
-				)
-				.set("ai", function (target) {
-					var player = _status.event.player;
+		async cost(event, trigger, player) {
+			const num = get.info(event.skill).getNum();
+			event.result = await player
+				.chooseTarget([1, num], lib.filter.notMe, get.prompt(event.skill), `选择至多${get.cnNumber(num)}名其他角色。弃置这些角色的各一张牌，然后视为对这些角色各使用一张【杀】`)
+				.set("ai", target => {
+					const player = get.player();
 					return get.effect(target, { name: "guohe_copy2" }, player, player) + get.effect(target, { name: "sha" }, player, player);
-				});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				event.targets = targets;
-				player.logSkill("dcpingxi", targets);
-				event.num = 0;
-			} else {
-				event.finish();
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			for (const target of event.targets.sortBySeat()) {
+				if (!target.isIn() || !target.countDiscardableCards(player, "he")) {
+					continue;
+				}
+				await player.discardPlayerCard(target, "he", true);
 			}
-			"step 2";
-			var target = targets[num];
-			if (
-				target.hasCard(function (card) {
-					return lib.filter.canBeDiscarded(card, player, target);
-				}, "he")
-			) {
-				player.discardPlayerCard(target, "he", true);
-			}
-			event.num++;
-			if (event.num < targets.length) {
-				event.redo();
-			}
-			"step 3";
-			var targetsx = targets.filter(function (target) {
-				return player.canUse("sha", target, false);
-			});
-			if (targetsx.length > 0) {
-				player.useCard(
-					{
-						name: "sha",
-						isCard: true,
-					},
-					targetsx
-				);
+			const sha = get.autoViewAs({ name: "sha", isCard: true });
+			for (const target of event.targets.sortBySeat()) {
+				if (!target.isIn() || !player.canUse(sha, target, false)) {
+					continue;
+				}
+				await player.useCard(sha, target, false);
 			}
 		},
 	},
