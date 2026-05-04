@@ -40833,7 +40833,6 @@ const skills = {
 	pyzhuren_club: {
 		audio: true,
 		trigger: { player: "useCard2" },
-		direct: true,
 		equipSkill: true,
 		filter(event, player) {
 			if (event.card.name != "sha" && get.type(event.card) != "trick") {
@@ -40843,16 +40842,10 @@ const skills = {
 			if (info.allowMultiple == false) {
 				return false;
 			}
-			var num = player.getHistory("useSkill", function (evt) {
-				return evt.skill == "pyzhuren_club";
-			}).length;
-			if (num >= 2) {
-				return false;
-			}
 			if (event.targets && !info.multitarget) {
 				if (
 					game.hasPlayer(function (current) {
-						return lib.filter.targetEnabled2(event.card, player, current) && !event.targets.includes(current);
+						return lib.filter.targetEnabled2(event.card, player, current) && lib.filter.targetInRange(event.card, player, current) && !event.targets.includes(current);
 					})
 				) {
 					return true;
@@ -40860,37 +40853,29 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var prompt2 = "为" + get.translation(trigger.card) + "额外指定一个目标";
-			player
-				.chooseTarget([1, player.storage.fumian_red], get.prompt(event.name), function (card, player, target) {
-					var player = _status.event.player;
+		usable: 2,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), `为${get.translation(trigger.card)}额外指定一个目标`, (card, player, target) => {
 					if (_status.event.targets.includes(target)) {
 						return false;
 					}
-					return lib.filter.targetEnabled2(_status.event.card, player, target);
+					return lib.filter.targetEnabled2(_status.event.card, player, target) && lib.filter.targetInRange(_status.event.card, player, target);
 				})
-				.set("prompt2", prompt2)
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
+				.set("ai", target => {
+					const trigger = _status.event.getTrigger();
+					const player = _status.event.player;
 					return get.effect(target, trigger.card, player, player);
 				})
 				.set("targets", trigger.targets)
-				.set("card", trigger.card);
-			"step 1";
-			if (result.bool) {
-				if (!event.isMine() && !event.isOnline()) {
-					game.delayx();
-				}
-				event.targets = result.targets;
+				.set("card", trigger.card)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			if (!event.isMine() && !event.isOnline()) {
+				await game.delayx();
 			}
-			"step 2";
-			if (event.targets) {
-				player.logSkill(event.name, event.targets);
-				trigger.targets.addArray(event.targets);
-			}
+			trigger.targets.addArray(event.targets);
 		},
 		ai: {
 			equipValue(card, player) {
