@@ -19072,7 +19072,7 @@ const skills = {
 					[
 						[
 							["draw", "摸体力上限张牌"],
-							["damage", `令${get.translation(trigger.card)}伤害+1` + (trigger.cards?.length ? `并获得${get.translation(trigger.cards)}` : "")],
+							["damage", `令${get.translation(trigger.card)}伤害+1` + (trigger.cards?.length ? `并于此牌造成伤害时获得${get.translation(trigger.cards)}` : "")],
 						],
 						"textbutton",
 					],
@@ -19113,19 +19113,30 @@ const skills = {
 			if (result == "draw") {
 				await player.draw(player.maxHp);
 			} else {
-				trigger.baseDamage++;
-				const cards = trigger.cards?.filterInD("od");
-				if (cards.length) {
-					await player.gain(cards, "gain2");
-				} else {
-					await game.delay();
-				}
+				player.addTempSkill(event.name + "_effect");
+				player.markAuto(event.name + "_effect", [trigger.card]);
 			}
 		},
 		subSkill: {
 			used: {
 				charlotte: true,
 				onremove: true,
+			},
+			effect: {
+				charlotte: true,
+				onremove: true,
+				filter(event, player) {
+					return event.card && player.getStorage("dckengqiang_effect").includes(event.card);
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num++;
+					const cards = (trigger.cards || []).filterInD("od");
+					if (cards.length) {
+						await player.gain(cards, "gain2");
+					}
+				},
 			},
 		},
 	},
