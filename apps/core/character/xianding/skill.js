@@ -13661,7 +13661,7 @@ const skills = {
 				})
 				.forResult();
 			event.result = {
-				bool: result.bool,
+				bool: result?.bool,
 				cards: [result?.links?.[0]],
 				cost_data: result?.links?.[1][2],
 			};
@@ -13672,18 +13672,21 @@ const skills = {
 			if (player.hasUseTarget(card, true, true)) {
 				await player.chooseUseTarget(card, true, cards);
 			}
-			let cardsLost = [];
+			let red = [];
 			game.getGlobalHistory("cardMove", evt => {
 				if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
-					cardsLost.addArray(evt.cards);
+					red.addArray(evt.cards);
 				}
 			});
-			cardsLost = cardsLost.filterInD("d").filter(card => get.color(card) == "red");
+			red = red.filterInD("d").filter(card => get.color(card) == "red");
+			if (!red.length) {
+				return;
+			}
 			let cardxs = get.inpileVCardList(info => {
 				if (get.type(info[2]) != "basic") {
 					return false;
 				}
-				return cardsLost.some(card => {
+				return red.some(card => {
 					const cardx = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
 					return player.hasUseTarget(cardx, true, true);
 				});
@@ -13691,47 +13694,39 @@ const skills = {
 			if (!cardxs.length) {
 				return;
 			}
-			let bcard, btarget;
-			if (cardsLost.length == 1 && cardxs.length == 1) {
-				bcard = cardsLost;
-				btarget = cardxs[0];
-			} else {
-				const result = await player
-					.chooseButton([`###圆融：将一张红色牌当基本牌使用###弃牌堆`, cardsLost, "###可转化基本牌###", [cardxs, "vcard"]], 2, true)
-					.set("filterButton", button => {
-						if (!Array.isArray(button.link)) {
-							return ui.selected.buttons.length == 0;
-						}
-						if (ui.selected.buttons.length != 1) {
-							return false;
-						}
-						const cardx = get.autoViewAs(
-							{ name: button.link[2], nature: button.link[3] },
-							ui.selected.buttons.map(i => i.link)
-						);
-						return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
-					})
-					.set("complexSelect", true)
-					.set("ai", button => {
-						if (ui.selected.buttons.length == 0) {
-							return Math.random();
-						}
-						if (!Array.isArray(button.link)) {
-							return 0;
-						}
-						const cardx = get.autoViewAs({ name: button.link[2] });
-						return get.player().getUseValue(cardx, true, true);
-					})
-					.forResult();
-				if (!result.bool) {
-					return;
-				}
-				bcard = [result.links[0]];
-				btarget = result.links[1];
+			const result = await player
+				.chooseButton([`###圆融：你可以将一张红色牌当基本牌使用###弃牌堆`, red, "###可转化基本牌###", [cardxs, "vcard"]], 2)
+				.set("filterButton", button => {
+					if (!Array.isArray(button.link)) {
+						return ui.selected.buttons.length == 0;
+					}
+					if (ui.selected.buttons.length != 1) {
+						return false;
+					}
+					const cardx = get.autoViewAs(
+						{ name: button.link[2], nature: button.link[3] },
+						ui.selected.buttons.map(i => i.link)
+					);
+					return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
+				})
+				.set("complexSelect", true)
+				.set("ai", button => {
+					if (ui.selected.buttons.length == 0) {
+						return Math.random();
+					}
+					if (!Array.isArray(button.link)) {
+						return 0;
+					}
+					const cardx = get.autoViewAs({ name: button.link[2] });
+					return get.player().getUseValue(cardx, true, true);
+				})
+				.forResult();
+			if (!result?.bool) {
+				return;
 			}
-			const cardx = get.autoViewAs({ name: btarget[2], nature: btarget[3] }, bcard);
+			const cardx = get.autoViewAs({ name: result.links[1][2], nature: result.links[1][3] }, [result.links[0]]);
 			if (player.hasUseTarget(cardx, true, true)) {
-				await player.chooseUseTarget(cardx, true, bcard);
+				await player.chooseUseTarget(cardx, true, [result.links[0]]);
 			}
 		},
 	},
