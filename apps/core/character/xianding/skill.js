@@ -8389,9 +8389,7 @@ const skills = {
 	},
 	dcfuji: {
 		audio: 2,
-		trigger: {
-			global: "phaseUseBegin",
-		},
+		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
 			if (!player.countCards("h")) {
 				return false;
@@ -8429,11 +8427,9 @@ const skills = {
 			effect: {
 				charlotte: true,
 				onremove: true,
-				trigger: {
-					target: "useCardToPlayer",
-				},
+				trigger: { target: "useCardToTargeted" },
 				intro: {
-					content: "本轮你成为其他角色使用牌的目标时，你可将所有手牌交给一名其他角色并令此牌无效",
+					content: "本轮其他角色使用牌指定你为目标后，你可将所有手牌交给一名其他角色并令此牌无效",
 				},
 				mark: true,
 				filter(event, player) {
@@ -8478,97 +8474,6 @@ const skills = {
 			},
 		},
 	},
-	/*dcfuji: {
-		audio: 2,
-		trigger: {
-			player: "phaseEnd",
-		},
-		filter(event, player) {
-			return player.countCards("h") && game.hasPlayer(current => current != player);
-		},
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
-				.set("ai", target => {
-					return get.attitude(get.player(), target);
-				})
-				.forResult();
-		},
-		async content(event, trigger, player) {
-			const target = event.targets[0];
-			await target.viewHandcards(player);
-			const skill = `${event.name}_${target.playerid}`;
-			game.addTempTag(skill, `缚·${get.translation(target.name)}`);
-			player.addGaintag(player.getCards("h"), skill);
-		},
-		group: "dcfuji_effect",
-		subSkill: {
-			effect: {
-				trigger: {
-					global: "useCardToPlayer",
-					player: "phaseBegin",
-				},
-				getIndex(event, player) {
-					if (event.name == "phase") {
-						return game.filterPlayer(current => {
-							return player.countCards("h", card => card.hasGaintag(`dcfuji_${current.playerid}`));
-						});
-					}
-					return [event.player];
-				},
-				filter(event, player, name, target) {
-					if (!player.countCards("h", card => card.hasGaintag(`dcfuji_${target.playerid}`))) {
-						return false;
-					}
-					return event.name == "phase" || event.target == player;
-				},
-				logTarget: (_1, _2, _3, target) => target,
-				async cost(event, trigger, player) {
-					const target = event.indexedData;
-					if (trigger.name == "phase") {
-						event.result = {
-							bool: true,
-							cards: player.getCards("h", card => card.hasGaintag(`dcfuji_${target.playerid}`)),
-						};
-					} else {
-						event.result = await player
-							.chooseCard(`###${get.prompt(event.skill, target)}###交给其任意张令其观看的牌，然后令${get.translation(trigger.card)}无效`, [1, Infinity])
-							.set("filterCard", card => {
-								return get.event().chooseCards.includes(card);
-							})
-							.set(
-								"chooseCards",
-								player.getCards("h", card => card.hasGaintag(`dcfuji_${target.playerid}`))
-							)
-							.set("eff", get.effect(player, trigger.card, trigger.player, player))
-							.set("ai", card => {
-								if (get.event().eff >= 0) {
-									return 0;
-								}
-								return 4 - get.value(card);
-							})
-							.forResult();
-					}
-				},
-				async content(event, trigger, player) {
-					const {
-						targets: [target],
-						cards,
-					} = event;
-					if (trigger.name == "phase") {
-						await player.give(cards, target);
-						await target.recover();
-					} else {
-						await player.give(cards, target);
-						const evt = trigger.getParent();
-						evt.targets.length = 0;
-						evt.all_excluded = true;
-						trigger.untrigger();
-					}
-				},
-			},
-		},
-	},*/
 	//凌烈
 	dcshouhu: {
 		audio: 2,
