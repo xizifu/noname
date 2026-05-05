@@ -15,9 +15,9 @@ export default () => {
 				if (_status.brawl && _status.brawl.submode) {
 					_status.mode = _status.brawl.submode;
 				}
-				event.replacePile = function () {
-					var list = ["shengdong", "qijia", "caomu", "jinchan", "zengbin", "fulei", "qibaodao", "zhungangshuo", "lanyinjia"];
-					var map = {
+				event.replacePile = () => {
+					const list = ["shengdong", "qijia", "caomu", "jinchan", "zengbin", "fulei", "qibaodao", "zhungangshuo", "lanyinjia"];
+					const map = {
 						shunshou: "shengdong",
 						jiedao: "qijia",
 						bingliang: "caomu",
@@ -29,27 +29,25 @@ export default () => {
 						qinglong: "zhungangshuo",
 						bagua: "lanyinjia",
 					};
-					for (var i = 0; i < lib.card.list.length; i++) {
-						var name = lib.card.list[i][2];
-						if (list.includes(name)) {
-							lib.card.list.splice(i--, 1);
-						} else if (map[name]) {
-							lib.card.list[i][2] = map[name];
-							lib.card.list[i]._replaced = true;
+					lib.card.list = lib.card.list.filter(cardInfo => list.includes(cardInfo[2]))
+					for (const cardInfo of lib.card.list) {
+						if (map[name]) {
+							cardInfo[2] = map[name];
+							cardInfo._replaced = true;
 						}
 					}
 				};
 			},
 			async (event, trigger, player) => {
-				var playback = localStorage.getItem(lib.configprefix + "playback");
+				const playback = localStorage.getItem(lib.configprefix + "playback");
 				if (playback) {
 					ui.create.me();
 					ui.arena.style.display = "none";
 					ui.system.style.display = "none";
 					_status.playback = playback;
 					localStorage.removeItem(lib.configprefix + "playback");
-					var store = lib.db.transaction(["video"], "readwrite").objectStore("video");
-					store.get(parseInt(playback)).onsuccess = function (e) {
+					const store = lib.db.transaction(["video"], "readwrite").objectStore("video");
+					store.get(parseInt(playback)).onsuccess = e => {
 						if (e.target.result) {
 							game.playVideoContent(e.target.result.video);
 						} else {
@@ -111,7 +109,7 @@ export default () => {
 						clear();
 						ui.create.dialog("如果你在使用手机，可能会觉得按钮有点小" + "，将布局改成移动可以使按钮变大");
 						ui.dialog.add('<div class="text center">你可以在选项-外观-布局中更改此设置');
-						var lcontrol = ui.create.control("使用移动布局", function () {
+						ui.create.control("使用移动布局", () => {
 							if (lib.config.phonelayout) {
 								ui.control.firstChild.firstChild.innerHTML = "使用移动布局";
 								game.saveConfig("phonelayout", false);
@@ -170,7 +168,7 @@ export default () => {
 				}
 				delete _status.new_tutorial;
 				if (_status.connectMode) {
-					game.waitForPlayer(function () {
+					game.waitForPlayer(() => {
 						if (lib.configOL.identity_mode == "zhong" || lib.configOL.identity_mode == "purple") {
 							lib.configOL.number = 8;
 						}
@@ -178,10 +176,10 @@ export default () => {
 				}
 			},
 			async (event, trigger, player) => {
-				var yearLimitCheck = () => {
-					var next = game.createEvent("year_limit_pop", false);
+				const yearLimitCheck = () => {
+					const next = game.createEvent("year_limit_pop", false);
 					next.setContent(async (event, trigger, player) => {
-						var str = get.cnNumber(game.shuffleNumber + 1, true);
+						const str = get.cnNumber(game.shuffleNumber + 1, true);
 						game.me.$fullscreenpop(`第${str}年`, "thunder");
 						game.log("游戏进入了", `#y第${str}年`);
 						if (game.shuffleNumber + 1 < game.countPlayer2()) {
@@ -206,13 +204,12 @@ export default () => {
 						lib.configOL.number = 8;
 					} else if (_status.mode == "normal") {
 						if (lib.configOL.enable_commoner || lib.configOL.double_nei) {
-							var identity = lib.configOL.enable_commoner ? "commoner" : "nei";
-							for (var i = 1; i < lib.config.mode_config.identity.identity.length; i++) {
-								var list = lib.config.mode_config.identity.identity[i];
-								var toReplace;
-								if (list.filter(i => i == "nei").length >= 2) {
+							const identity = lib.configOL.enable_commoner ? "commoner" : "nei";
+							for (const list of lib.config.mode_config.identity.identity.slice(1)) {
+								let toReplace;
+								if (list.filter(role => role == "nei").length >= 2) {
 									toReplace = "nei";
-								} else if (list.filter(i => i == "zhong").length > list.filter(i => i == "fan").length / 2) {
+								} else if (list.filter(role => role == "zhong").length > list.filter(role => role == "fan").length / 2) {
 									toReplace = "zhong";
 								} else {
 									toReplace = "fan";
@@ -232,13 +229,12 @@ export default () => {
 					game.randomMapOL();
 				} else {
 					if (_status.mode == "normal" && (get.config("enable_commoner") || get.config("double_nei"))) {
-						var identity = get.config("enable_commoner") ? "commoner" : "nei";
-						for (var i = 1; i < lib.config.mode_config.identity.identity.length; i++) {
-							var list = lib.config.mode_config.identity.identity[i];
-							var toReplace;
-							if (list.filter(i => i == "nei").length >= 2) {
+						const identity = get.config("enable_commoner") ? "commoner" : "nei";
+						for (const list of lib.config.mode_config.identity.identity.slice(1)) {
+							let toReplace;
+							if (list.filter(role => role == "nei").length >= 2) {
 								toReplace = "nei";
-							} else if (list.filter(i => i == "zhong").length > list.filter(i => i == "fan").length / 2) {
+							} else if (list.filter(role => role == "zhong").length > list.filter(role => role == "fan").length / 2) {
 								toReplace = "zhong";
 							} else {
 								toReplace = "fan";
@@ -250,8 +246,8 @@ export default () => {
 					if (_status.mode != "purple" && get.config("enable_year_limit")) {
 						lib.onwash.push(yearLimitCheck);
 					}
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].getId();
+					for (const current of game.players) {
+						current.getId();
 					}
 					if (_status.brawl && _status.brawl.chooseCharacterBefore) {
 						_status.brawl.chooseCharacterBefore();
@@ -265,27 +261,27 @@ export default () => {
 				}
 				if (game.players.length == 2) {
 					game.showIdentity(true);
-					var map = {};
-					for (var i in lib.playerOL) {
-						map[i] = lib.playerOL[i].identity;
+					const map = {};
+					for (const id in lib.playerOL) {
+						map[id] = lib.playerOL[id].identity;
 					}
-					game.broadcast(function (map) {
-						for (var i in map) {
-							lib.playerOL[i].identity = map[i];
-							lib.playerOL[i].setIdentity();
-							lib.playerOL[i].ai.shown = 1;
+					game.broadcast(map => {
+						for (const id in map) {
+							lib.playerOL[id].identity = map[id];
+							lib.playerOL[id].setIdentity();
+							lib.playerOL[id].ai.shown = 1;
 						}
 					}, map);
 				} else {
-					for (var i = 0; i < game.players.length; i++) {
-						game.players[i].ai.shown = 0;
+					for (const current of game.players) {
+						current.ai.shown = 0;
 					}
 				}
-				var stratagemMode = _status.mode == "stratagem";
+				const stratagemMode = _status.mode == "stratagem";
 				if (stratagemMode) {
-					var beginner;
+					let beginner;
 					if (_status.cheat_seat) {
-						var seat = _status.cheat_seat.link;
+						const seat = _status.cheat_seat.link;
 						beginner = seat == 0 ? game.me : game.players[game.players.length - seat];
 						if (!beginner) {
 							beginner = game.me;
@@ -296,7 +292,7 @@ export default () => {
 					}
 					event.beginner = beginner;
 
-					var stratagemBroadcast = () => {
+					const stratagemBroadcast = () => {
 						_status.stratagemFuryMax = 3;
 						ui.css.stratagemCardStyle = lib.init.sheet([".card.stratagem-fury-glow:before{", "opacity:0.2;", "box-shadow:rgba(0,0,0,0.2) 0 0 0 1px,rgb(255,109,12) 0 0 5px,rgb(255,0,0) 0 0 10px;", "background-color:yellow;", "-webkit-filter:blur(5px);", "filter:blur(5px);", "}"].join(""));
 					};
@@ -304,7 +300,7 @@ export default () => {
 					if (_status.connectMode && !_status.postReconnect.stratagemReinit) {
 						_status.postReconnect.stratagemReinit = [stratagemBroadcast, {}];
 					}
-					for (var current of game.players) {
+					for (const current of game.players) {
 						if (current.identity == "zhu") {
 							current.addSkill("stratagem_monarchy");
 						}
@@ -386,7 +382,7 @@ export default () => {
 					}
 					if (skill) {
 						game.broadcastAll(
-							function (player, skill) {
+							(player, skill) => {
 								player.addSkill(skill);
 								player.storage.enhance_zhu = skill;
 							},
@@ -409,18 +405,18 @@ export default () => {
 				game.syncState();
 				event.trigger("gameStart");
 
-				var players = get.players(lib.sort.position);
-				var info = [];
-				for (var i = 0; i < players.length; i++) {
-					var ifo = {
-						name: players[i].name1,
-						name2: players[i].name2,
-						identity: players[i].identity,
-						nickname: players[i].node.nameol.innerHTML,
+				const players = get.players(lib.sort.position);
+				const info = [];
+				for (const [index, current] of players.entries()) {
+					const ifo = {
+						name: current.name1,
+						name2: current.name2,
+						identity: current.identity,
+						nickname: current.node.nameol.innerHTML,
 					};
 					if (stratagemMode) {
-						ifo.translate = lib.translate[game.players[i].name];
-						ifo.isCamouflaged = players[i].ai.stratagemCamouflage;
+						ifo.translate = lib.translate[game.players[index].name];
+						ifo.isCamouflaged = current.ai.stratagemCamouflage;
 					}
 					info.push(ifo);
 				}
@@ -439,9 +435,9 @@ export default () => {
 							},
 						},
 					});
-					for (var i = 0; i < game.players.length; i++) {
-						//game.addVideo('markSkill',game.players[i],['stratagem_fury']);
-						game.players[i].ai.shown = 0;
+					for (const current of game.players) {
+						//game.addVideo('markSkill', current, ['stratagem_fury']);
+						current.ai.shown = 0;
 					}
 					game.stratagemCamouflage();
 				}
@@ -450,7 +446,7 @@ export default () => {
 				if (_status.mode != "stratagem") {
 					event.beginner = _status.firstAct2 || game.zhong || game.zhu || _status.firstAct || game.me;
 				}
-				game.gameDraw(event.beginner, function (player) {
+				game.gameDraw(event.beginner, player => {
 					if (_status.mode == "purple" && player.seatNum > 5) {
 						return 5;
 					}
