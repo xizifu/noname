@@ -2874,14 +2874,15 @@ export default () => {
 					}, 500);
 				});
 			},
-			stratagemCamouflage: function () {
-				var next = game.createEvent("stratagemCamouflage");
+			stratagemCamouflage() {
+				const next = game.createEvent("stratagemCamouflage");
 				next.players = game.players.slice();
 				if (_status.connectMode) {
 					next.setContent("stratagemCamouflageOL");
 				} else {
 					next.setContent("stratagemCamouflage");
 				}
+				return next;
 			},
 		},
 		translate: {
@@ -3520,133 +3521,139 @@ export default () => {
 						}
 					}
 				},
-				stratagemCamouflageOL: () => {
-					"step 0";
-					var send = (clientCamouflaged, id, online) => {
-						var me = game.me;
-						if (me.identity == "nei") {
-							var storage = me.storage;
-							if (!storage.zhibi) {
-								storage.zhibi = [];
-							}
-							storage.zhibi.addArray(clientCamouflaged);
-							var rebel = get.translation("fan2"),
-								dialog = ui.create.dialog(`${get.translation(clientCamouflaged)}是${rebel}<br>`, "forcebutton");
-							ui.create.spinningIdentityCard("fan", dialog);
-							dialog.videoId = id;
-							clientCamouflaged.forEach(victim => {
-								var classList = victim.classList,
-									nonCamouflageFlashing = classList.contains("flash-animation-iteration-count-infinite");
-								if (nonCamouflageFlashing) {
-									victim.nonCamouflageFlashing = true;
-								} else {
-									classList.add("flash-animation-iteration-count-infinite");
-								}
-								victim.prompt(rebel, "fan");
-							});
-							me.chooseControl("ok").set("dialog", dialog);
-						} else {
-							ui.create.dialog("请等待内奸身份确认...").videoId = id;
-						}
-						if (online) {
-							game.resume();
-						}
-					};
-					var camouflaged = (event.targets = game.players.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage).randomGets(Math.max(Math.round(get.population() / 6), 1)));
-					camouflaged.forEach(current => (current.ai.stratagemCamouflage = true));
-					event.videoId = lib.status.videoId++;
-					var time = 10000;
-					if (lib.configOL && lib.configOL.choose_timeout) {
-						time = parseInt(lib.configOL.choose_timeout) * 1000;
-					}
-					var aiTargets = (event.aiTargets = []);
-					event.players.forEach(current => {
-						current.showTimer(time);
-						if (current.isOnline()) {
-							current.send(send, camouflaged, event.videoId, true);
-							if (current.identity == "nei") {
-								current.wait();
-								event.withOL = true;
-							}
-							return;
-						}
-						var me = game.me;
-						if (current == me) {
-							event.withMe = true;
-							send(camouflaged, event.videoId);
+				stratagemCamouflageOL: [
+					async (event) => {
+						const send = (clientCamouflaged, id, online) => {
+							const me = game.me;
+							let choosing;
 							if (me.identity == "nei") {
-								me.wait();
+								const storage = me.storage;
+								storage.zhibi ??= [];
+								storage.zhibi.addArray(clientCamouflaged);
+								const rebel = get.translation("fan2");
+								const dialog = ui.create.dialog(`${get.translation(clientCamouflaged)}是${rebel}<br>`, "forcebutton");
+								ui.create.spinningIdentityCard("fan", dialog);
+								dialog.videoId = id;
+								clientCamouflaged.forEach(victim => {
+									const classList = victim.classList;
+									const nonCamouflageFlashing = classList.contains("flash-animation-iteration-count-infinite");
+									if (nonCamouflageFlashing) {
+										victim.nonCamouflageFlashing = true;
+									} else {
+										classList.add("flash-animation-iteration-count-infinite");
+									}
+									victim.prompt(rebel, "fan");
+								});
+								choosing = me.chooseControl("ok").set("dialog", dialog);
 							} else {
-								event._result = {
-									bool: true,
-									_noHidingTimer: true,
-								};
+								ui.create.dialog("请等待内奸身份确认...").videoId = id;
 							}
-							return;
+							if (online) {
+								game.resume();
+							}
+							return choosing;
+						};
+						const camouflaged = (event.targets = game.players.filter(current => current.identity == "fan" && !current.ai.stratagemCamouflage).randomGets(Math.max(Math.round(get.population() / 6), 1)));
+						camouflaged.forEach(current => (current.ai.stratagemCamouflage = true));
+						event.videoId = lib.status.videoId++;
+						let time = 10000;
+						if (lib.configOL && lib.configOL.choose_timeout) {
+							time = parseInt(lib.configOL.choose_timeout) * 1000;
 						}
-						if (current.identity == "nei") {
-							aiTargets.push(current);
-						}
-					});
-					if (!aiTargets.length) {
-						return;
-					}
-					aiTargets.randomSort();
-					new Promise(resolve => setTimeout(resolve, Math.ceil(3000 + 5000 * Math.random()))).then(() => {
-						var interval = setInterval(
-							() => {
-								aiTargets.shift();
-								if (aiTargets.length) {
-									return;
+						const aiTargets = (event.aiTargets = []);
+						let localChoosing;
+						event.players.forEach(current => {
+							current.showTimer(time);
+							if (current.isOnline()) {
+								current.send(send, camouflaged, event.videoId, true);
+								if (current.identity == "nei") {
+									current.wait();
+									event.withOL = true;
 								}
-								clearInterval(interval);
-								if (event.withAI) {
-									game.resume();
-								}
-							},
-							Math.ceil(500 + 500 * Math.random())
-						);
-					});
-					("step 1");
-					if (event.withMe) {
-						game.me.unwait(result);
-					}
-					("step 2");
-					if (event.withOL && !event.resultOL) {
-						game.pause();
-					}
-					("step 3");
-					if (!event.aiTargets.length) {
-						return;
-					}
-					event.withAI = true;
-					game.pause();
-					("step 4");
-					game.broadcastAll("closeDialog", event.videoId);
-					event.players.forEach(current => current.hideTimer());
-					var afterCamouflage = clientCamouflaged =>
-						clientCamouflaged.forEach(victim => {
-							victim.unprompt();
-							if (victim.nonCamouflageFlashing) {
-								delete victim.nonCamouflageFlashing;
 								return;
 							}
-							var classList = victim.classList;
-							if (classList.contains("flash-animation-iteration-count-infinite")) {
-								classList.remove("flash-animation-iteration-count-infinite");
+							const me = game.me;
+							if (current == me) {
+								event.withMe = true;
+								localChoosing = send(camouflaged, event.videoId);
+								if (me.identity == "nei") {
+									me.wait();
+								} else {
+									event._result = {
+										bool: true,
+										_noHidingTimer: true,
+									};
+								}
+								return;
+							}
+							if (current.identity == "nei") {
+								aiTargets.push(current);
 							}
 						});
-					event.players.forEach(current => {
-						if (current.isOnline()) {
-							current.send(afterCamouflage, targets);
-							return;
+						if (aiTargets.length) {
+							aiTargets.randomSort();
+							new Promise(resolve => setTimeout(resolve, Math.ceil(3000 + 5000 * Math.random()))).then(() => {
+								const interval = setInterval(
+									() => {
+										aiTargets.shift();
+										if (aiTargets.length) {
+											return;
+										}
+										clearInterval(interval);
+										if (event.withAI) {
+											game.resume();
+										}
+									},
+									Math.ceil(500 + 500 * Math.random())
+								);
+							});
 						}
-						var me = game.me;
-						if (current == me && me.identity == "nei") {
-							afterCamouflage(targets);
+						if (event.withMe) {
+							let result = event._result;
+							if (localChoosing) {
+								result = await localChoosing.forResult();
+								event._result = result;
+							}
+							game.me.unwait(result);
 						}
-					});
-				},
+						if (event.withOL && !event.resultOL) {
+							game.pause();
+						}
+					},
+					async (event) => {
+						if (event.aiTargets.length) {
+							event.withAI = true;
+							game.pause();
+						}
+					},
+					async (event) => {
+						game.broadcastAll("closeDialog", event.videoId);
+						event.players.forEach(current => current.hideTimer());
+						const afterCamouflage = clientCamouflaged =>
+							clientCamouflaged.forEach(victim => {
+								victim.unprompt();
+								if (victim.nonCamouflageFlashing) {
+									delete victim.nonCamouflageFlashing;
+									return;
+								}
+								const classList = victim.classList;
+								if (classList.contains("flash-animation-iteration-count-infinite")) {
+									classList.remove("flash-animation-iteration-count-infinite");
+								}
+							});
+						const { targets } = event;
+						event.players.forEach(current => {
+							if (current.isOnline()) {
+								current.send(afterCamouflage, targets);
+								return;
+							}
+							const me = game.me;
+							if (current == me && me.identity == "nei") {
+								afterCamouflage(targets);
+							}
+						});
+					}
+				],
 			},
 		},
 		get: {
