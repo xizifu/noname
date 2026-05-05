@@ -801,24 +801,11 @@ const skills = {
 	//☆法正
 	youtan: {
 		audio: 4,
-		logAudio(event) {
-			if (event.name == "useCardToTarget") {
-				return ["youtan3.mp3", "youtan4.mp3"];
-			}
-			return 2;
-		},
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
-			target: "useCardToTarget",
 		},
 		filter(event, player, name) {
-			if (name == "useCardToTarget") {
-				if (event.player == player) {
-					return false;
-				}
-				return !player.getStorage("youtan").includes(get.suit(event.card));
-			}
 			const evt = event.getParent("phaseUse", true);
 			if (evt && evt.player == player) {
 				return false;
@@ -826,47 +813,27 @@ const skills = {
 			const cards = event.getg(player);
 			return cards?.length && cards.some(card => !player.getStorage("youtan").includes(get.suit(card)));
 		},
-		intro: {
-			content: "已记录花色:$",
-		},
+		intro: { content: "已记录花色：$" },
 		forced: true,
 		onremove(player, skill) {
 			player.removeTip(skill);
 			player.setStorage(skill, []);
 		},
 		async content(event, trigger, player) {
-			if (event.triggername == "useCardToTarget") {
-				const eff = get.effect(player, trigger.card, trigger.player, trigger.player);
-				const result = await trigger.player
-					.chooseToDiscard(`忧叹：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`, "he")
-					.set("ai", card => {
-						const { eff } = get.event();
-						if (eff > 0) {
-							return 10 - get.value(card);
-						}
-						return 0;
-					})
-					.set("eff", eff)
-					.forResult();
-				if (!result?.bool) {
-					trigger.getParent().excluded.add(player);
-				}
-			} else {
-				const suits = trigger
-					.getg(player)
-					.map(card => get.suit(card))
-					.removeArray(player.getStorage(event.name));
-				if (suits?.length) {
-					player.markAuto(event.name, suits);
-					player.addTip(
-						event.name,
-						`忧叹${player
-							.getStorage(event.name)
-							.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
-							.map(i => get.translation(i))
-							.join("")}`
-					);
-				}
+			const suits = trigger
+				.getg(player)
+				.map(card => get.suit(card))
+				.removeArray(player.getStorage(event.name));
+			if (suits?.length) {
+				player.markAuto(event.name, suits);
+				player.addTip(
+					event.name,
+					`忧叹${player
+						.getStorage(event.name)
+						.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
+						.map(i => get.translation(i))
+						.join("")}`
+				);
 			}
 		},
 		mod: {
@@ -5219,25 +5186,21 @@ const skills = {
 	shiming: {
 		audio: 2,
 		trigger: { global: "phaseDrawBegin1" },
-		filter(event, player) {
-			return !player.hasSkill("shiming_round");
-		},
+		round: 1,
 		check(event, player) {
-			return true; //get.attitude(player,event.player)<0||get.damageEffect(event.player,event.player,player)>0;
+			return true;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			player.addTempSkill("shiming_round", "roundStart");
 			const {
 				targets: [target],
 			} = event;
 			const cards = get.cards(3, true);
-			const result = await player
+			let result = await player
 				.chooseButton(["识命：是否将其中一张置于牌堆底？", cards.slice(0)])
 				.set("ai", button => {
-					var att = _status.event.att,
-						damage = _status.event.damage,
-						val = get.value(button.link, _status.event.player);
+					const { att, damage, player } = get.event();
+					const val = get.value(button.link, player);
 					if ((att > 0 && damage < 0) || (att <= 0 && damage > 0)) {
 						return 6 - val;
 					}
@@ -5246,28 +5209,22 @@ const skills = {
 				.set("att", get.attitude(player, target))
 				.set("damage", get.damageEffect(target, target, player) > 0 && target.hp <= 3 ? 1 : -1)
 				.forResult();
-			if (result.bool && result.links?.length) {
+			if (result?.bool && result.links?.length) {
 				const { links: cards } = result;
 				player.popup("一下", "wood");
 				game.log(player, "将一张牌置于了牌堆底");
 				await game.cardsGotoPile(cards);
 			}
-			const result2 = await target
+			result = await target
 				.chooseBool("是否跳过摸牌阶段并对自己造成1点伤害，然后从牌堆底摸三张牌？")
 				.set("ai", () => _status.event.bool)
 				.set("bool", get.damageEffect(target, target) >= -6 || target.hp > 3)
 				.forResult();
-			if (result2.bool) {
+			if (result?.bool) {
 				trigger.cancel();
 				await target.damage(target);
-				await target.draw(3);
+				await target.draw(3, "bottom");
 			}
-		},
-		subSkill: {
-			round: {
-				mark: true,
-				intro: { content: "本轮已发动〖识命〗" },
-			},
 		},
 	},
 	jiangxi: {
@@ -7509,7 +7466,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets } = event;
 			const num = targets.length;
-			const list = [`摸${get.cnNumber(4 - num)}张牌并复原武将牌`, `${num > 1 ? `弃置${get.cnNumber(num - 1)}张牌然后` : ""}回复一点体力`];
+			const list = [`摸${get.cnNumber(4 - num)}张牌并复原武将牌`, `${num > 1 ? `弃置${get.cnNumber(num - 1)}张牌，然后` : ""}回复1点体力`];
 			if (player.getHistory("damage").length > num) {
 				list.push(`依次执行以上两项，然后非锁定失效直到你下个回合开始`);
 			}
@@ -7520,22 +7477,21 @@ const skills = {
 					.set("prompt", "雀颂：请选择一项")
 					.set("ai", () => {
 						const { num, player } = get.event();
-						return get.effect(player, { name: "draw" }, player, player) * (4 - num) >=
-							get.effect(player, { name: "guohe_copy2" }, player, player) + get.recoverEffect(player, player, player)
-							? 0
-							: 1;
+						return get.effect(player, { name: "draw" }, player, player) * (4 - num) >= get.effect(player, { name: "guohe_copy2" }, player, player) + get.recoverEffect(player, player, player) ? 0 : 1;
 					})
 					.set("num", num)
 					.forResult();
-				if (typeof result.index == "number") {
+				if (typeof result?.index == "number") {
 					const { index } = result;
 					if (index % 2 == 0) {
 						await target.draw(4 - num);
 						await target.link(false);
 						await target.turnOver(false);
 					}
-					if (index > 0 && num > 1) {
-						await target.chooseToDiscard(num - 1, "he", true);
+					if (index > 0) {
+						if (num > 1) {
+							await target.chooseToDiscard(num - 1, "he", true);
+						}
 						await target.recover();
 					}
 					if (index == 2) {
