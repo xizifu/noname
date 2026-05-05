@@ -791,36 +791,36 @@ export default () => {
 					delete _status.clickingidentity;
 				}
 			},
-			checkResult: function () {
-				var me = game.me._trueMe || game.me;
+			/**
+			 * 根据当前身份模式和场上存活情况结算本机视角的胜负。
+			 *
+			 * 普通身份局会按主公、忠臣、反贼、内奸、平民的胜利条件判断；
+			 * 3v3v2（purple）会先拆分冷暖阵营和野心家，写入联机结算用的胜负名单。
+			 */
+			checkResult() {
+				const me = game.me._trueMe || game.me;
 				if (_status.brawl && _status.brawl.checkResult) {
 					_status.brawl.checkResult();
 					return;
 				} else if (_status.mode == "purple") {
-					var winner = [];
-					var loser = [];
-					var ye = game.filterPlayer(
-						function (current) {
-							return ["rYe", "bYe"].includes(current.identity);
-						},
+					const winner = [];
+					const loser = [];
+					const ye = game.filterPlayer(
+						current => ["rYe", "bYe"].includes(current.identity),
 						null,
 						true
 					);
-					var red = game.filterPlayer(
-						function (current) {
-							return ["rZhu", "rZhong", "bNei"].includes(current.identity);
-						},
+					const red = game.filterPlayer(
+						current => ["rZhu", "rZhong", "bNei"].includes(current.identity),
 						null,
 						true
 					);
-					var blue = game.filterPlayer(
-						function (current) {
-							return ["bZhu", "bZhong", "rNei"].includes(current.identity);
-						},
+					const blue = game.filterPlayer(
+						current => ["bZhu", "bZhong", "rNei"].includes(current.identity),
 						null,
 						true
 					);
-					game.countPlayer2(function (current) {
+					game.countPlayer2(current => {
 						switch (current.identity) {
 							case "rZhu":
 								if (ye.length == 0 && game.bZhu.isDead()) {
@@ -865,21 +865,21 @@ export default () => {
 								break;
 						}
 					}, true);
-					var winner2 = winner.slice(0);
-					var loser2 = loser.slice(0);
-					for (var i = 0; i < winner.length; i++) {
-						if (winner[i].isDead()) {
-							winner.splice(i--, 1);
+					const winner2 = winner.slice(0);
+					const loser2 = loser.slice(0);
+					for (const current of winner.slice()) {
+						if (current.isDead()) {
+							winner.remove(current);
 						}
 					}
-					for (var i = 0; i < loser.length; i++) {
-						if (loser[i].isDead()) {
-							loser.splice(i--, 1);
+					for (const current of loser.slice()) {
+						if (current.isDead()) {
+							loser.remove(current);
 						}
 					}
 					if (winner.length > 0 || loser.length == game.players.length) {
 						game.broadcastAll(
-							function (winner, loser) {
+							(winner, loser) => {
 								_status.winner = winner;
 								_status.loser = loser;
 							},
