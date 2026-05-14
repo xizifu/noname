@@ -769,27 +769,37 @@ export default () => {
 					await game.promises.saveConfig("gameRecord", lib.config.gameRecord);
 				}
 			},
-			showIdentity: function (me) {
-				for (var i = 0; i < game.players.length; i++) {
-					// if(me===false&&game.players[i]==game.me) continue;
-					game.players[i].node.identity.classList.remove("guessing");
-					game.players[i].identityShown = true;
-					game.players[i].ai.shown = 1;
-					game.players[i].setIdentity(game.players[i].identity);
-					if (game.players[i].special_identity) {
-						game.players[i].node.identity.firstChild.innerHTML = get.translation(game.players[i].special_identity + "_bg");
+			/**
+			 * 公开并刷新所有玩家的身份显示。
+			 *
+			 * 会取消身份标记上的猜测状态，将每名玩家标记为已亮明身份，
+			 * 同步其身份文案与特殊身份背景，并把主公玩家标记为 `isZhu`。
+			 * 若当前存在点击猜身份的临时节点，也会一并删除并清空状态。
+			 *
+			 * @param {boolean} [me] - 兼容旧逻辑的保留参数，目前不会影响显示范围。
+			 */
+			showIdentity(me) {
+				for (const player of game.players) {
+					// if(me===false&&player==game.me) continue;
+					player.node.identity.classList.remove("guessing");
+					player.identityShown = true;
+					player.ai.shown = 1;
+					player.setIdentity(player.identity);
+					if (player.special_identity) {
+						player.node.identity.firstChild.innerHTML = get.translation(`${player.special_identity}_bg`);
 					}
-					if (game.players[i].identity == "zhu") {
-						game.players[i].isZhu = true;
+					if (player.identity == "zhu") {
+						player.isZhu = true;
 					}
 				}
-				if (_status.clickingidentity) {
-					for (var i = 0; i < _status.clickingidentity[1].length; i++) {
-						_status.clickingidentity[1][i].delete();
-						_status.clickingidentity[1][i].style.transform = "";
-					}
-					delete _status.clickingidentity;
+				if (!_status.clickingidentity) {
+					return;
 				}
+				for (const identityNode of _status.clickingidentity[1]) {
+					identityNode.delete();
+					identityNode.style.transform = "";
+				}
+				delete _status.clickingidentity;
 			},
 			/**
 			 * 根据当前身份模式和场上存活情况结算本机视角的胜负。
