@@ -3192,73 +3192,62 @@ export default () => {
 						}
 					}
 				},
-				logAi: function (targets, card) {
+				/**
+				 * 根据一次行动的目标和牌/技能效果更新玩家的 AI 暴露度，并在允许时刷新自动身份标记。
+				 *
+				 * `targets` 为数字时会直接叠加到暴露度；为目标数组时会结合目标已暴露程度、身份和行动收益推断本玩家的阵营倾向。
+				 *
+				 * @this { Player }
+				 * @param { Player[] | number } targets - 行动目标列表，或要直接增加的暴露值。
+				 * @param { Card | VCard } card - 触发暴露判断的牌或技能。
+				 */
+				logAi(targets, card) {
 					if (this.ai.shown == 1 || this.isMad()) {
 						return;
 					}
-					var stratagemMode = get.mode() == "identity" && _status.mode == "stratagem";
+					const stratagemMode = get.mode() == "identity" && _status.mode == "stratagem";
 					if (stratagemMode && (!game.zhu || !game.zhu.isZhu || !game.zhu.identityShown)) {
 						return;
 					}
 					if (typeof targets == "number") {
 						this.ai.shown += targets;
 					} else {
-						var effect = 0,
-							c,
-							shown;
-						var info = get.info(card);
+						let effect = 0;
+						const info = get.info(card);
 						if (info.ai && info.ai.expose) {
-							if (_status.event.name == "_wuxie" && card.name == "wuxie") {
-								const infomap = _status.event._info_map;
-								if (infomap) {
-									if (this != infomap.target && infomap.player && infomap.player.ai.shown) {
-										this.ai.shown += 0.2;
-									}
-								}
-							} else {
+							if (_status.event.name != "_wuxie" || card.name != "wuxie") {
 								this.ai.shown += info.ai.expose;
-							}
-						}
-						if (targets.length > 0) {
-							for (var i = 0; i < targets.length; i++) {
-								shown = Math.abs(targets[i].ai.shown);
-								if (shown < 0.2 || targets[i].identity == "nei") {
-									c = 0;
-								} else if (shown < 0.4) {
-									c = 0.5;
-								} else if (shown < 0.6) {
-									c = 0.8;
-								} else {
-									c = 1;
-								}
-								var eff = get.effect(targets[i], card, this);
-								effect += eff * c;
-								if (eff == 0 && shown == 0 && ["zhong", "rZhong", "bZhong"].includes(this.identity) && targets[i] != this) {
-									effect += 0.1;
-								}
-							}
-						}
-						if (effect > 0) {
-							if (effect < 1) {
-								c = 0.5;
 							} else {
-								c = 1;
-							}
-							if (targets.length != 1 || targets[0] != this) {
-								if (targets.length == 1) {
-									this.ai.shown += 0.2 * c;
-								} else {
-									this.ai.shown += 0.1 * c;
+								const infomap = _status.event._info_map;
+								if (infomap && this != infomap.target && infomap.player && infomap.player.ai.shown) {
+									this.ai.shown += 0.2;
 								}
 							}
-						} else if (effect < 0 && this == game.me && ["nei", "commoner", "rYe", "bYe"].includes(game.me.identity)) {
-							if (targets.length != 1 || targets[0] != this) {
-								if (targets.length == 1) {
-									this.ai.shown -= 0.2;
-								} else {
-									this.ai.shown -= 0.1;
-								}
+						}
+						for (const target of targets) {
+							const shown = Math.abs(target.ai.shown);
+							let coefficient = 1;
+							if (shown < 0.2 || target.identity == "nei") {
+								coefficient = 0;
+							} else if (shown < 0.4) {
+								coefficient = 0.5;
+							} else if (shown < 0.6) {
+								coefficient = 0.8;
 							}
+							const eff = get.effect(target, card, this);
+							effect += eff * coefficient;
+							if (eff == 0 && shown == 0 && ["zhong", "rZhong", "bZhong"].includes(this.identity) && target != this) {
+								effect += 0.1;
+							}
+						}
+						const targetsSelfOnly = targets.length == 1 && targets[0] == this;
+						if (effect > 0 && !targetsSelfOnly) {
+							const coefficient = effect < 1 ? 0.5 : 1;
+							const expose = targets.length == 1 ? 0.2 : 0.1;
+							this.ai.shown += expose * coefficient;
+						} else if (effect < 0 && !targetsSelfOnly && this == game.me && ["nei", "commoner", "rYe", "bYe"].includes(game.me.identity)) {
+							const expose = targets.length == 1 ? 0.2 : 0.1;
+							this.ai.shown -= expose;
 						}
 					}
 					if (!stratagemMode && this != game.me) {
@@ -3277,77 +3266,44 @@ export default () => {
 						return;
 					}
 
-					var marknow = !_status.connectMode && this != game.me && get.config("auto_mark_identity") && this.ai.identity_mark != "finished";
-					// if(true){
+					const marknow = !_status.connectMode && this != game.me && get.config("auto_mark_identity") && this.ai.identity_mark != "finished";
 					if (marknow && _status.clickingidentity && _status.clickingidentity[0] == this) {
-						for (var i = 0; i < _status.clickingidentity[1].length; i++) {
-							_status.clickingidentity[1][i].delete();
-							_status.clickingidentity[1][i].style.transform = "";
+						for (const identityNode of _status.clickingidentity[1]) {
+							identityNode.delete();
+							identityNode.style.transform = "";
 						}
 						delete _status.clickingidentity;
 					}
 					if (!Array.isArray(targets)) {
 						targets = [];
 					}
-					var effect = 0,
-						c,
-						shown;
-					var zhu = game.zhu;
+					let effect = 0;
+					let zhu = game.zhu;
 					if (_status.mode == "zhong" && !game.zhu.isZhu) {
 						zhu = game.zhong;
 					}
-					if (targets.length == 1 && targets[0] == this) {
-						effect = 0;
-					} else if (this.identity != "nei" && this.identity != "commoner") {
-						if (this.ai.shown > 0) {
-							if (this.identity == "fan") {
-								effect = -1;
-							} else {
-								effect = 1;
-							}
-						}
-					} else if (targets.length > 0) {
-						for (var i = 0; i < targets.length; i++) {
-							shown = Math.abs(targets[i].ai.shown);
-							if (shown < 0.2 || targets[i].identity == "nei") {
-								c = 0;
+					const targetsSelfOnly = targets.length == 1 && targets[0] == this;
+					const hiddenIdentity = this.identity == "nei" || this.identity == "commoner";
+					if (!targetsSelfOnly && !hiddenIdentity && this.ai.shown > 0) {
+						effect = this.identity == "fan" ? -1 : 1;
+					} else if (!targetsSelfOnly && hiddenIdentity) {
+						for (const target of targets) {
+							const shown = Math.abs(target.ai.shown);
+							let coefficient = 1;
+							if (shown < 0.2 || target.identity == "nei") {
+								coefficient = 0;
 							} else if (shown < 0.4) {
-								c = 0.5;
+								coefficient = 0.5;
 							} else if (shown < 0.6) {
-								c = 0.8;
-							} else {
-								c = 1;
+								coefficient = 0.8;
 							}
-							effect += get.effect(targets[i], card, this, zhu) * c;
+							effect += get.effect(target, card, this, zhu) * coefficient;
 						}
 					}
-					if (this.identity == "nei" || this.identity == "commoner") {
-						if (effect > 0) {
-							if (this.ai.identity_mark == "fan") {
-								if (marknow) {
-									this.setIdentity();
-								}
-								this.ai.identity_mark = "finished";
-							} else {
-								if (marknow) {
-									this.setIdentity("zhong");
-								}
-								this.ai.identity_mark = "zhong";
-							}
-						} else if (effect < 0 && get.population("fan") > 0) {
-							if (this.ai.identity_mark == "zhong") {
-								if (marknow) {
-									this.setIdentity();
-								}
-								this.ai.identity_mark = "finished";
-							} else {
-								if (marknow) {
-									this.setIdentity("fan");
-								}
-								this.ai.identity_mark = "fan";
-							}
+					if (!hiddenIdentity) {
+						if (!marknow) {
+							return;
 						}
-					} else if (marknow) {
 						if (effect > 0 && this.identity != "fan") {
 							this.setIdentity("zhong");
 							this.ai.identity_mark = "finished";
@@ -3355,8 +3311,19 @@ export default () => {
 							this.setIdentity("fan");
 							this.ai.identity_mark = "finished";
 						}
+						return;
 					}
-					// }
+					const markIdentity = identity => {
+						if (marknow) {
+							this.setIdentity(identity);
+						}
+						this.ai.identity_mark = identity || "finished";
+					};
+					if (effect > 0) {
+						markIdentity(this.ai.identity_mark == "fan" ? undefined : "zhong");
+					} else if (effect < 0 && get.population("fan") > 0) {
+						markIdentity(this.ai.identity_mark == "zhong" ? undefined : "fan");
+					}
 				},
 				showIdentity: function () {
 					this.node.identity.classList.remove("guessing");
