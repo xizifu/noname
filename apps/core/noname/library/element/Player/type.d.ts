@@ -341,7 +341,7 @@ export interface EventChooseButtonParams extends ChooseBase, CheckButtonParams {
 	// TODO: 加类型
 	createDialog?: any[];
 
-	processAI(): Partial<Result>;
+	processAI?(): Partial<Result>;
 }
 
 export interface EventChooseCardOLParams {
