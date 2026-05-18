@@ -12,7 +12,7 @@ import type { Card, VCard, Player, Button, Dialog, GameEvent } from ".."
 export type BroadSelect = number | Select
 
 /**
- * 
+ * 选择牌时通用的过滤与数量参数
  */
 export interface CheckCardParams {
     /**
@@ -86,7 +86,7 @@ export interface CheckCardParams {
 }
 
 /**
- * 
+ * 选择目标时通用的过滤与数量参数
  */
 export interface CheckTargetParams {
 	/**
@@ -127,7 +127,7 @@ export interface CheckTargetParams {
 }
 
 /**
- * 
+ * 选择按钮时通用的过滤与数量参数
  */
 export interface CheckButtonParams {
 	/**
@@ -165,7 +165,7 @@ export interface CheckButtonParams {
 }
 
 /**
- * 
+ * 同时需要选择牌和目标时的通用参数
  */
 export interface CheckCardTargetParams extends CheckCardParams, CheckTargetParams {
 	ai?: undefined;
@@ -188,7 +188,7 @@ export interface CheckCardTargetParams extends CheckCardParams, CheckTargetParam
 }
 
 /**
- * 
+ * 同时需要选择按钮和目标时的通用参数
  */
 export interface CheckButtonTargetParams extends CheckButtonParams, CheckTargetParams {
 	ai?: undefined;
@@ -211,11 +211,26 @@ export interface CheckButtonTargetParams extends CheckButtonParams, CheckTargetP
 }
 
 /**
- * 
+ * 选择类事件共用的基础参数
  */
 export interface ChooseBase {
+	/**
+	 * 是否强制进行选择
+	 *
+	 * 当该值为`true`时，通常表示该流程不能直接取消，需要给出一个选择结果
+	 */
 	forced?: boolean;
+	/**
+	 * 选择界面的主提示文本
+	 *
+	 * 一般显示在选择框标题或第一行，用于概括当前要做的事
+	 */
 	prompt?: string;
+	/**
+	 * 选择界面的补充提示文本
+	 *
+	 * 通常显示在主提示下面，用于补充说明、操作要求或额外信息
+	 */
 	prompt2?: string;
 }
 
