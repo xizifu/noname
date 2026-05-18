@@ -197,95 +197,145 @@ export class Player extends HTMLDivElement {
 			}
 		}
 	}
-	/** @type { Record<string, HTMLDivElement> } */
+	/**
+	 * 玩家面板的子节点引用表，存放头像、血条、身份等 DOM
+	 *
+	 * @type { Record<string, HTMLDivElement> }
+	 */
 	// eslint-disable-next-line no-unreachable
 	node;
 	/**
+	 * 当前玩家已进入的回合编号，每次开始回合时递增
+	 *
 	 * @type { number }
 	 */
 	phaseNumber;
 	/**
+	 * 当前回合被跳过的事件名列表
+	 *
 	 * @type { string[] }
 	 */
 	skipList;
 	/**
-	 * @type { Array<[string,string,Function|undefined]> }
+	 * 视为装备记录表
+	 *
+	 * @type { [skill: string, equipName: string, preserve?: Function][] }
 	 */
 	extraEquip;
 	/**
+	 * 玩家当前拥有的技能名列表
+	 *
 	 * @type { string[] }
 	 */
 	skills;
 	/**
+	 * 通过 `addInvisibleSkill` 添加的隐藏技能名列表
+	 *
 	 * @type { string[] }
 	 */
 	invisibleSkills;
 	/**
+	 * 已经执行过 `init` 的技能名列表，用来避免重复初始化
+	 *
 	 * @type { string[] }
 	 */
 	initedSkills;
 	/**
-	 * @type { Record<string, string[]> }
+	 * 由其他技能附加出来的额外技能映射，键为来源技能名
+	 *
+	 * @type { Record<string, string[] | string> }
 	 */
 	additionalSkills;
 	/**
+	 * 被其他技能禁用的技能映射，键为禁用来源技能名
+	 *
 	 * @type { Record<string, string[]> }
 	 */
 	disabledSkills;
 	/**
+	 * 对外隐藏但仍然生效的技能名列表
+	 *
 	 * @type { string[] }
 	 */
 	hiddenSkills;
 	/**
+	 * 已经觉醒过的技能名列表
+	 *
 	 * @type { string[] }
 	 */
 	awakenedSkills;
 	/**
+	 * 冲突/互斥技能映射，键为冲突来源技能名
+	 *
 	 * @type { Record<string, string[]> }
 	 */
 	forbiddenSkills;
 	/**
-	 * @type { any[] }
+	 * 普通提示气泡节点队列
+	 *
+	 * @type { HTMLDivElement[] }
 	 */
 	popups;
 	/**
-	 * @type { any[] }
+	 * 伤害数值提示气泡节点队列
+	 *
+	 * @type { HTMLDivElement[] }
 	 */
 	damagepopups;
 	/**
+	 * 判定区中的牌列表
+	 *
 	 * @type { Card[] }
 	 */
 	judging;
 	/**
-	 * @type {Stat[]}
+	 * 按回合保存的统计对象数组，记录出牌、技能、触发技能等数据
+	 *
+	 * @type { Stat[] }
 	 */
 	stat;
 	/**
-	 * 玩家的行动历史，每个回合对应一个历史。
+	 * 按回合保存的行动历史，每个元素对应一回合
+	 *
 	 * @type { ActionHistory[] }
 	 */
 	actionHistory;
 	/**
-	 * @type { Record<string, string[]> }
+	 * 临时技能及其失效条件的映射
+	 *
+	 * @type { Record<string, any> }
 	 */
 	tempSkills;
 	/**
+	 * 玩家通用存储区，技能和牌效果会往这里挂载自定义状态
+	 *
 	 * @type { Record<string, any> }
 	 */
 	storage;
 	/**
+	 * 技能/状态对应的标记 DOM 映射
+	 *
 	 * @type { Record<string, HTMLDivElement> }
 	 */
 	marks;
 	/**
+	 * 已扩展的槽位及其扩展层数
+	 *
 	 * @type { Record<string, number> }
 	 */
 	expandedSlots;
 	/**
+	 * 已禁用的槽位及其禁用层数
+	 *
 	 * @type { Record<string, number> }
 	 */
 	disabledSlots;
 	/**
+	 * AI 判断用的关系与手牌信息缓存
+	 *
+	 * friend/enemy/neutral 记录目标倾向，shown 记录暴露度，
+	 * handcards 记录手牌的来源、公开情况和已见过的牌
+	 *
 	 * @type { {
 	 * 	friend: [],
 	 * 	enemy: [],
@@ -300,106 +350,158 @@ export class Player extends HTMLDivElement {
 	 */
 	ai;
 	/**
+	 * 延迟队列计数，归零时会恢复玩家头像等临时位移
+	 *
 	 * @type { number }
 	 */
 	queueCount;
 	/**
+	 * 离场计数，`> 0` 时表示玩家仍处于 out 状态
+	 *
 	 * @type { number }
 	 */
 	outCount;
 	/**
+	 * 当前最大体力值
+	 *
 	 * @type { number }
 	 */
 	maxHp;
 	/**
+	 * 当前体力值
+	 *
 	 * @type { number }
 	 */
 	hp;
 	/**
+	 * 当前护甲值
+	 *
 	 * @type { number }
 	 */
 	hujia;
 	/**
+	 * 玩家在座位上的编号
+	 *
 	 * @type { number }
 	 */
 	seatNum;
 	/**
+	 * 座位顺序上的下一个玩家
+	 *
 	 * @type { Player }
 	 */
 	nextSeat;
 	/**
+	 * 行动顺序上的下一个玩家，死亡后会重新串接
+	 *
 	 * @type { Player }
 	 */
 	next;
 	/**
+	 * 座位顺序上的上一个玩家
+	 *
 	 * @type { Player }
 	 */
 	previousSeat;
 	/**
+	 * 行动顺序上的上一个玩家，死亡后会重新串接
+	 *
 	 * @type { Player }
 	 */
 	previous;
 	/**
+	 * 当前生效的角色名，通常与主将名一致，变身/双将时可能切换
+	 *
 	 * @type { string }
 	 */
 	name;
 	/**
+	 * 主将名
+	 *
 	 * @type { string }
 	 */
 	name1;
 	/**
+	 * 副将名
+	 *
 	 * @type { string }
 	 */
 	name2;
 	/**
+	 * 临时角色名/别名列表，用于变身、皮肤和语音匹配
+	 *
 	 * @type { any[] }
 	 */
 	tempname;
 	/**
+	 * 国战下对应的君主武将 id
+	 *
 	 * @type { string }
 	 */
 	junName;
 	/**
+	 * 当前使用的武将皮肤路径
+	 *
 	 * @type { string }
 	 */
 	skinPath;
 	/**
+	 * 角色性别
+	 *
 	 * @type { string }
 	 */
 	sex;
 	/**
+	 * 角色势力
+	 *
 	 * @type { string }
 	 */
 	group;
 	/**
+	 * 初始化完成后执行的回调数组，通常由外部元素模板注入
+	 *
 	 * @type { ((player: this) => any)[] }
 	 */
 	inits;
 	/**
+	 * 内部初始化回调数组，在 `inits` 之后执行
+	 *
 	 * @type { ((player: this) => any)[] }
 	 */
 	_inits;
 	/**
+	 * 是否为主公/君主
+	 *
 	 * @type { boolean }
 	 */
 	isZhu;
 	/**
+	 * 身份标记，例如 `zhu`、`zhong`、`fan`、`nei`、`unknown`
+	 *
 	 * @type { string }
 	 */
 	identity;
 	/**
+	 * 身份是否已经亮明
+	 *
 	 * @type { boolean | undefined }
 	 */
 	identityShown;
 	/**
+	 * 是否已经从场上移除
+	 *
 	 * @type { boolean }
 	 */
 	removed;
 	/**
+	 * 提示文字节点映射，键为提示名
+	 *
 	 * @type {Map<string,HTMLDivElement>}
 	 */
 	tips;
 	/**
+	 * 联机模式下的客户端 WebSocket 连接
+	 *
 	 * @type { import("./client.js").Client | undefined }
 	 */
 	ws;
