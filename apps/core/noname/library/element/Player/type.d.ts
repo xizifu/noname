@@ -11,6 +11,25 @@ import type { Card, VCard, Player, Button, Dialog, GameEvent } from ".."
  */
 export type BroadSelect = number | Select
 
+export type DialogButtonPreset = Extract<keyof UI["create"]["buttonPresets"], string>;
+
+export type DialogButtonType =
+	| DialogButtonPreset
+	| `pre${DialogButtonPreset}`
+	| ((item: unknown, type: unknown, position?: HTMLDivElement | DocumentFragment, noClick?: boolean, button?: Button) => Button);
+
+export type DialogCreateArgument =
+	| boolean
+	| string
+	| HTMLDivElement
+	| DocumentFragment
+	| Card[]
+	| Player[]
+	| DialogCreateArgument[]
+	| [items: unknown[], type: DialogButtonType | "textbutton"]
+	| [items: RowItem[], type: "addNewRow"]
+	| [handler: (dialog: Dialog) => void, type: "handle"];
+
 /**
  * 选择牌时通用的过滤与数量参数
  */
@@ -351,8 +370,7 @@ export interface EventChooseButtonParams extends ChooseBase, CheckButtonParams {
 	complexSelect?: boolean;
 	dialog?: Dialog;
 	direct?: boolean;
-	// TODO: 加类型
-	createDialog?: any[];
+	createDialog?: DialogCreateArgument[];
 
 	processAI?(): Partial<Result>;
 }
