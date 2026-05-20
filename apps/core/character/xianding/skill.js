@@ -31378,12 +31378,12 @@ const skills = {
 		complexSelect: true,
 		complexTarget: true,
 		filterTarget(card, player, target) {
-			var selected = ui.selected.targets;
+			const selected = ui.selected.targets;
 			if (!selected.length) {
 				return true;
 			}
-			for (var i of selected) {
-				if (i.getNext() == target || i.getPrevious() == target) {
+			for (const current of selected) {
+				if (current.getNext() == target || current.getPrevious() == target) {
 					return true;
 				}
 			}
@@ -31397,18 +31397,31 @@ const skills = {
 		},
 		async contentAfter(event, trigger, player) {
 			const { targets } = event;
-			let list = targets.filter(target => {
-				let num = target.countCards("h");
-				return targets.every(targetx => {
-					return targetx.countCards("h") <= num;
-				});
-			});
+			let list = targets.filter(target => target.isMaxHandcard(false, current => targets.includes(current)));
 			if (!list.length) {
 				return;
 			}
-			for (let current of list) {
-				const result = await current
-					.chooseTarget("间计：是否视为对" + get.translation(player) + "以外被选择的一名角色使用一张杀？", (card, player, target) => {
+			let result =
+				list.length == 1
+					? { bool: true, targets: list }
+					: await player
+							.chooseTarget(
+								`间计：请选择一名角色，令其选择是否对${get.translation(targets)}中一名不为${get.translation(player)}的角色视为使用一张【杀】`,
+								(card, player, target) => {
+									return get.event().targets?.includes(target);
+								},
+								true
+							)
+							.set("ai", target => {
+								const player = get.player();
+								return get.attitude(player, target);
+							})
+							.set("targets", list)
+							.forResult();
+			if (result?.bool) {
+				const target = result.targets[0];
+				result = await target
+					.chooseTarget(`间计：是否视为对${get.translation(player)}以外被选择的一名角色使用一张杀？`, (card, player, target) => {
 						const { owner, targets } = get.event();
 						if (target == player || target == owner) {
 							return false;
@@ -31418,13 +31431,15 @@ const skills = {
 					.set("owner", player)
 					.set("targets", targets)
 					.set("ai", target => {
-						let player = _status.event.player;
+						const player = get.player();
 						return get.effect(target, { name: "sha" }, player, player);
 					})
 					.forResult();
-				if (result.bool) {
+				if (result?.bool) {
 					const card = new lib.element.VCard({ name: "sha", isCard: true });
-					await current.useCard(card, result.targets, false);
+					if (target.canUse(card, result.targets[0], false)) {
+						await target.useCard(card, result.targets[0], false);
+					}
 				}
 			}
 		},
