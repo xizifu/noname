@@ -1008,10 +1008,7 @@ export default () => {
 					list2.randomSort();
 					var identityList = list.concat(list2);
 					var num = get.rand(0, 7);
-					var players = game.players.slice(0);
-					for (var i = 0; i < num; i++) {
-						players.push(players.shift());
-					}
+					var players = game.players.slice(num).concat(game.players.slice(0, num));
 					game.broadcastAll(
 						function (players, identityList, list) {
 							_status.mode = "purple";
@@ -1019,12 +1016,13 @@ export default () => {
 								ui.arena.classList.add("choose-character");
 							}
 							for (var i = 0; i < players.length; i++) {
+								var identity = identityList[i];
 								players[i].node.identity.classList.add("guessing");
-								players[i].identity = identityList[i];
-								players[i].setIdentity(list.includes(identityList[i]) ? "cai2" : "cai");
-								if (["rZhu", "bZhu"].includes(identityList[i])) {
-									game[identityList[i]] = players[i];
-									players[i].setIdentity(identityList[i]);
+								players[i].identity = identity;
+								players[i].setIdentity(list.includes(identity) ? "cai2" : "cai");
+								if (identity == "rZhu" || identity == "bZhu") {
+									game[identity] = players[i];
+									players[i].setIdentity(identity);
 									players[i].identityShown = true;
 									players[i].node.identity.classList.remove("guessing");
 								}
@@ -1205,162 +1203,182 @@ export default () => {
 					}, 500);
 				});
 			},
-			chooseCharacterPurple: function () {
-				var next = game.createEvent("chooseCharacter");
-				next.setContent(function () {
-					"step 0";
-					ui.arena.classList.add("choose-character");
-					game.no_continue_game = true;
-					lib.init.onfree();
-					("step 1");
-					var list = ["rZhu", "rZhong", "rNei", "rYe"];
-					var list2 = ["bZhu", "bZhong", "bNei", "bYe"];
-					list.randomSort();
-					list2.randomSort();
-					var identityList = list.concat(list2);
-					var num = get.rand(0, 7);
-					var players = game.players.slice(0);
-					for (var i = 0; i < num; i++) {
-						players.push(players.shift());
-					}
-					for (var i = 0; i < players.length; i++) {
-						players[i].node.identity.classList.add("guessing");
-						players[i].identity = identityList[i];
-						players[i].setIdentity(list.includes(identityList[i]) ? "cai2" : "cai");
-						if (["rZhu", "bZhu"].includes(identityList[i])) {
-							game[identityList[i]] = players[i];
-							players[i].setIdentity(identityList[i]);
-							players[i].identityShown = true;
-							players[i].node.identity.classList.remove("guessing");
-						}
-					}
-					game.zhu = game.rZhu;
-					game.rZhu.isZhu = true;
-					game.bZhu.isZhu = true;
-					game.me.setIdentity();
-					game.me.node.identity.classList.remove("guessing");
-					players.sortBySeat(game.zhu);
-					for (var i = 0; i < players.length; i++) {
-						players[i].seatNum = i;
-					}
-					("step 2");
-					var map = {};
-					var map_zhu = {};
-					var list = [];
-					for (var i in lib.character) {
-						if (lib.filter.characterDisabled(i)) {
-							continue;
-						}
-						if (i.indexOf("lingju") != -1 || get.is.double(i)) {
-							continue;
-						}
-						var group = lib.character[i][1];
-						if (lib.selectGroup.includes(group)) {
-							continue;
-						}
-						if (!map[group]) {
-							map[group] = [];
-							list.push(group);
-						}
-						map[group].push(i);
-						if (lib.character[i].isZhugong) {
-							if (!map_zhu[group]) {
-								map_zhu[group] = [];
+			/**
+			 * @this {Game}
+			 */
+			chooseCharacterPurple() {
+				const next = game.createEvent("chooseCharacter");
+				/** @type { ContentFuncsByAll } */
+				const contents = [
+					// step 0
+					async (event, trigger, player) => {
+						ui.arena.classList.add("choose-character");
+						game.no_continue_game = true;
+						lib.init.onfree();
+					},
+					// step 1
+					async (event, trigger, player) => {
+						const list = ["rZhu", "rZhong", "rNei", "rYe"];
+						const list2 = ["bZhu", "bZhong", "bNei", "bYe"];
+						list.randomSort();
+						list2.randomSort();
+						const identityList = list.concat(list2);
+						const num = get.rand(0, 7);
+
+						const players = game.players.slice(num).concat(game.players.slice(0, num));
+						for (let i = 0; i < players.length; ++i) {
+							const identity = identityList[i];
+							const current = players[i];
+							current.node.identity.classList.add("guessing");
+							current.identity = identity;
+							current.setIdentity(list.includes(identity) ? "cai2" : "cai");
+							if (identity === "rZhu" || identity === "bZhu") {
+								game[identity] = current;
+								current.setIdentity(identity);
+								current.identityShown = true;
+								current.node.identity.classList.remove("guessing");
 							}
-							map_zhu[group].push(i);
 						}
-					}
-					for (var i in map) {
-						if (map[i].length < 12) {
-							delete map[i];
-							list.remove(i);
+						game.zhu = game.rZhu;
+						game.rZhu.isZhu = true;
+						game.bZhu.isZhu = true;
+						game.me.setIdentity();
+						game.me.node.identity.classList.remove("guessing");
+						players.sortBySeat(game.zhu);
+						for (const [i, current] of players.entries()) {
+							players[i].seatNum = i;
 						}
-					}
-					list.sort(function (a, b) {
-						return lib.group.indexOf(a) - lib.group.indexOf(b);
-					});
-					event.list = list;
-					event.map = map;
-					event.map_zhu = map_zhu;
-					game.bZhu
-						.chooseControl(list)
-						.set("prompt", "请选择冷方武将势力")
-						.set("ai", function () {
-							return _status.event.choice;
-						})
-						.set("choice", event.list.randomGet());
-					("step 3");
-					event.bZhu = result.control;
-					event.list.remove(event.bZhu);
-					game.rZhu
-						.chooseControl(event.list)
-						.set("prompt", "请选择暖方武将的势力")
-						.set("ai", function () {
-							return _status.event.choice;
-						})
-						.set("choice", event.list.randomGet());
-					("step 4");
-					event.rZhu = result.control;
-					if (game.me == game.rZhu || game.me == game.bZhu) {
-						event.isZhu = true;
-						var list = event.map[event[game.me.identity]].randomGets(4);
-						if (event.map_zhu[event[game.me.identity]]) {
-							list.addArray(event.map_zhu[event[game.me.identity]].randomGets(2));
+					},
+					// step 2
+					async (event, trigger, player) => {
+						const map = {};
+						const map_zhu = {};
+						const list = [];
+						for (const charaName in lib.character) {
+							if (lib.filter.characterDisabled(charaName)) {
+								continue;
+							}
+							if (charaName.indexOf("lingju") != -1 || get.is.double(charaName)) {
+								continue;
+							}
+							const group = lib.character[charaName][1];
+							if (lib.selectGroup.includes(group)) {
+								continue;
+							}
+							if (!map[group]) {
+								map[group] = [];
+								list.push(group);
+							}
+							map[group].push(charaName);
+							if (lib.character[charaName].isZhugong) {
+								if (!map_zhu[group]) {
+									map_zhu[group] = [];
+								}
+								map_zhu[group].push(charaName);
+							}
 						}
-						game.me.chooseButton(true, ["请选择您的武将牌", [list, "character"]]);
-					}
-					("step 5");
-					if (event.isZhu) {
-						event.map[event[game.me.identity]].remove(result.links[0]);
-						game.me.init(result.links[0]);
-					}
-					if (!game.rZhu.name) {
-						var list = event.map[event.rZhu].randomGets(3);
-						if (event.map_zhu[event.rZhu]) {
-							list.addArray(event.map_zhu[event.rZhu]);
+						for (const group in map) {
+							if (map[group].length < 12) {
+								delete map[group];
+								list.remove(group);
+							}
 						}
-						var character = list.randomGet();
-						event.map[event.rZhu].remove(character);
-						game.rZhu.init(character);
-					}
-					if (!game.bZhu.name) {
-						var list = event.map[event.bZhu].randomGets(4);
-						if (event.map_zhu[event.bZhu]) {
-							list.addArray(event.map_zhu[event.bZhu].randomGets(2));
+						list.sort((a, b) => lib.group.indexOf(a) - lib.group.indexOf(b));
+						event.list = list;
+						event.map = map;
+						event.map_zhu = map_zhu;
+
+						let result = await game.bZhu
+							.chooseControl(list)
+							.set("prompt", "请选择冷方武将势力")
+							.set("ai", function () {
+								return _status.event.choice;
+							})
+							.set("choice", event.list.randomGet())
+							.forResult();
+						event.bZhu = result.control;
+						event.list.remove(event.bZhu);
+
+						result = await game.rZhu
+							.chooseControl(event.list)
+							.set("prompt", "请选择暖方武将的势力")
+							.set("ai", function () {
+								return _status.event.choice;
+							})
+							.set("choice", event.list.randomGet())
+							.forResult();
+						event.rZhu = result.control;
+					},
+					// step 3
+					async (event, trigger, player) => {
+						if (game.me === game.rZhu || game.me === game.bZhu) {
+							event.isZhu = true;
+							const list = event.map[event[game.me.identity]].randomGets(4);
+							if (event.map_zhu[event[game.me.identity]]) {
+								list.addArray(event.map_zhu[event[game.me.identity]].randomGets(2));
+							}
+							game.me.chooseButton(true, ["请选择您的武将牌", [list, "character"]]);
 						}
-						var character = list.randomGet();
-						event.map[event.bZhu].remove(character);
-						game.bZhu.init(character);
-					}
-					if (!game.rZhu.isInitFilter("noZhuHp")) {
-						game.rZhu.maxHp++;
-						game.rZhu.hp++;
-						game.rZhu.update();
-					}
-					if (!game.bZhu.isInitFilter("noZhuHp")) {
-						game.bZhu.maxHp++;
-						game.bZhu.hp++;
-						game.bZhu.update();
-					}
-					if (!event.isZhu) {
-						var group = game.me.identity.indexOf("r") == 0 ? event.rZhu : event.bZhu;
-						game.me.chooseButton(true, ["请选择您的武将牌", [event.map[group].randomRemove(5), "character"]]);
-					}
-					("step 6");
-					if (!event.isZhu) {
-						game.me.init(result.links[0]);
-					}
-					game.countPlayer(function (current) {
-						if (!current.name) {
-							var group = current.identity.indexOf("r") == 0 ? event.rZhu : event.bZhu;
-							current.init(event.map[group].randomRemove(1)[0]);
+					},
+					// step 4
+					async (event, trigger, player, result) => {
+						if (event.isZhu) {
+							event.map[event[game.me.identity]].remove(result.links[0]);
+							game.me.init(result.links[0]);
 						}
-					});
-					("step 7");
-					setTimeout(function () {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
-				});
+						if (!game.rZhu.name) {
+							const list = event.map[event.rZhu].randomGets(3);
+							if (event.map_zhu[event.rZhu]) {
+								list.addArray(event.map_zhu[event.rZhu]);
+							}
+							const character = list.randomGet();
+							event.map[event.rZhu].remove(character);
+							game.rZhu.init(character);
+						}
+						if (!game.bZhu.name) {
+							const list = event.map[event.bZhu].randomGets(4);
+							if (event.map_zhu[event.bZhu]) {
+								list.addArray(event.map_zhu[event.bZhu].randomGets(2));
+							}
+							const character = list.randomGet();
+							event.map[event.bZhu].remove(character);
+							game.bZhu.init(character);
+						}
+						if (!game.rZhu.isInitFilter("noZhuHp")) {
+							game.rZhu.maxHp++;
+							game.rZhu.hp++;
+							game.rZhu.update();
+						}
+						if (!game.bZhu.isInitFilter("noZhuHp")) {
+							game.bZhu.maxHp++;
+							game.bZhu.hp++;
+							game.bZhu.update();
+						}
+						if (!event.isZhu) {
+							var group = game.me.identity.indexOf("r") == 0 ? event.rZhu : event.bZhu;
+							game.me.chooseButton(true, ["请选择您的武将牌", [event.map[group].randomRemove(5), "character"]]);
+						}
+					},
+					// step 5
+					async (event, trigger, player, result) => {
+						if (!event.isZhu) {
+							game.me.init(result.links[0]);
+						}
+						for (const current of game.filterPlayer()) {
+							if (!current.name) {
+								const group = current.identity.indexOf("r") === 0 ? event.rZhu : event.bZhu;
+								current.init(event.map[group].randomRemove(1)[0]);
+							}
+						}
+					},
+					// step 6
+					async (event, trigger, player) => {
+						setTimeout(() => {
+							ui.arena.classList.remove("choose-character");
+						}, 500);
+					},
+				];
+				next.setContent(contents);
 			},
 			chooseCharacterStratagemOL: function () {
 				var next = game.createEvent("chooseCharacter");
