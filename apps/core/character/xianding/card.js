@@ -70,13 +70,6 @@ const cards = {
 		targetprompt: ["受伤弃牌", "受伤摸牌"],
 		async contentBefore(event, trigger, player) {
 			const evt = event.getParent();
-			const sorter = _status.currentPhase || player;
-			evt.fixedSeat = true;
-			evt.targets.sortBySeat(sorter);
-			evt.targets.reverse();
-			if (evt.targets[evt.targets.length - 1] === sorter) {
-				evt.targets.unshift(evt.targets.pop());
-			}
 			const target = evt.stocktargets[0];
 			evt.shuiyanqijun_target = target;
 		},

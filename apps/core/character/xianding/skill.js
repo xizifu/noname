@@ -24915,28 +24915,35 @@ const skills = {
 			return !event.numFixed;
 		},
 		frequent: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.num += 2;
-			player
-				.when("phaseDrawEnd")
-				.filter((evt, player) => evt == trigger && player.countCards("h"))
-				.step(async (event, trigger, player) => {
-					let str = "明势：请展示三张牌并令一名其他角色选择获得其中的一张牌";
-					if (player.countCards("h") <= 3) {
-						str = "明势：展示手牌并令一名其他角色选择获得其中的一张牌";
+			player.addTempSkill(event.name + "_effect");
+			player.markAuto(event.name + "_effect", [trigger]);
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				trigger: { player: "phaseDrawEnd" },
+				filter(event, player) {
+					return player.getStorage("dcsbmingshi_effect").includes(event);
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					player.markAuto(!event.name, [trigger]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
+					}
+					if (player.countCards("h") < 3 || !game.hasPlayer(current => player != current)) {
+						return;
 					}
 					const result = await player
 						.chooseCardTarget({
-							prompt: str,
+							prompt: "明势：请展示三张牌并令一名其他角色选择获得其中的一张牌",
 							filterTarget: lib.filter.notMe,
 							filterCard: true,
-							selectCard() {
-								var player = _status.event.player;
-								if (player.countCards("h") <= 3) {
-									return -1;
-								}
-								return 3;
-							},
+							selectCard: 3,
 							position: "h",
 							forced: true,
 							ai1(card) {
@@ -24951,7 +24958,7 @@ const skills = {
 							},
 						})
 						.forResult();
-					if (!result.bool) {
+					if (!result?.bool) {
 						return;
 					}
 					const target = result.targets[0];
@@ -24965,7 +24972,7 @@ const skills = {
 						.set("ai", button => get.value(button.link))
 						.set("source", player)
 						.forResult();
-					if (result2.bool) {
+					if (result2?.bool) {
 						const card = result2.links[0];
 						if (lib.filter.canBeGained(card, player, target)) {
 							await target.gain(card, player, "giveAuto");
@@ -24973,7 +24980,8 @@ const skills = {
 							game.log("但", card, "不能被", player, "获得！");
 						}
 					}
-				});
+				},
+			},
 		},
 	},
 	dcsbmengmou: {
@@ -24986,9 +24994,9 @@ const skills = {
 		intro: {
 			content(storage) {
 				if (!storage) {
-					return "每回合限一次，当你得到其他角色的牌后，或其他角色得到你的牌后，你可以令该角色使用至多X张【杀】，且其每以此法造成1点伤害，其回复1点体力。（X为你的体力上限）";
+					return "每回合限一次，当你得到其他角色的牌后，或其他角色得到你的手牌后，你可以令该角色使用至多X张【杀】，且其每以此法造成1点伤害，其回复1点体力。（X为你的体力上限）";
 				}
-				return "每回合限一次，当你得到其他角色的牌后，或其他角色得到你的牌后，你可令该角色打出至多X张【杀】，然后其失去Y点体力。（X为你的体力上限，Y为X-其打出【杀】数）";
+				return "每回合限一次，当你得到其他角色的牌后，或其他角色得到你的手牌后，你可令该角色打出至多X张【杀】，然后其失去Y点体力。（X为你的体力上限，Y为X-其打出【杀】数）";
 			},
 		},
 		audio: 2,
@@ -25004,7 +25012,7 @@ const skills = {
 			if (player.getStorage("dcsbmengmou_used").includes(player.storage.dcsbmengmou ? "yin" : "yang")) {
 				return false;
 			}
-			var cards1 = event.getl(player).cards2,
+			var cards1 = event.getl(player).hs,
 				cards2 = event.getg(player);
 			return (
 				game.hasPlayer(function (current) {
@@ -25018,7 +25026,7 @@ const skills = {
 					if (current == player) {
 						return false;
 					}
-					var cardsx = event.getl(current).cards2;
+					var cardsx = event.getl(current).hs;
 					return cards2.some(i => cardsx.includes(i));
 				})
 			);
@@ -25029,7 +25037,7 @@ const skills = {
 			player.addTempSkill("dcsbmengmou_effect", "dcsbmengmouAfter");
 			var targets = [],
 				num = player.maxHp;
-			var cards1 = trigger.getl(player).cards2;
+			var cards1 = trigger.getl(player).hs;
 			var cards2 = trigger.getg(player);
 			targets.addArray(
 				game.filterPlayer(function (current) {
@@ -25045,7 +25053,7 @@ const skills = {
 					if (current == player) {
 						return false;
 					}
-					var cardsx = trigger.getl(current).cards2;
+					var cardsx = trigger.getl(current).hs;
 					return cards2.some(i => cardsx.includes(i));
 				})
 			);
