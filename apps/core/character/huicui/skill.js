@@ -3933,7 +3933,7 @@ const skills = {
 						givenCards.push(links[i]);
 						game.log(player, "将", links[i], "交给了", target);
 					});
-					event.getParent().set("givenCards", givenCards);
+
 					await game
 						.loseAsync({
 							gain_list,
@@ -3943,12 +3943,13 @@ const skills = {
 							animate: "gain2",
 						})
 						.setContent("gaincardMultiple");
-					const toDraw = player.getAllHistory("useSkill", evt => {
-						const evtx = evt.event;
-						return evt.skill === "dcjichou" && evtx.givenCards && evtx.givenCards.length;
-					})[0].event.givenCards.length;
+					const names = givenCards.map(card => card.name).toUniqued();
 					await game.delayx();
-					await player.draw(toDraw);
+						const newNames = names.filter(name => !player.getStorage(event.name).includes(name));
+					if (newNames.length) {
+						player.markAuto(event.name, newNames);
+						await player.draw(newNames.length);
+					}
 				}
 			}
 			if (_status.connectMode) {
@@ -3958,6 +3959,8 @@ const skills = {
 				});
 			}
 		},
+		onremove: true,
+		intro: {  content: "已交出牌名：$"},
 	},
 	dcmouli: {
 		audio: 2,
