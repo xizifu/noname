@@ -35340,7 +35340,7 @@ const skills = {
 			}
 			event.finish();
 			"step 5";
-			player.chooseTarget("割圆：选择至多三名角色", "第一名角色摸三张牌，第二名角色弃置四张牌，第三名角色将所有手牌与牌堆底的牌交换", true, [1, 3]);
+			player.chooseTarget("割圆：你可以选择至多三名角色", "第一名角色摸三张牌，第二名角色弃置四张牌，第三名角色将所有手牌与牌堆底的牌交换", [1, 3]);
 			"step 6";
 			if (result.bool) {
 				var targets = result.targets;
