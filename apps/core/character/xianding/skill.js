@@ -22559,7 +22559,7 @@ const skills = {
 						if (!evt) {
 							return false;
 						}
-						return evt.hs.some(i => cards.includes(i)) || evt.es.some(i => cards.includes(i)) || evt.js.some(i => cards.includes(i));
+						return evt.hs.some(card => cards.includes(card));
 					});
 				},
 				forced: true,
@@ -22575,9 +22575,7 @@ const skills = {
 						if (!evt) {
 							return false;
 						}
-						cards.addArray(evt.hs.filter(i => gcards.includes(i)));
-						cards.addArray(evt.es.filter(i => gcards.includes(i)));
-						cards.addArray(evt.js.filter(i => gcards.includes(i)));
+						cards.addArray(evt.hs.filter(card => gcards.includes(card)));
 					});
 					player.addGaintag(cards, "dcjuewu_two");
 					player.addSkill("dcjuewu_two");
@@ -22697,18 +22695,23 @@ const skills = {
 						const info = [get.type(name), "", name, nature];
 						return info;
 					});
-					const { links } = await target
-						.chooseButton(["武佑：选择一个牌名", [vcard, "vcard"]], true)
+					let str = `###武佑：${isMe ? "请" : "你可以"}选择一个牌名###<div class='text center'>${isMe ? `${get.translation(cards)}视为你选择牌名的牌且无距离和次数限制` : `然后交给${get.translation(player)}一张手牌，此牌视为你选择牌名的牌且无距离和次数限制`}</div>`;
+					const next = target
+						.chooseButton([str, [vcard, "vcard"]])
 						.set("user", player)
 						.set("ai", button => {
 							const player = get.player(),
 								user = get.event().user;
 							return user.getUseValue({ name: button.link[2], nature: button.link[3] }) * get.attitude(player, user);
-						})
-						.forResult();
-					if (!links || !links.length) {
+						});
+					if (isMe) {
+						next.set("forced", true);
+					}
+					const result = await next.forResult();
+					if (!result?.links?.length) {
 						return;
 					}
+					const { links } = result;
 					const viewAs = { name: links[0][2], nature: links[0][3] };
 					if (!isMe) {
 						cards = (
