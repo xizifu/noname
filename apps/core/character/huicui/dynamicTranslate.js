@@ -50,7 +50,7 @@ const dynamicTranslates = {
 	},
 	dcjianzhuan(player) {
 		let str = "锁定技。①当你于出牌阶段使用牌时，你选择此阶段未执行过的一项执行：";
-		const list = ["⒈令一名角色弃置X张牌", "；", "⒉摸X张牌", "；", "⒊重铸X张牌", "；", "⒋弃置X张牌"],
+		const list = ["⒈令一名其他角色弃置X张牌", "；", "⒉摸X张牌", "；", "⒊重铸X张牌", "；", "⒋弃置X张牌"],
 			info = get.info("dcjianzhuan").choices,
 			storage = player.getStorage("dcjianzhuan");
 		let choices = [];
@@ -70,7 +70,7 @@ const dynamicTranslates = {
 				str += "</span>";
 			}
 		}
-		return str + "（X为此技能于本阶段的发动次数）。②出牌阶段结束时，若你本阶段执行过〖渐专①〗的所有选项，则你随机移除〖渐专①〗的一项。";
+		return str + "（X为此技能于本阶段的发动次数）。②出牌阶段结束时，若你本阶段执行过〖渐专①〗的所有选项且〖渐专①〗剩余选项数大于1，则你随机移除〖渐专①〗的一项。";
 	},
 	dcpingzhi(player) {
 		const bool = player.storage.dcpingzhi;

@@ -3377,18 +3377,21 @@ const skills = {
 		choices: {
 			discard_target: {
 				intro: "拆牌",
-				introx: num => "令一名角色弃置" + num + "张牌",
+				introx: num => `令一名其他角色弃置${get.cnNumber(num)}张牌`,
 				weight: 1,
 				ai_effect(player, num) {
 					return game.hasPlayer(target => {
-						return get.effect(target, { name: "guohe_copy2" }, player, player) > 0;
+						return player != target && get.effect(target, { name: "guohe_copy2" }, player, player) > 0;
 					})
 						? 2 + num
 						: 0;
 				},
 				async content(player, num = 1) {
+					if (!game.hasPlayer(current => current != player)) {
+						return;
+					}
 					const { bool, targets } = await player
-						.chooseTarget("令一名角色弃置" + num + "张牌", true)
+						.chooseTarget(`令一名其他角色弃置${get.cnNumber(num)}张牌`, true, lib.filter.notMe)
 						.set("ai", target => {
 							return get.effect(target, { name: "guohe_copy2" }, get.event().player, get.event().player) * Math.sqrt(Math.min(get.event().num, target.countDiscardableCards(target, "he")));
 						})
@@ -3403,7 +3406,7 @@ const skills = {
 			},
 			draw_self: {
 				intro: "摸牌",
-				introx: num => "摸" + num + "张牌",
+				introx: num => `摸${get.cnNumber(num)}张牌`,
 				weight: 1,
 				ai_effect(player, num) {
 					return 3;
@@ -3414,7 +3417,7 @@ const skills = {
 			},
 			recast_self: {
 				intro: "重铸",
-				introx: num => "重铸" + num + "张牌",
+				introx: num => `重铸${get.cnNumber(num)}张牌`,
 				weight: 1,
 				ai_effect(player, num) {
 					return 1;
@@ -3424,7 +3427,7 @@ const skills = {
 						return;
 					}
 					const { bool, cards } = await player
-						.chooseCard("重铸" + num + "张牌", "he", num, lib.filter.cardRecastable, true)
+						.chooseCard(`重铸${get.cnNumber(num)}张牌`, "he", num, lib.filter.cardRecastable, true)
 						.set("ai", lib.skill.zhiheng.check)
 						.forResult();
 					if (bool) {
@@ -3434,7 +3437,7 @@ const skills = {
 			},
 			discard_self: {
 				intro: "弃牌",
-				introx: num => "弃置" + num + "张牌",
+				introx: num => `弃置${get.cnNumber(num)}张牌`,
 				weight: "90%",
 				ai_effect(player, num) {
 					let cards = player.getCards("hs");
@@ -3443,7 +3446,7 @@ const skills = {
 					return cards.some(card => player.hasValueTarget(card, true, true)) ? 4 : -4;
 				},
 				async content(player, num = 1) {
-					await player.chooseToDiscard(num, "he", true);
+					await player.chooseToDiscard(num, "he", true, "allowChooseAll");
 				},
 			},
 		},
@@ -3453,7 +3456,7 @@ const skills = {
 				audio: "dcjianzhuan",
 				trigger: { player: "phaseUseEnd" },
 				filter(event, player) {
-					if (player.getStorage("dcjianzhuan").length >= 4) {
+					if (player.getStorage("dcjianzhuan").length >= 3) {
 						return false;
 					}
 					return player.getStorage("dcjianzhuan_used").length >= 4 - player.getStorage("dcjianzhuan").length;
