@@ -4046,18 +4046,17 @@ const skills = {
 				audio: "dcshiju",
 				forceaudio: true,
 				enable: "phaseUse",
-				usable: 1,
 				filter(event, player) {
 					if (!player.countCards("he")) {
 						return false;
 					}
-					return game.hasPlayer(current => current.hasSkill("dcshiju"));
+					return game.hasPlayer(current => current.hasSkill("dcshiju") && !current.hasSkill("dcshiju_targeted"));
 				},
 				filterTarget(card, player, target) {
-					return target.hasSkill("dcshiju");
+					return target.hasSkill("dcshiju") && !target.hasSkill("dcshiju_targeted");
 				},
 				selectTarget() {
-					const num = game.countPlayer(current => current.hasSkill("dcshiju"));
+					const num = game.countPlayer(current => current.hasSkill("dcshiju") && !current.hasSkill("dcshiju_targeted"));
 					return num > 1 ? 1 : -1;
 				},
 				filterCard: true,
@@ -4069,7 +4068,7 @@ const skills = {
 						let valueFix = 0;
 						if (
 							game.hasPlayer(current => {
-								if (!current.hasSkill("dcshiju")) {
+								if (!current.hasSkill("dcshiju") || current.hasSkill("dcshiju_targeted")) {
 									return false;
 								}
 								if (current.hasUseTarget(card) && !player.countEmptySlot(subtype)) {
@@ -4088,7 +4087,7 @@ const skills = {
 				},
 				prompt() {
 					const list = game.filterPlayer(current => {
-						return current.hasSkill("dcshiju");
+						return current.hasSkill("dcshiju") && !current.hasSkill("dcshiju_targeted");
 					});
 					return `将一张牌交给${get.translation(list)}${list.length > 1 ? "中的一人" : ""}，若此牌为装备牌，其可以使用之，且你本回合的攻击范围+X（X为其装备区的牌数）。若其以此法替换了装备，你与其各摸两张牌。`;
 				},
@@ -4101,10 +4100,11 @@ const skills = {
 				async content(event, trigger, player) {
 					const card = event.cards[0],
 						target = event.target;
+					target.addTempSkill("dcshiju_targeted", "phaseUseAfter");
 					if (target != player) {
 						await player.give(card, target);
-					} else {
-						await player.showCards(card, get.translation(player) + "发动了【势举】");
+					} else if (get.type(card) == "equip" && get.position(card) == "e") {
+						await player.give(card, target);
 					}
 					if (!target.getCards("h").includes(card) || get.type(card) !== "equip") {
 						return;
@@ -4168,6 +4168,7 @@ const skills = {
 				},
 				intro: { content: "本回合攻击范围+#" },
 			},
+			targeted: { charlotte: true },
 		},
 	},
 	dcyingshi: {
