@@ -37755,7 +37755,7 @@ const skills = {
 			return player.hp > 0 || player.maxHp > 1;
 		},
 		async cost(event, trigger, player) {
-			if (player.hp <= 1 || player.maxHp <= 1) {
+			if (player.maxHp <= 1) {
 				event.result = { bool: true, cost_data: 1 };
 			} else {
 				const result = await player
@@ -37781,9 +37781,7 @@ const skills = {
 					await player.loseMaxHp();
 				}
 			} else {
-				if (player.hp > 1) {
-					await player.loseHp();
-				}
+				await player.loseHp();
 			}
 			const list = ["选项一：摸两张牌", "选项二：对一名其他角色造成1点伤害，且本回合对其使用【杀】无距离和次数限制", "选项三：本回合手牌上限视为无限", "选项四：获得一名其他角色区域内的一张牌", "选项五：令一名其他角色将手牌数摸至体力上限（至多摸至五张）"],
 				num = Math.min(5, player.getDamagedHp() + 1),
