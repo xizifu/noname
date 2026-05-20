@@ -22252,31 +22252,37 @@ const skills = {
 		},
 	},
 	dcfenhui: {
-		audio: 2,
-		enable: "phaseUse",
-		limited: true,
-		filterTarget(card, player, target) {
-			const list = get.event().dcfenhui_enabled;
-			if (!list || !list.length) {
-				return false;
-			}
-			return list.includes(target);
-		},
 		onChooseToUse(event) {
-			if (game.online) {
+			if (game.online || event.type !== "phase") {
 				return;
 			}
-			const player = event.player;
-			const evts = player.getAllHistory("useCard", evt => {
-				return evt.targets && evt.targets.length;
+			event.targetprompt2.add(target => {
+				if (event.skill !== "dcfenhui" || !target.classList.contains("selectable")) return;
+				const count = get.event().dcfenhui_enabled.get(target);
+				const num = Math.min(5, count);
+				return `${num}恨`;
 			});
+			const player = event.player;
+			const evts = player.getAllHistory("useCard", evt => evt.targets?.length);
 			event.set(
 				"dcfenhui_enabled",
-				game.filterPlayer(current => {
-					return evts.filter(evt => evt.targets.includes(current)).length;
-				})
+				game
+					.filterPlayer(current => {
+						return evts.filter(evt => evt.targets.includes(current)).length;
+					})
+					.reduce((map, current) => map.set(current, evts.filter(evt => evt.targets.includes(current)).length), new Map())
 			);
 		},
+		audio: 2,
+		enable: "phaseUse",
+		filterTarget(card, player, target) {
+			const map = get.event().dcfenhui_enabled;
+			if (!map?.size) {
+				return false;
+			}
+			return map.has(target);
+		},
+		limited: true,
 		skillAnimation: true,
 		animationColor: "fire",
 		derivation: ["dcxingmen"],
@@ -22293,9 +22299,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				audio: "dcfenhui",
-				trigger: {
-					global: ["damageBegin1", "die", "dyingAfter"],
-				},
+				trigger: { global: ["damageBegin1", "die", "dyingAfter"] },
 				filter(event, player) {
 					if (event.name == "dying" && !event.player?.isIn()) {
 						return false;
@@ -31406,7 +31410,7 @@ const skills = {
 					? { bool: true, targets: list }
 					: await player
 							.chooseTarget(
-								`间计：请选择一名角色，令其选择是否对${get.translation(targets)}中一名不为${get.translation(player)}的角色视为使用一张【杀】`,
+								`间计：请选择一名角色，令其选择是否对${get.translation(targets)}中一名不为你的角色视为使用一张【杀】`,
 								(card, player, target) => {
 									return get.event().targets?.includes(target);
 								},
