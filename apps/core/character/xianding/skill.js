@@ -16224,44 +16224,38 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseBegin" },
 		filter(event, player) {
-			return player.countCards("h");
+			return player.hasCards("h");
 		},
 		async cost(event, trigger, player) {
-			const cards = player.getCards("h");
-			event.result =
-				cards.length > 1
-					? await player
-							.chooseCard(true)
-							.set("ai", card => {
-								const player = get.player(),
-									suit = get.suit(card);
-								return get.value(card) * (2 + lib.suit.indexOf(suit)) * game.countPlayer(target => (target === player ? 0 : Math.sign(-get.attitude(player, target))));
-							})
-							.set("prompt", get.translation(event.skill) + "：请展示一张手牌")
-							.set("prompt2", lib.translate[event.skill + "_info"])
-							.forResult()
-					: { bool: true, cards: cards };
+			event.result = await player
+				.chooseCard(get.prompt2(event.skill), "h")
+				.set("ai", card => {
+					const player = get.player(),
+						suit = get.suit(card);
+					return get.value(card) * (2 + lib.suit.indexOf(suit)) * game.countPlayer(target => (target === player ? 0 : Math.sign(-get.attitude(player, target))));
+				})
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			await player.showCards(event.cards, get.translation(player) + "发动了【" + get.translation(event.name) + "】");
 			const targets = game.filterPlayer(target => target !== player);
+			const list = [];
 			if (targets.length) {
 				player.line(targets);
-				for (const target of targets) {
+				for (const target of targets.sortBySeat()) {
 					const cards = target.getDiscardableCards(target, "h", card => get.suit(card) === get.suit(event.cards[0]));
 					if (cards.length) {
-						await target.discard(cards.randomGets(1));
+						const card = cards.randomGet(1);
+						await target.discard(card);
+						list.add(card);
 					}
 				}
 			}
-			const cards = game
-				.getGlobalHistory("everything", evt => evt.name === "discard" && evt.getParent() == event)
-				.reduce((cards, evt) => cards.addArray(evt.cards), [])
-				.filterInD("d");
+			const cards = list.filterInD("d");
 			if (!cards.length) {
 				return;
 			}
-			const result = cards.length > 1 ? await player.chooseCardButton(cards, true, "获得其中一张牌").forResult() : { bool: true, links: cards };
+			const result = await player.chooseCardButton(cards, "占欲：你可以获得其中一张牌").forResult();
 			if (result?.bool && result?.links?.length) {
 				await player.gain(result.links, "gain2");
 			}
