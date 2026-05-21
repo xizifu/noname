@@ -22559,7 +22559,7 @@ const skills = {
 						if (!evt) {
 							return false;
 						}
-						return evt.hs.some(card => cards.includes(card));
+						return evt.hs.some(card => cards.includes(card)) || evt.es.some(card => cards.includes(card)) || evt.js.some(card => cards.includes(card));
 					});
 				},
 				forced: true,
@@ -22576,6 +22576,8 @@ const skills = {
 							return false;
 						}
 						cards.addArray(evt.hs.filter(card => gcards.includes(card)));
+						cards.addArray(evt.es.filter(card => gcards.includes(card)));
+						cards.addArray(evt.js.filter(card => gcards.includes(card)));
 					});
 					player.addGaintag(cards, "dcjuewu_two");
 					player.addSkill("dcjuewu_two");

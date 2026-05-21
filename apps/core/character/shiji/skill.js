@@ -9575,6 +9575,33 @@ const skills = {
 			await player.recover();
 		},
 	},
+	spwuku: {
+		audio: 2,
+		trigger: { global: "useCard" },
+		forced: true,
+		preHidden: true,
+		filter(event, player) {
+			if (get.type(event.card) != "equip") {
+				return false;
+			}
+			var gz = get.mode() == "guozhan";
+			if (gz && event.player.isFriendOf(player)) {
+				return false;
+			}
+			return player.countMark("spwuku") < (gz ? 2 : 3);
+		},
+		content() {
+			player.addMark("spwuku", 1);
+		},
+		marktext: "库",
+		intro: {
+			content: "mark",
+		},
+		ai: {
+			combo: "spmiewu",
+			threaten: 3.6,
+		},
+	},
 	spsanchen: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
