@@ -9837,15 +9837,13 @@ const skills = {
 				if (links.includes("lose")) {
 					await player.loseMaxHp();
 				} else {
-					const { links: cards } =
-						player.countExpansions("olsbjigu") <= 2
-							? player.getExpansions("olsbjigu")
-							: await player
-									.chooseButton([`解腕：移去两张“谷”`, player.getExpansions("olsbjigu")], 2, true)
-									.set("ai", button => 6 - get.value(button.link))
-									.forResult();
-					if (cards?.length) {
-						await player.loseToDiscardpile(cards);
+					const result = await player
+						.chooseButton([`解腕：移去两张“谷”`, player.getExpansions("olsbjigu")], 2, true)
+						.set("ai", button => 6 - get.value(button.link))
+						.set("direct", true)
+						.forResult();
+					if (result?.links?.length) {
+						await player.loseToDiscardpile(result.links);
 					}
 				}
 				if (!player.countCards("hs", card => player.hasUseTarget(get.autoViewAs({ name: "shunshou", storage: { olsbjiewan: true } }, [card]), void 0, false))) {
