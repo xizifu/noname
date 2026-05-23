@@ -7520,7 +7520,7 @@ const skills = {
 					})()
 				)
 				.forResult();
-			if (result.control == "cancel2") {
+			if (result?.control == "cancel2") {
 				return;
 			}
 			player.logSkill("dcxiangshu", trigger.player);
@@ -7528,10 +7528,10 @@ const skills = {
 			player.storage.dcxiangshu_lottery = num;
 			player.addTempSkill("dcxiangshu_lottery", "phaseUseAfter");
 			result = await player
-				.chooseToDiscard("相鼠：是否弃置一张牌不公布此数字？")
+				.chooseToDiscard("相鼠：是否弃置一张手牌不公布此数字？", "h")
 				.set("ai", card => 2 - get.value(card))
 				.forResult();
-			if (!result.bool) {
+			if (!result?.bool) {
 				const lotteryNum = player.storage.dcxiangshu_lottery;
 				player.markSkill("dcxiangshu_lottery");
 				player.popup(lotteryNum);
