@@ -7934,9 +7934,9 @@ const skills = {
 			if (!event.targets || event.targets.length != 1 || event.targets[0] == player) {
 				return false;
 			}
-			var card = event.card;
-			var target = event.targets[0];
-			var marked = target.hasMark("dcjizhong");
+			const card = event.card;
+			const target = event.targets[0];
+			const marked = target.hasMark("dcjizhong");
 			return (get.type(card) == "trick" || (get.color(card) == "black" && get.type(card) == "basic")) && ((marked && target.countGainableCards(player, "hej")) || (!marked && game.hasPlayer(current => current.hasMark("dcjizhong"))));
 		},
 		logTarget: event => event.targets[0],
@@ -7945,8 +7945,9 @@ const skills = {
 			if (target.hasMark("dcjizhong")) {
 				return "获得该角色区域内的一张牌";
 			} else {
+				const targets = game.filterPlayer(current => current.hasMark("dcjizhong"));
 				const card = { name: event.card.name, nature: event.card.nature, isCard: true };
-				return "令所有有“信众”的角色依次视为对其使用一张" + get.translation(card);
+				return `令所有有“信众”的角色（${get.translation(targets)}）依次视为对其使用一张${get.translation(card)}`;
 			}
 		},
 		check(event, player) {
@@ -7979,9 +7980,7 @@ const skills = {
 				}
 			}
 		},
-		ai: {
-			combo: "dcjizhong",
-		},
+		ai: { combo: "dcjizhong" },
 	},
 	dcguangshi: {
 		audio: 2,
