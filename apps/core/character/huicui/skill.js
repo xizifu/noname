@@ -12457,6 +12457,9 @@ const skills = {
 			threaten: 1.4,
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
+				if (!arg?.target) {
+					return false;
+				}
 				return (
 					player.countCards("h", function (card) {
 						return !ui.selected.cards.includes(card);
