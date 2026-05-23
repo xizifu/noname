@@ -3627,6 +3627,70 @@ const skills = {
 	},
 	//马钧
 	gongqiao: {
+		createCard(type) {
+			if (!_status.postReconnect.gongqiao) {
+				_status.postReconnect.gongqiao = [
+					function (list) {
+						for (const type of list) {
+							lib.skill.gongqiao.createCard(type);
+						}
+					},
+					[],
+				];
+			}
+			_status.postReconnect.gongqiao[1].add(type);
+			if (!lib.card[`gongqiao_${type}`]) {
+				lib.translate[`gongqiao_${type}`] = "工巧";
+				const card = {
+					derivation: "yj_majun",
+					fullskin: true,
+					image: "image/card/majun_gongqiao.png",
+					type: "equip",
+					enable: true,
+					selectTarget: -1,
+					filterTarget(card, player, target) {
+						if (player != target) {
+							return false;
+						}
+						return target.canEquip(card, true);
+					},
+					modTarget: true,
+					allowMultiple: false,
+					content: lib.element.content.equipCard,
+					toself: true,
+					ai: { basic: { equipValue: 2 } },
+					originalType: type,
+					cardPrompt(card) {
+						let str = `原本是一张${get.translation(this.originalType)}牌。`,
+							subtypes = get.subtypes(card);
+						if (subtypes?.length) {
+							str = `${str.slice(0, -1)}，被置入了${subtypes.map(i => `${get.translation(i)}栏`).join("、")}。`;
+						}
+						return str;
+					},
+					async onLose(event, trigger, player) {
+						// 神秘结算
+						event.cards.forEach(card => {
+							card.fix();
+							ui.discardPile.appendChild(card);
+							game.log(card, "被置入了弃牌堆");
+						});
+						if (event.getParent(2).name == "gain") {
+							const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] == event.card);
+							event.getParent(2).cards.removeArray(remove);
+						}
+					},
+				};
+				lib.translate[`gongqiao_${type}_info`] = `原本是一张${get.translation(type)}牌。`;
+				lib.card[`gongqiao_${type}`] = card;
+				game.finishCard(`gongqiao_${type}`);
+			}
+		},
+		video(player, info) {
+			for (const type of info[0]) {
+				lib.skill.gongqiao.createCard(type);
+			}
+		},
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
@@ -3675,7 +3739,19 @@ const skills = {
 					delay: false,
 					prepare: "throw",
 					async content(event, trigger, player) {
-						const card = get.autoViewAs({ name: `gongqiao_${get.type2(event.cards[0])}` }, event.cards);
+						const type = get.type2(event.cards[0]);
+						const list = [type];
+						game.addVideo("skill", player, ["gongqiao", [list]]);
+						game.broadcastAll(
+							(player, list) => {
+								for (const type of list) {
+									lib.skill.gongqiao.createCard(type);
+								}
+							},
+							player,
+							list
+						);
+						const card = get.autoViewAs({ name: `gongqiao_${type}` }, event.cards);
 						card.subtypes = [lib.skill.gongqiao_backup.slot];
 						await player.equip(card);
 					},
