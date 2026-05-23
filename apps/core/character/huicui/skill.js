@@ -6544,41 +6544,32 @@ const skills = {
 	//吴班
 	dcyouzhan: {
 		audio: 2,
-		trigger: {
-			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
+		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 		forced: true,
-		direct: true,
-		filter(event, player) {
+		getIndex(event, player) {
 			if (player != _status.currentPhase) {
 				return false;
 			}
-			return game.hasPlayer(current => {
-				if (current == player) {
-					return false;
-				}
-				var evt = event.getl(current);
-				return evt && evt.cards2.length;
-			});
+			return game
+				.filterPlayer(current => {
+					if (current == player) {
+						return false;
+					}
+					const evt = event.getl(current);
+					return evt?.cards2?.length;
+				})
+				.sortBySeat();
 		},
+		logTarget: (event, player, triggername, target) => target,
 		async content(event, trigger, player) {
-			const targets = game.filterPlayer(current => {
-				if (current == player) {
-					return false;
-				}
-				const evt = trigger.getl(current);
-				return evt && evt.cards2.length;
-			});
-			player.logSkill("dcyouzhan", targets);
-			for (const target of targets) {
-				const next = player.draw();
-				next.gaintag = ["dcyouzhan"];
-				await next;
-				player.addTempSkill("dcyouzhan_limit");
-				target.addTempSkill("dcyouzhan_effect");
-				target.addMark("dcyouzhan_effect", 1, false);
-				target.addTempSkill("dcyouzhan_draw");
-			}
+			const target = event.targets[0];
+			const next = player.draw();
+			next.gaintag = [event.name];
+			await next;
+			player.addTempSkill(event.name + "_limit");
+			target.addTempSkill(event.name + "_effect");
+			target.addMark(event.name + "_effect", 1, false);
+			target.addTempSkill(event.name + "_draw");
 		},
 		ai: {
 			damageBonus: true,
@@ -6591,9 +6582,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				audio: "dcyouzhan",
-				trigger: {
-					player: "damageBegin3",
-				},
+				trigger: { player: "damageBegin3" },
 				filter(event, player) {
 					return player.hasMark("dcyouzhan_effect");
 				},
@@ -6601,13 +6590,11 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				async content(event, trigger, player) {
-					trigger.num += player.countMark("dcyouzhan_effect");
-					player.removeSkill("dcyouzhan_effect");
+					trigger.num += player.countMark(event.name);
+					player.removeSkill(event.name);
 				},
 				mark: true,
-				intro: {
-					content: "本回合下一次受到的伤害+#",
-				},
+				intro: { content: "本回合下一次受到的伤害+#" },
 				ai: {
 					effect: {
 						target(card, player, target) {
@@ -6619,9 +6606,7 @@ const skills = {
 				},
 			},
 			draw: {
-				trigger: {
-					global: "phaseJieshuBegin",
-				},
+				trigger: { global: "phaseJieshuBegin" },
 				forced: true,
 				charlotte: true,
 				filter(event, player) {
