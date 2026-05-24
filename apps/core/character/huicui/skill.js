@@ -5949,39 +5949,26 @@ const skills = {
 			if (get.type(name) != "basic") {
 				return false;
 			}
-			return player.countCards("he") >= player.countMark("dcshizong") + 1;
+			return player.countCards("he") >= player.countMark("dcshizong_used") + 1;
 		},
 		filter(event, player) {
 			if (event.type == "wuxie" || event.dcshizong) {
 				return false;
 			}
-			if (player.countCards("he") < player.countMark("dcshizong") + 1) {
+			if (player.countCards("he") < player.countMark("dcshizong_used") + 1) {
 				return false;
 			}
-			for (const name of lib.inpile) {
-				if (get.type(name) != "basic") {
-					continue;
-				}
-				const card = { name: name, isCard: true };
-				if (event.filterCard(card, player, event)) {
-					return true;
-				}
-				if (name == "sha") {
-					for (const nature of lib.inpile_nature) {
-						card.nature = nature;
-						if (event.filterCard(card, player, event)) {
-							return true;
-						}
-					}
-				}
-			}
-			return false;
+			return get
+				.inpileVCardList(info => {
+					return info[0] == "basic";
+				})
+				.some(info => event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event));
 		},
 		chooseButton: {
 			dialog(event, player) {
 				const vcards = get.inpileVCardList(info => {
 					if (info[0] != "basic") {
-						return;
+						return false;
 					}
 					const card = { name: info[2], nature: info[3], isCard: true };
 					return event.filterCard(card, player, event);
@@ -6021,7 +6008,7 @@ const skills = {
 					filterCard: true,
 					filterTarget: lib.filter.notMe,
 					selectTarget: 1,
-					selectCard: () => get.player().countMark("dcshizong") + 1,
+					selectCard: () => get.player().countMark("dcshizong_used") + 1,
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
@@ -6039,19 +6026,17 @@ const skills = {
 						return get.attitude(get.player(), target);
 					},
 					async precontent(event, trigger, player) {
-						var target = event.result.targets[0];
+						const target = event.result.targets[0];
+						player.addTempSkill("dcshizong_used");
+						player.addMark("dcshizong_used", 1, false);
 						player.logSkill("dcshizong", target);
-						if (!player.countMark("dcshizong")) {
-							player.when({ global: "phaseAfter" }).step(async () => delete player.storage.dcshizong);
-						}
-						player.addMark("dcshizong", 1, false);
 						await player.give(event.result.cards.slice(), target);
-						var viewAs = new lib.element.VCard({
+						const viewAs = new lib.element.VCard({
 							name: event.result.card.name,
 							nature: event.result.card.nature,
 							isCard: true,
 						});
-						var result = await target
+						let result = await target
 							.chooseCard("恃纵：是否将一张牌置于牌堆底？", `若如此做，${get.translation(player)}视为使用一张${get.translation(viewAs.nature)}【${get.translation(viewAs.name)}】`, "he")
 							.set("ai", card => {
 								if (get.event().goon) {
@@ -6061,11 +6046,10 @@ const skills = {
 							})
 							.set("goon", get.attitude(target, player) * (player.getUseValue(viewAs) || 1) >= 1)
 							.forResult();
-						var card = event.result.cards[0];
-						if (result.bool) {
-							var card = result.cards[0];
-							game.delayex();
-							var next = target.loseToDiscardpile(card, ui.cardPile);
+						if (result?.bool) {
+							const card = result.cards[0];
+							await game.delayex();
+							const next = target.loseToDiscardpile(card, ui.cardPile);
 							next.log = false;
 							if (get.position(card) == "e") {
 								game.log(target, "将", card, "置于了牌堆底");
@@ -6073,11 +6057,11 @@ const skills = {
 								next.blank = true;
 								game.log(target, "将一张牌置于了牌堆底");
 							}
-							result = await next.forResult();
+							await next;
 							game.broadcastAll(viewAs => {
 								lib.skill.dcshizong_backup2.viewAs = viewAs;
 							}, lib.skill.dcshizong_backup.viewAs);
-							var evt = event.getParent();
+							const evt = event.getParent();
 							evt.set("_backupevent", "dcshizong_backup2");
 							evt.set("openskilldialog", `请选择${get.translation(viewAs.nature)}${get.translation(viewAs.name)}的目标`);
 							evt.backup("dcshizong_backup2");
@@ -6096,14 +6080,15 @@ const skills = {
 							var evt = event.getParent();
 							evt.set("dcshizong", true);
 							evt.goto(0);
+							player.tempBanSkill("dcshizong");
 						}
-						game.delayx();
+						await game.delayx();
 					},
 					ai: { order: 10 },
 				};
 			},
 			prompt(links, player) {
-				return `###恃纵：选择要交出的牌和目标角色###将${get.cnNumber(player.countMark("dcshizong") + 1)}张牌交给一名其他角色，其可以选择将一张牌置于牌堆底，视为你使用一张${get.translation(links[0][3] || "")}${get.translation(links[0][2])}。`;
+				return `###恃纵：选择要交出的牌和目标角色###将${get.cnNumber(player.countMark("dcshizong_used") + 1)}张牌交给一名其他角色，其可以选择将一张牌置于牌堆底，视为你使用一张${get.translation(links[0][3] || "")}${get.translation(links[0][2])}。`;
 			},
 		},
 		ai: {
@@ -6122,7 +6107,7 @@ const skills = {
 				if (arg === "respond" || tag == "fireAttack") {
 					return true;
 				}
-				if (player.countCards("he") < player.countMark("dcshizong") + 1) {
+				if (player.countCards("he") < player.countMark("dcshizong_used") + 1) {
 					return false;
 				}
 				if (tag == "respondSha") {
@@ -6144,6 +6129,11 @@ const skills = {
 				filterCard: () => false,
 				selectCard: -1,
 				log: false,
+			},
+			used: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本回合已发动#次【恃纵】" },
 			},
 		},
 	},
