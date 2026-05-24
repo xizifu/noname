@@ -4736,7 +4736,7 @@ const skills = {
 		trigger: { player: ["phaseUseBegin", "phaseUseEnd"] },
 		filter(event, player) {
 			return (
-				player.countCards("h", card => {
+				player.hasCards("he", card => {
 					return (
 						card.hasGaintag("eternal_dcqiqin_tag") &&
 						lib.skill.dczixi.zixiList.some(name => {
@@ -4751,7 +4751,7 @@ const skills = {
 			let max = [null, 0, null, null];
 			for (let name of names) {
 				let res = [null, null, 0];
-				player.getCards("h", i => {
+				player.getCards("he", i => {
 					if (!i.hasGaintag("eternal_dcqiqin_tag") || get.value(i) >= 7) {
 						return false;
 					}
@@ -4781,7 +4781,7 @@ const skills = {
 		async content(event, trigger, player) {
 			game.addVideo("skill", player, ["dczixi", []]);
 			const names = lib.skill.dczixi.zixiList.filter(name => {
-				return player.countCards("h", card => {
+				return player.hasCards("he", card => {
 					return card.hasGaintag("eternal_dcqiqin_tag") && game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
 				});
 			});
@@ -4790,8 +4790,20 @@ const skills = {
 				map[get.translation(name)] = name;
 			}
 			let max = lib.skill.dczixi.selectAi(player, Object.values(map));
+			const dialog = [];
+			dialog.push(`###${get.prompt("dczixi")}###<div class="text center">将一张“琴”以你选择的牌名置于一名角色的判定区</div>`);
+			const hs = player.getCards("h", card => card.hasGaintag("eternal_dcqiqin_tag"));
+			const es = player.getCards("e", card => card.hasGaintag("eternal_dcqiqin_tag"));
+			if (hs.length) {
+				dialog.addArray(['<div class="text center">你的手牌</div>', hs]);
+			}
+			if (es.length) {
+				dialog.addArray(['<div class="text center">你的装备</div>', es]);
+			}
+			dialog.push([Object.keys(map), "tdnodes"]);
 			const { bool, links } = await player
-				.chooseButton(2, ["###" + get.prompt("dczixi") + '###<div class="text center">将一张“琴”以你选择的牌名置于一名角色的判定区</div>', player.getCards("h"), [Object.keys(map), "tdnodes"]])
+				.chooseButton(2)
+				.set("createDialog", dialog)
 				.set("filterButton", button => {
 					const type = typeof button.link,
 						card = button.link;
@@ -4853,9 +4865,7 @@ const skills = {
 				}
 			}
 		},
-		ai: {
-			combo: "dcqiqin",
-		},
+		ai: { combo: "dcqiqin" },
 		group: "dczixi_effect",
 		subSkill: {
 			judge: {
@@ -5158,9 +5168,9 @@ const skills = {
 	dcweiwan: {
 		audio: 2,
 		enable: "phaseUse",
-		filter: (event, player) => {
+		filter(event, player) {
 			return (
-				player.countCards(lib.skill.dcweiwan.position, card => {
+				player.hasCards(lib.skill.dcweiwan.position, card => {
 					return lib.skill.dcweiwan.filterCard(card, player);
 				}) &&
 				game.hasPlayer(target => {
@@ -5168,14 +5178,14 @@ const skills = {
 				})
 			);
 		},
-		filterCard: (card, player) => {
+		filterCard(card, player) {
 			return card.hasGaintag("eternal_dcqiqin_tag") && lib.filter.cardDiscardable(card, player);
 		},
-		filterTarget: (card, player, target) => {
-			return target != player && target.countCards("hej");
+		filterTarget(card, player, target) {
+			return target != player && target.hasCards("hej");
 		},
-		position: "h",
-		check: card => {
+		position: "he",
+		check(card) {
 			const player = _status.event.player;
 			const target = game.players.reduce(
 				(result, current) => {
@@ -5191,7 +5201,7 @@ const skills = {
 		},
 		usable: 1,
 		async content(event, trigger, player) {
-			let target = event.target;
+			const target = event.target;
 			let suit = get.suit(event.cards[0], player);
 			let cards = target.getCards("hej", card => get.suit(card, target) != suit && lib.filter.canBeGained(card, player, target));
 			if (!cards.length) {
@@ -5212,18 +5222,18 @@ const skills = {
 				player.chat("无牌可得！！");
 				return;
 			}
-			player.gain(cards, target, "give");
+			await player.gain(cards, target, "give");
 			switch (cards.length) {
 				case 1:
-					target.loseHp();
+					await target.loseHp();
 					break;
 				case 2:
-					player.addTempSkill("tanbei_effect3");
-					target.addTempSkill("tanbei_effect1");
+					player.addTempSkill("dcweiwan_buff");
+					player.markAuto("dcweiwan_buff", [target]);
 					break;
 				case 3:
-					player.addTempSkill("tanbei_effect3");
-					target.addTempSkill("tanbei_effect2");
+					player.addTempSkill("dcweiwan_debuff");
+					player.markAuto("dcweiwan_debuff", [target]);
 					break;
 			}
 		},
@@ -5244,7 +5254,7 @@ const skills = {
 			},
 			combo: "dcqiqin",
 		},
-		getWeiWanEffect: (player, cardx, target) => {
+		getWeiWanEffect(player, cardx, target) {
 			const suit = get.suit(cardx, player);
 			const cards = target.getCards("hej", card => get.suit(card, target) !== suit && lib.filter.canBeGained(card, player, target));
 			const num = lib.suits.filter(suit => cards.some(card => get.suit(card, target) === suit)).length;
@@ -5258,6 +5268,37 @@ const skills = {
 				default:
 					return num;
 			}
+		},
+		subSkill: {
+			buff: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本回合对$使用牌无距离和次数限制" },
+				mod: {
+					targetInRange(card, player, target) {
+						if (player.getStorage("dcweiwan_buff").includes(target)) {
+							return true;
+						}
+					},
+					cardUsableTarget(card, player, target) {
+						if (player.getStorage("dcweiwan_buff").includes(target)) {
+							return true;
+						}
+					},
+				},
+			},
+			debuff: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本回合不能对$使用牌" },
+				mod: {
+					playerEnabled(card, player, target) {
+						if (player.getStorage("dcweiwan_debuff").includes(target)) {
+							return false;
+						}
+					},
+				},
+			},
 		},
 	},
 	//董昭
