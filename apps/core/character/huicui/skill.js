@@ -966,52 +966,82 @@ const skills = {
 	},
 	//新杀向宠 —— by 星の语
 	dcguying: {
+		getNum(player) {
+			const history = player.getAllHistory("useSkill", evt => evt.skill == "dcguying");
+			let count = 1;
+			for (let i = history.length - 1; i >= 0; i--) {
+				const record = history[i];
+				if (record["dcguying_mark"] === true) {
+					count++;
+				} else {
+					break;
+				}
+			}
+			return count;
+		},
+		init(player, skill) {
+			const num = get.info(skill).getNum(player);
+			player.setStorage(skill, num, true);
+			player.addTip(skill, `${get.translation(skill)} ${player.getStorage(skill)}`);
+		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.removeTip(skill);
+		},
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		async cost(event, trigger, player) {
-			const num = player.storage.dcguying_double ? 2 : 1;
+			const num = get.info(event.skill).getNum(player);
+			player.setStorage(event.skill, num, true);
+			player.addTip(event.skill, `${get.translation(event.skill)} ${player.getStorage(event.skill)}`);
 			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), [1, num])
+				.chooseTarget(get.prompt(event.skill), [1, num], `令至多${get.cnNumber(num)}名角色获得以下效果直到你的下个结束阶段开始前：下次受到伤害后，摸体力上限张牌（至多摸五张），然后将X张手牌交给你（X为其手牌数减体力上限）。若在此期间此效果未触发，你下次发动〖固营〗可以多选择一名角色。`)
 				.set("ai", target => get.attitude(get.player(), target) / target.hp)
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			player.storage.dcguying_double ??= true;
+			const history = player.getAllHistory("useSkill", evt => evt.skill == event.name);
+			if (history.length) {
+				history[history.length - 1][event.name + "_mark"] = true;
+			}
 			const targets = event.targets,
-				skill = "dcguying_effect";
+				skill = event.name + "_effect";
 			player.addTempSkill(skill, { player: "phaseJieshuBegin" });
 			player.markAuto(skill, targets);
-			targets.forEach(target => target.markAuto(event.name, player));
 		},
-		intro: {
-			content: `下一次受到伤害后，依次摸体力上限张牌（最多摸5张），然后将超出体力上限的牌数交给<span class=thundertext>$</span>`,
-		},
+		intro: { content: "当前【固营】角色数上限：#" },
 		subSkill: {
 			effect: {
-				audio: "dcguying",
 				charlotte: true,
-				forced: true,
 				onremove(player, skill) {
-					player.storage[skill].forEach(target => target.unmarkAuto("dcguying", player));
 					delete player.storage[skill];
+					lib.skill.dcguying.init(player, "dcguying");
 				},
+				marktext: "营",
+				intro: { content: "$下次受到伤害后，摸体力上限张牌（至多摸五张），然后将超出体力上限的手牌交给你" },
+				audio: "dcguying",
 				trigger: { global: "damageEnd" },
 				filter(event, player) {
 					return event.num > 0 && player.getStorage("dcguying_effect").includes(event.player);
 				},
+				forced: true,
 				logTarget: "player",
 				async content(event, trigger, player) {
-					if (player.storage.dcguying_double) {
-						delete player.storage.dcguying_double;
+					const history = player.getAllHistory("useSkill", evt => evt.skill == "dcguying");
+					if (history.length) {
+						history[history.length - 1]["dcguying_mark"] = false;
 					}
+					lib.skill.dcguying.init(player, "dcguying");
 					const target = trigger.player;
 					player.unmarkAuto(event.name, target);
-					target.unmarkAuto("dcguying", player);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
+					}
 					await target.draw(Math.min(5, target.maxHp));
 					const num = target.countCards("h") - target.maxHp;
 					if (num > 0 && target != player) {
 						await target
-							.chooseToGive(`固营：将${num}张手牌交给${get.translation(player)}`, player, num, true)
+							.chooseToGive(`固营：将${get.cnNumber(num)}张手牌交给${get.translation(player)}`, player, num, true)
 							.set("ai", card => {
 								return (get.event().goon > 0 ? 8 : 6) - get.value(card);
 							})
