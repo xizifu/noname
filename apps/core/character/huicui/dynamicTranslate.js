@@ -46,6 +46,7 @@ const dynamicTranslates = {
 		if (num < 4) {
 			str += "</span>";
 		}
+		str += "（X为你本次弃置的牌数）";
 		return str;
 	},
 	dcjianzhuan(player) {
