@@ -35,8 +35,8 @@ const dynamicTranslates = {
 	},
 	dcmanwang(player) {
 		var num = 4 - player.countMark("dcmanwang");
-		var str = "出牌阶段，你可以弃置任意张牌。然后你依次执行以下选项中的前X项：";
-		var list = ["⒈获得〖叛侵〗。", "⒉摸一张牌。", "⒊回复1点体力。", "⒋摸两张牌并失去〖叛侵〗。"];
+		var str = "出牌阶段，你可以弃置任意张牌。然后你依次执行以下选项中的前等量项：";
+		var list = [`⒈获得${get.poptip("dcpanqin")}。`, "⒉摸一张牌。", "⒊回复1点体力。", `⒋摸两张牌并失去${get.poptip("dcpanqin")}。`];
 		for (var i = 0; i < 4; i++) {
 			if (i == num) {
 				str += '<span style="text-decoration: line-through;">';
@@ -46,7 +46,6 @@ const dynamicTranslates = {
 		if (num < 4) {
 			str += "</span>";
 		}
-		str += "（X为你本次弃置的牌数）";
 		return str;
 	},
 	dcjianzhuan(player) {

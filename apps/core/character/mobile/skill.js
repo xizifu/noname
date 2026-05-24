@@ -18506,7 +18506,7 @@ const skills = {
 					const result = await player
 						.chooseButtonTarget({
 							createDialog: ["邀名：你可以消耗1点蓄力值并…", [list, "textbutton"]],
-							filterButto(button) {
+							filterButton(button) {
 								if (button.link === "discard") {
 									return game.hasPlayer(current => current != player && current.hasDiscardableCards(player, "he") && current.countCards("h") >= player.countCards("h"));
 								}

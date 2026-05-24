@@ -1735,7 +1735,7 @@ const skills = {
 				audio: "dcxiangchen",
 				trigger: { global: "changeHpAfter" },
 				filter(event, player) {
-					if (event.changedHp == 0) {
+					if (event.changedHp == 0 || !event.player.isIn()) {
 						return false;
 					}
 					return event.player == player || player.getStorage("dcxiangchen", null) == event.player;

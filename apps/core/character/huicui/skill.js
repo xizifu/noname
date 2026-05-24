@@ -6805,109 +6805,119 @@ const skills = {
 				if (current == player) {
 					return false;
 				}
-				return (!player.hasSkill("dcmanzhi_1") && current.countCards("he")) || (!player.hasSkill("dcmanzhi_2") && current.countCards("hej"));
+				return (!player.hasSkill("dcmanzhi_1") && current.countCards("he") >= 1) || (!player.hasSkill("dcmanzhi_2") && current.countCards("hej"));
 			});
 		},
-		direct: true,
-		async content(event, trigger, player) {
-			let result;
-			if (_status.connectMode) {
-				game.broadcastAll(function () {
-					_status.noclearcountdown = true;
-				});
-			}
-			result = await player
-				.chooseTarget(get.prompt2("dcmanzhi"), (card, player, target) => {
-					if (player == target) {
-						return false;
-					}
-					return (!player.hasSkill("dcmanzhi_1") && target.countCards("he")) || (!player.hasSkill("dcmanzhi_2") && target.countCards("hej"));
-				})
-				.set("ai", target => {
-					return 1 - get.attitude(get.player(), target);
-				})
-				.forResult();
-			if (!result.bool) {
-				if (_status.connectMode) {
-					game.broadcastAll(function () {
-						delete _status.noclearcountdown;
-						game.stopCountChoose();
-					});
-				}
-				return;
-			}
-			const target = result.targets[0];
-			const choices = [];
-			const choiceList = ["令其交给你两张牌，然后其视为使用一张无距离限制的【杀】", "你获得其区域内的至多两张牌，然后交给其等量的牌并摸一张牌"];
-			const chosen = [player.hasSkill("dcmanzhi_1"), player.hasSkill("dcmanzhi_2")];
-			if (target.countCards("he") && (!chosen[0] || trigger.name == "phaseZhunbei")) {
-				choices.push("选项一");
-			} else {
-				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + (chosen[0] ? "（已被选择过）" : "") + "</span>";
-			}
-			if (target.countCards("hej") && (!chosen[1] || trigger.name == "phaseZhunbei")) {
-				choices.push("选项二");
-			} else {
-				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + (chosen[1] ? "（已被选择过）" : "") + "</span>";
-			}
-			if (trigger.name == "phaseJieshu") {
-				choices.push("cancel2");
-			}
-			result = await player
-				.chooseControl(choices)
-				.set("choiceList", choiceList)
-				.set("ai", () => {
-					return _status.event.choice;
-				})
-				.set(
-					"choice",
-					(function () {
-						if (target.getUseValue({ name: "sha" }, false) > 5 && !player.hasShan() && trigger.name == "phaseZhunbei") {
-							return 1;
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: [
+						`###${get.prompt(event.skill)}###<div class='text center'>你可以选择一项并选择一名其他角色…</div>`,
+						[
+							[
+								["give", "令其交给你两张牌，然后其视为使用一张无距离限制的【杀】"],
+								["gain", "你获得其区域内的至多两张牌，然后交给其等量的牌并摸一张牌"],
+							],
+							"textbutton",
+						],
+					],
+					filterButton(button) {
+						const player = get.player();
+						const trigger = get.event().getTrigger();
+						const chosen = [player.hasSkill("dcmanzhi_1"), player.hasSkill("dcmanzhi_2")];
+						if (button.link === "give") {
+							return game.hasPlayer(current => current != player && current.countCards("he") >= 1 && (!chosen[0] || trigger.name == "phaseZhunbei"));
 						}
-						return 0;
-					})()
-				)
-				.set("prompt", "蛮智：请选择一项")
+						return game.hasPlayer(current => current != player && current.countCards("hej") && (!chosen[1] || trigger.name == "phaseZhunbei"));
+					},
+					filterTarget(card, player, target) {
+						if (!ui.selected.buttons.length || player == target) {
+							return false;
+						}
+						const trigger = get.event().getTrigger();
+						const chosen = [player.hasSkill("dcmanzhi_1"), player.hasSkill("dcmanzhi_2")];
+						const link = ui.selected.buttons[0].link;
+						if (link === "give") {
+							return target.countCards("he") >= 1 && (!chosen[0] || trigger.name == "phaseZhunbei");
+						}
+						return target.countCards("hej") && (!chosen[1] || trigger.name == "phaseZhunbei");
+					},
+					ai1(button) {
+						const player = get.player();
+						const link = button.link;
+						const trigger = get.event().getTrigger();
+						if (link == "gain") {
+							if (trigger.name == "phaseZhunbei" && !player.hasShan() && !game.hasPlayer(current => current != player && current.countCards("he") >= 1 && get.attitude(player, current) > 0)) {
+								return 2.5;
+							}
+							return 1.5;
+						} else {
+							if (
+								game.hasPlayer(current => {
+									const att = get.attitude(player, current);
+									return att > 0 && current.getUseValue({ name: "sha" }, false) > 5 && current.countCards("he") >= 4;
+								})
+							) {
+								return 2;
+							}
+							if (player.hasShan() || player.getHp() >= 2) {
+								return 1;
+							}
+							return 0;
+						}
+					},
+					ai2(target) {
+						const player = get.player();
+						const trigger = get.event().getTrigger();
+						const link = ui.selected.buttons[0].link;
+						const att = get.attitude(player, target);
+						if (link == "give") {
+							if (att > 0 && target.getUseValue({ name: "sha" }, false) > 5 && target.countCards("he") >= 4) {
+								return 2;
+							}
+							if (att < 0 && (target.getUseValue({ name: "jiu" }, false) <= 5 || player.getHp() >= 2)) {
+								return 1;
+							}
+						}
+						return 1 - att;
+					},
+				})
 				.forResult();
-			if (_status.connectMode) {
-				game.broadcastAll(function () {
-					delete _status.noclearcountdown;
-					game.stopCountChoose();
-				});
-			}
-			if (result.control == "cancel2") {
-				return;
-			}
-			player.logSkill("dcmanzhi", target);
-			if (result.control == "选项一") {
+			event.result = {
+				bool: result.bool,
+				targets: result.targets,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (event.cost_data[0] == "give") {
 				player.addTempSkill("dcmanzhi_1");
-				result = await target.chooseCard(Math.min(2, target.countCards("he")), "he", "蛮智：请交给" + get.translation(player) + "两张牌", true).forResult();
-				if (!result.bool) {
+				const num = Math.min(2, target.countCards("he"));
+				if (!num) {
+					return;
+				}
+				const result = await target.chooseToGive(player, "he", true, num, `蛮智：请交给${get.translation(player)}${get.cnNumber(num)}张牌`).forResult();
+				if (!result?.bool) {
 					return;
 				}
 				await target.give(result.cards, player);
 				await target.chooseUseTarget("sha", true, "nodistance");
-				return;
-			}
-			player.addTempSkill("dcmanzhi_2");
-			result = await player.gainPlayerCard(target, "hej", [1, 2], true).forResult();
-			if (!result.bool || !target.isIn()) {
-				return;
-			}
-			const num = result.cards.length;
-			const hs = player.getCards("he");
-			if (!hs.length) {
-				return;
-			}
-			if (hs.length < num) {
-				result = { bool: true, cards: hs };
 			} else {
-				result = await player.chooseCard("he", true, num, "交给" + get.translation(target) + get.cnNumber(num) + "张牌").forResult();
-			}
-			if (result.bool) {
-				await player.give(result.cards, target);
-				await player.draw();
+				player.addTempSkill("dcmanzhi_2");
+				let result = await player.gainPlayerCard(target, "hej", [1, 2], true).forResult();
+				if (!result?.bool || !target.isIn()) {
+					return;
+				}
+				const num = result.cards.length;
+				const hs = player.getCards("he");
+				if (!hs.length) {
+					return;
+				}
+				result = await player.chooseToGive(target, "he", true, num, `交给${get.translation(target)}${get.cnNumber(num)}张牌`).forResult();
+				if (result?.bool) {
+					await player.draw();
+				}
 			}
 		},
 		subSkill: {
