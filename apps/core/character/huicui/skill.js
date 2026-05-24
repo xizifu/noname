@@ -9699,64 +9699,75 @@ const skills = {
 			return event.player != player && event.card.name == "sha" && event.targets.length && !event.targets.includes(player) && event.targets.every(current => player.inRange(current) && current.isIn()) && player.hasCard(card => card.hasGaintag("dcaishou_tag"), "h");
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
-			const result = await player
-				.chooseCardTarget({
-					position: "hs",
-					prompt: get.prompt("dcsaowei"),
-					prompt2: "将一张“隘”当做【杀】对" + get.translation(trigger.targets) + "使用",
-					targets: trigger.targets,
-					filterCard(card, player) {
-						if (get.itemtype(card) == "card" && !card.hasGaintag("dcaishou_tag")) {
-							return false;
-						}
-						return _status.event.targets.every(current => player.canUse(get.autoViewAs({ name: "sha" }, [card]), current, false));
-					},
-					filterTarget(card, player, target) {
-						if (!_status.event.targets.includes(target)) {
-							return false;
-						}
-						card = get.autoViewAs({ name: "sha" }, [card]);
-						return lib.filter.filterTarget.apply(this, arguments);
-					},
-					selectTarget: -1,
-					ai1(card) {
-						const player = _status.event.player;
-						if (player.isHealthy() && player.hasSkill("dcaishou") && player.countCards("h", card => card.hasGaintag("dcaishou_tag") == 1)) {
-							return 0;
-						}
-						let eff = 0;
-						for (const target of _status.event.targets) {
-							eff += get.effect(target, get.autoViewAs({ name: "sha" }, [card]), player, player);
-						}
-						if (eff > 0) {
-							return 6.5 + eff / 10 - get.value(card);
-						}
-						return 0;
-					},
-					ai2: () => 1,
-				})
-				.forResult();
-			if (result.bool) {
-				const cards = result.cards,
-					targets = result.targets;
-				event.cards = cards;
-				const next = player.useCard({ name: "sha" }, cards, targets, false, "dcsaowei");
-				player
-					.when("useCardAfter")
-					.filter(event => event == next)
-					.step(async (event, trigger, player) => {
-						if (player.hasHistory("sourceDamage", evt => evt.card == trigger.card)) {
-							const cards = trigger.cards.filterInD();
-							if (cards.length > 0) {
-								player.gain(cards, "gain2");
-							}
-						}
-					});
-			}
+			player.addTempSkill("dcsaowei_gain");
+			const next = player.chooseToUse();
+			next.set("openskilldialog", "扫围：是否将一张“隘”当做【杀】对" + get.translation(trigger.targets) + "使用？");
+			next.set("norestore", true);
+			next.set("_backupevent", `${event.name}_backup`);
+			next.set("custom", {
+				add: {},
+				replace: { window() {} },
+			});
+			next.backup(`${event.name}_backup`);
+			next.set("targetRequired", true);
+			next.set("complexTarget", true);
+			next.set("complexSelect", true);
+			next.set("filterTarget", function (card, player, target) {
+				if (!_status.event.targets.includes(target)) {
+					return false;
+				}
+				return lib.filter.filterTarget.apply(this, arguments);
+			});
+			next.set("selectTarget", -1);
+			next.set("targets", trigger.targets);
+			next.set("addCount", false);
+			next.set("logSkill", event.name);
+			await next;
 		},
-		ai: {
-			combo: "dcaishou",
+		ai: { combo: "dcaishou" },
+		subSkill: {
+			backup: {
+				viewAs: { name: "sha" },
+				filterCard(card, player) {
+					return get.itemtype(card) == "card" && card.hasGaintag("dcaishou_tag");
+				},
+				position: "h",
+				selectCard: 1,
+				ai1(card) {
+					const player = get.player();
+					if (player.isHealthy() && player.hasSkill("dcaishou") && player.countCards("h", card => card.hasGaintag("dcaishou_tag")) == 1) {
+						return 0;
+					}
+					let eff = 0;
+					for (const target of get.event().targets || []) {
+						eff += get.effect(target, get.autoViewAs({ name: "sha" }, [card]), player, player);
+					}
+					if (eff > 0) {
+						return 6.5 + eff / 10 - get.value(card);
+					}
+					return 0;
+				},
+				log: false,
+				manualConfirm: true,
+			},
+			gain: {
+				audio: "dcsaowei",
+				charlotte: true,
+				trigger: { player: "useCardAfter" },
+				filter(event, player) {
+					return event.skill == "dcsaowei_backup" && player.hasHistory("sourceDamage", evt => evt.card == event.card);
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const cards = trigger.cards.filterInD();
+					if (cards.length > 0) {
+						await player.gain(cards, "gain2");
+					}
+				},
+			},
 		},
 	},
 	//向朗
