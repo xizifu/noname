@@ -4265,7 +4265,6 @@ const skills = {
 	dccangming: {
 		audio: 2,
 		trigger: {
-			//global: "gameDrawAfter",
 			global: "phaseBefore",
 			player: "enterGame",
 		},
@@ -4274,10 +4273,10 @@ const skills = {
 			if (event.name == "phase" && game.phaseNumber != 0) {
 				return false;
 			}
-			return !!game.countPlayer(target => target.countCards("h") > 0);
+			return game.hasPlayer(target => target.hasCards("h"));
 		},
 		logTarget() {
-			return game.filterPlayer(target => target.countCards("h") > 0);
+			return game.filterPlayer(target => target.hasCards("h"));
 		},
 		async content(event, trigger, player) {
 			const { name, targets } = event;
@@ -4292,15 +4291,6 @@ const skills = {
 					gaintag: [name],
 				})
 				.setContent("addToExpansionMultiple");
-			/*const func = async target => {
-				if (!target.countCards("h")) {
-					return;
-				}
-				const next = target.addToExpansion(target.getCards("h"), target, "giveAuto", false);
-				next.gaintag.add(name);
-				await next;
-			};
-			await game.doAsyncInOrder(event.targets, func);*/
 		},
 		marktext: "溟",
 		intro: {
@@ -4317,9 +4307,8 @@ const skills = {
 		group: "dccangming_draw",
 		subSkill: {
 			draw: {
-				trigger: {
-					global: ["addToExpansionAfter", "loseAsyncAfter"],
-				},
+				audio: "dccangming",
+				trigger: { global: ["addToExpansionEnd", "loseAsyncEnd"] },
 				filter(event, player) {
 					if (event.getlx == false) {
 						return false;
@@ -4332,19 +4321,17 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					const { cards } = trigger;
-					//await player.draw();
 					const types = cards.map(card => get.color(card)).unique();
 					await player.draw(types.length);
 				},
 			},
 			gain: {
-				trigger: {
-					player: ["phaseBegin", "damageEnd"],
-				},
+				trigger: { player: ["phaseBegin", "damageEnd"] },
 				filter(event, player) {
-					return player.countExpansions("dccangming") > 0;
+					return player.hasExpansions("dccangming");
 				},
 				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
 					game.log(player, "获得了", get.cnNumber(player.countExpansions("dccangming")), "张牌");
 					await player.gain(player.getExpansions("dccangming"), "draw");
@@ -4356,46 +4343,38 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		onChooseToUse(event) {
-			if (game.online) {
+			if (game.online || event.dcchouxiList) {
 				return;
 			}
-			const list = [];
-			game.countPlayer(current => {
-				if (!current.countExpansions("dccangming")) {
+			const player = event.player;
+			const cards = game.filterPlayer().flatMap(current => current.getExpansions("dccangming"));
+			const list = get.inpileVCardList(info => {
+				if (!["basic", "trick"].includes(info[0]) || player.getStorage("dcchouxi_used").includes(info[2])) {
 					return false;
 				}
-				for (const card of current.getExpansions("dccangming")) {
-					if (["basic", "trick"].includes(get.type(card, false))) {
-						list.add(get.name(card, false));
-					}
+				if (!cards.some(card => get.name(card) == info[2] && get.is.sameNature([card, info[3]], true))) {
+					return false;
 				}
-				return true;
+				return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3], storage: { dcchouxi: true } }, "unsure"), player, event);
 			});
-			list.removeArray(event.player.getStorage("dcchouxi_used"));
 			event.set("dcchouxiList", list);
 		},
 		filter(event, player) {
-			if (!event.dcchouxiList?.length || !player.countCards("hs")) {
+			if (!event.dcchouxiList?.length) {
 				return false;
 			}
-			return event.dcchouxiList.some(name => {
-				const card = get.autoViewAs({ name: name, storage: { dcchouxi: true } }, "unsure");
-				return player.hasUseTarget(card);
-			});
+			return player.hasCards("hes");
 		},
 		chooseButton: {
 			dialog(event, player) {
-				const list = event.dcchouxiList.filter(name => {
-					const card = get.autoViewAs({ name: name, storage: { dcchouxi: true } }, "unsure");
-					return player.hasUseTarget(card);
-				});
+				const list = event.dcchouxiList;
 				const dialog = ui.create.dialog("筹汐", [list, "vcard"], "hidden");
 				dialog.direct = true;
 				return dialog;
 			},
 			check(button) {
 				const player = get.player(),
-					card = get.autoViewAs({ name: button.link[2], storage: { dcchouxi: true } }, "unsure");
+					card = get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { dcchouxi: true } }, "unsure");
 				return player.getUseValue(card);
 			},
 			backup(links, player) {
@@ -4404,6 +4383,7 @@ const skills = {
 					popname: true,
 					viewAs: {
 						name: links[0][2],
+						nature: links[0][3],
 						storage: {
 							dcchouxi: true,
 						},
@@ -4421,7 +4401,7 @@ const skills = {
 				};
 			},
 			prompt(links, player) {
-				return `将一张牌当作${get.translation(links[0][2])}使用`;
+				return `将一张牌当作${get.translation(links[0][3] || "")}【${get.translation(links[0][2])}】使用`;
 			},
 		},
 		locked: false,
@@ -4440,15 +4420,14 @@ const skills = {
 		ai: {
 			combo: ["dccangming", "dcjichao"],
 			order: 8,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		subSkill: {
 			backup: {},
 			used: {
 				charlotte: true,
 				onremove: true,
+				intro: { content: "本回合【筹汐】已使用过牌名：$" },
 			},
 		},
 	},
