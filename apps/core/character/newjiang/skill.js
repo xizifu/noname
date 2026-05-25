@@ -5014,43 +5014,45 @@ const skills = {
 			return event.player != player && event.player == _status.currentPhase && event.player.countCards("h") <= event.player.getHp();
 		},
 		check(event, player) {
-			var type = get.type2(event.card, event.player);
-			if (type == "equip" && event.player.hasCard(card => event.player.hasValueTarget(card))) {
-				return false;
+			const target = event.player;
+			const type = get.type2(event.card, target);
+			const att = get.attitude(player, target);
+			if (att <= 0) {
+				return true;
 			}
-			if (
-				get.attitude(player, event.player) > 0 &&
-				(!event.player.isAllCardsKnown(player) ||
-					2 * event.player.getHp() + 0.7 * event.player.countCards("hs") <= 6 - player.countMark("zhenfeng"))
-			) {
-				return false;
+			if (target.isAllCardsKnown(player) && (target.getHp() >= 3 || get.effect(target, { name: "sha" }, player, player) > 0 || target.hasShan())) {
+				return true;
 			}
-			return true;
+			if (1.5 * target.getHp() + 0.8 * target.countCards("h") > 6 - player.countMark("zhenfeng")) {
+				return true;
+			}
+			return false;
 		},
-		onremove: true,
-		logTarget: "player",
-		content() {
-			"step 0";
-			var choices = Array.from({ length: trigger.player.countCards("h") + 1 }).map((_, i) => get.cnNumber(i, true));
-			var type = get.type2(trigger.card, trigger.player);
-			player
-				.chooseControl(choices)
-				.set("prompt", "镇锋：猜测其手牌中的" + get.translation(type) + "牌数")
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			const choices = Array.from({ length: target.countCards("h") + 1 }).map((_, i) => get.cnNumber(i, true));
+			const type = get.type2(trigger.card, target);
+			const result = await player
+				.chooseControl(choices, "cancel2")
+				.set("prompt", `镇锋：猜测其手牌中的${get.translation(type)}牌数`)
 				.set("ai", () => {
 					return _status.event.choice;
 				})
 				.set(
 					"choice",
 					(function () {
-						var num = trigger.player.countCards("h", card => get.type2(card) == type);
-						var knownNum = trigger.player.countKnownCards(_status.event.player, card => get.type2(card) == type);
-						if (trigger.player.isAllCardsKnown(_status.event.player)) {
+						if (!get.info("zhenfeng").check(trigger, player)) {
+							return "cancel2";
+						}
+						const num = target.countCards("h");
+						const knownNum = target.countKnownCards(player, card => get.type2(card) == type);
+						if (target.isAllCardsKnown(player)) {
 							return knownNum;
 						}
-						var restNum = num - knownNum;
-						var numx;
+						const restNum = num - knownNum;
+						let numx;
 						if (type == "basic") {
-							numx = num + Math.floor(Math.random() * restNum + 1);
+							numx = knownNum + Math.floor(Math.random() * (restNum + 1));
 						} else if (type == "trick") {
 							if (num > 2) {
 								numx = 2;
@@ -5061,7 +5063,7 @@ const skills = {
 								numx += Math.random() > 0.5 ? 1 : -1;
 							}
 						} else {
-							numx = [0, 1].randomGet();
+							numx = Math.random() < 0.4 ? 1 : 0;
 						}
 						if (numx < knownNum) {
 							numx = knownNum;
@@ -5070,40 +5072,43 @@ const skills = {
 						}
 						return numx;
 					})()
-				);
-			"step 1";
-			var type = get.type2(trigger.card, trigger.player);
-			var guessedNum = result.index;
+				)
+				.forResult();
+			event.result = {
+				bool: result?.control != "cancel2",
+				cost_data: result.index,
+			};
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const guessedNum = event.cost_data;
+			const type = get.type2(trigger.card, target);
 			player.chat("我猜" + get.cnNumber(guessedNum) + "张");
-			game.log(player, "猜测", trigger.player, "有", get.cnNumber(guessedNum) + "张" + get.translation(type) + "牌");
-			event.guessedNum = guessedNum;
-			game.delay();
-			"step 2";
-			var type = get.type2(trigger.card, trigger.player);
-			var count = trigger.player.countCards("h", card => get.type2(card) == type);
-			var guessedNum = event.guessedNum;
+			game.log(player, "猜测", target, "有", get.cnNumber(guessedNum) + "张" + get.translation(type) + "牌");
+			await game.delay();
+			const count = target.countCards("h", card => get.type2(card) == type);
 			if (count == guessedNum) {
 				player.popup("洗具");
 				game.log(player, "猜测", "#g正确");
 				if (player.countMark("zhenfeng") < 5) {
 					player.addMark("zhenfeng", 1, false);
 				}
-				player.draw(player.countMark("zhenfeng"));
-				if (player.canUse("sha", trigger.player, false)) {
-					player.useCard({ name: "sha", isCard: true }, trigger.player);
+				await player.draw(player.countMark("zhenfeng"));
+				if (player.canUse("sha", target, false)) {
+					await player.useCard({ name: "sha", isCard: true }, target);
 				}
 			} else {
 				player.popup("杯具");
 				game.log(player, "猜测", "#y错误");
 				player.clearMark("zhenfeng");
-				if (Math.abs(count - guessedNum) > 1 && trigger.player.canUse("sha", player, false)) {
-					trigger.player.useCard({ name: "sha", isCard: true }, player, false, "noai");
+				if (Math.abs(count - guessedNum) > 1 && target.canUse("sha", player, false)) {
+					await target.useCard({ name: "sha", isCard: true }, player, false, "noai");
 				}
 			}
 		},
-		intro: {
-			content: "已连续猜对#次",
-		},
+		onremove: true,
+		intro: { content: "已连续猜对#次" },
 	},
 	//新杀小加强 李严
 	dcduliang: {
