@@ -20747,22 +20747,24 @@ const skills = {
 			const num = Math.min(player.countDisabled() + player.getDamagedHp(), player.maxHp);
 			if (num) {
 				await player.draw(num);
-				player.addTempSkill("dcdufeng_effect");
-				player.addMark("dcdufeng_effect", num, false);
+				if (num > 1) {
+					player.addTempSkill("dcdufeng_effect");
+					player.addMark("dcdufeng_effect", num - 1, false);
+				}
 			}
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				onremove: true,
-				intro: { content: "本回合攻击范围与使用【杀】的次数上限均为#" },
+				intro: { content: "本回合攻击范围与使用【杀】的次数上限均+#" },
 				mod: {
-					attackRangeBase(player, num) {
-						return player.countMark("dcdufeng_effect");
+					attackRange(player, num) {
+						return num + player.countMark("dcdufeng_effect");
 					},
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
-							return player.countMark("dcdufeng_effect");
+							return num + player.countMark("dcdufeng_effect");
 						}
 					},
 				},
