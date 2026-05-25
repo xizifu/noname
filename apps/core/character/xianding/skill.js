@@ -23969,41 +23969,59 @@ const skills = {
 	},
 	//胡遵
 	dczhantao: {
+		getNumber(card) {
+			if (get.is.convertedCard(card)) {
+				return card.cards.reduce((num, card) => num + get.number(card, false), 0);
+			}
+			if (typeof get.number(card, false) == "number") {
+				return get.number(card, false);
+			}
+			return null;
+		},
 		audio: 2,
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
-			if (!event.player.isIn() || (event.player !== player && !player.inRange(event.player))) {
+			if (!event.card || !event.player.isIn() || (event.player !== player && !player.inRange(event.player))) {
 				return false;
 			}
-			return event.source && event.source != player;
+			return event.source != player && typeof get.info("dczhantao").getNumber(event.card) == "number";
 		},
 		check(event, player) {
-			if (!event.source.isIn() || !event.card || typeof get.number(event.card) !== "number") {
+			if (!event.source?.isIn() || !event.card || typeof get.number(event.card) !== "number") {
 				return 0;
 			}
 			return get.effect(event.source, { name: "sha" }, player, player) >= 0;
 		},
 		logTarget: "player",
+		prompt2(event, player) {
+			let str = "你可以判定";
+			if (event.source?.isIn()) {
+				const num = get.info("dczhantao").getNumber(event.card);
+				str += `，若判定结果点数大于${num}，你视为对${get.translation(event.source)}使用一张【杀】。`;
+			} else {
+				str += "。";
+			}
+			return str;
+		},
 		async content(event, trigger, player) {
 			player
 				.judge(card => {
-					const evt = get.event().getParent(get.event().eventName).getTrigger();
-					if (!evt.source || !evt.source.isIn() || !evt.card || typeof get.number(evt.card) !== "number") {
+					const evt = get.event().evtTrigger;
+					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
 						return 0;
 					}
-					if (get.number(card) > get.number(evt.card)) {
+					if (get.number(card) > get.info("dczhantao").getNumber(evt.card)) {
 						return 1.5;
 					}
 					return 0;
 				})
-				.set("judge2", r => r.bool)
-				.set("callback", () => {
-					const evtx = event.getParent();
-					const evt = event.getParent(evtx.eventName).getTrigger();
-					if (!evt.source || !evt.source.isIn() || !evt.card || typeof get.number(evt.card) !== "number") {
+				.set("judge2", result => result.bool)
+				.set("callback", event => {
+					const evt = event.getParent().evtTrigger;
+					if (!evt.source?.isIn() || !evt.card || typeof get.info("dczhantao").getNumber(evt.card) !== "number") {
 						return;
 					}
-					if (event.judgeResult.number > get.number(evt.card)) {
+					if (event.judgeResult.number > get.info("dczhantao").getNumber(evt.card)) {
 						const sha = new lib.element.VCard({ name: "sha", isCard: true }),
 							target = evt.source;
 						if (player.canUse(sha, target, false, false)) {
@@ -24011,7 +24029,7 @@ const skills = {
 						}
 					}
 				})
-				.set("eventName", event.name);
+				.set("evtTrigger", trigger);
 		},
 	},
 	dcanjing: {
@@ -24022,7 +24040,7 @@ const skills = {
 		},
 		usable: 1,
 		async cost(event, trigger, player) {
-			const skillName = event.name.slice(0, -5);
+			const skillName = event.skill;
 			const maxCount = player.getAllHistory("useSkill", evt => evt.skill === skillName).length + 1;
 			event.result = await player
 				.chooseTarget(get.prompt2(skillName), (card, player, target) => target.isDamaged(), [1, maxCount])
@@ -24032,21 +24050,13 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const targets = event.targets.slice();
-			targets.sortBySeat(_status.currentPhase);
-			for (const target of targets) {
-				await target.draw();
+			const targets = event.targets;
+			for (const target of [...targets].sortBySeat(_status.currentPhase)) {
+				await target.draw("nodelay");
 			}
-			const minHp = targets.map(i => i.getHp()).sort((a, b) => a - b)[0];
 			await game.delayx();
-			for (const target of targets) {
-				if (!target.isIn()) {
-					continue;
-				}
-				if (target.getHp() === minHp) {
-					await target.recover();
-				}
-			}
+			const luckyOne = targets.filter(current => current.isMinHp(false, false, targets.includes(current))).randomGet();
+			await luckyOne.recover();
 		},
 	},
 	//诸葛梦雪
