@@ -6121,7 +6121,7 @@ const skills = {
 						return false;
 					}
 					return game.hasPlayer(current => {
-						if (!current.hasRoundHistory("sourceDamage", evt => evt.player, 0)) {
+						if (!current.hasRoundHistory("sourceDamage", evt => evt.player == player, 0)) {
 							return false;
 						}
 						return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current);
@@ -6129,7 +6129,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const targets = game.filterPlayer(current => {
-						if (!current.hasRoundHistory("sourceDamage", evt => evt.player, 0)) {
+						if (!current.hasRoundHistory("sourceDamage", evt => evt.player == player, 0)) {
 							return false;
 						}
 						return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current);

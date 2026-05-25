@@ -10961,9 +10961,7 @@ const skills = {
 			},
 			liuli: {
 				audio: "mbjiejian2.mp3",
-				trigger: {
-					global: "useCardToTarget",
-				},
+				trigger: { global: "useCardToTarget" },
 				filter(event, player) {
 					if (event.player == player || get.type(event.card) == "equip") {
 						return false;
@@ -10976,14 +10974,37 @@ const skills = {
 					}
 					return !player.getStorage("mbjiejian_used").includes(event.target);
 				},
-				prompt2: "将此牌转移给自己",
+				prompt2(event, player) {
+					return `将${get.translation(event.card)}转移给自己`;
+				},
 				check(event, player) {
-					let eff1 = get.effect(player, event.card, event.player, player),
-						eff2 = get.effect(event.targets[0], event.card, event.player, player);
-					if (eff2 > 0) {
-						eff2 *= 1.7;
+					const target = event.targets[0];
+					const card = event.card;
+					const source = event.player;
+					const eff1 = get.effect(target, card, source, player);
+					if (eff1 > 0) {
+						return false;
 					}
-					return eff1 >= eff2;
+					const eff2 = get.effect(player, card, source, player) + get.effect(player, { name: "draw" }, player, player);
+					if (eff2 >= eff1) {
+						return true;
+					}
+					// 照搬【镇卫】
+					let save = false;
+					if (get.attitude(player, target) > 2) {
+						if (card.name == "sha") {
+							if (player.hasShan() || player.getEquip(2) || target.hp == 1 || player.hp > target.hp + 1) {
+								if (!target.hasShan() || target.countCards("h") < player.countCards("h")) {
+									save = true;
+								}
+							}
+						} else if (card.name == "juedou" && target.hp == 1) {
+							save = true;
+						} else if (card.name == "shunshou" && get.attitude(player, source) < 0 && get.attitude(source, target) < 0) {
+							save = true;
+						}
+					}
+					return save;
 				},
 				logTarget: "target",
 				async content(event, trigger, player) {
@@ -11000,9 +11021,7 @@ const skills = {
 			},
 			remove: {
 				audio: "mbjiejian3.mp3",
-				trigger: {
-					global: "phaseEnd",
-				},
+				trigger: { global: "phaseEnd" },
 				forced: true,
 				filter(event, player) {
 					return event.player.hasMark("mbjiejian_mark");
@@ -11017,11 +11036,7 @@ const skills = {
 					}
 				},
 			},
-			mark: {
-				intro: {
-					content: "获得“节谏”时的体力值：$",
-				},
-			},
+			mark: { intro: { content: "获得“节谏”时的体力值：$" } },
 		},
 	},
 	//新司马孚

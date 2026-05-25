@@ -7915,75 +7915,92 @@ const skills = {
 			if (!["basic", "trick"].includes(get.type(event.card))) {
 				return false;
 			}
-			return event.player != player && player.countMark("mpjiusong");
+			return event.player != player && player.hasMark("mpjiusong");
 		},
 		prompt2(event, player) {
+			const target = event.target;
+			const card = event.card;
+			const source = event.player;
 			let list;
-			if (get.type(event.card) != "delay") {
+			if (get.type(card) != "delay") {
 				list = game.filterPlayer(current => {
-					return lib.filter.targetEnabled2(event.card, event.player, current);
+					return lib.filter.targetEnabled2(card, source, current);
 				});
 			} else {
-				list = game.filterPlayer(current => lib.filter.judge(event.card, event.player, current));
+				list = game.filterPlayer(current => lib.filter.judge(card, source, current));
 			}
 			const gainText = `${list.length > 1 && !player.storage.mpmaotao_gained ? `若新目标与原目标相同，你` : ""}${!player.storage.mpmaotao_gained ? "获得牌堆中的一张锦囊牌。" : ""}`;
-			return `移去1枚“醉”${list.length > 1 ? `，令${get.translation(event.card)}目标改为${get.translation(list)}中的一名随机角色` : ""}。${gainText}`;
+			return `移去1枚“醉”${list.length > 1 ? `，令${get.translation(card)}目标改为${get.translation(list)}中的一名随机角色` : ""}。${gainText}`;
 		},
 		check(event, player) {
-			const eff = get.effect(event.target, event.card, player, player);
+			const target = event.target;
+			const card = event.card;
+			const source = event.player;
+			const eff = get.effect(target, card, source, player);
 			let list;
-			if (get.type(event.card) != "delay") {
+			if (get.type(card) != "delay") {
 				list = game.filterPlayer(current => {
-					return lib.filter.targetEnabled2(event.card, event.player, current);
+					return lib.filter.targetEnabled2(card, source, current);
 				});
 			} else {
-				list = game.filterPlayer(current => lib.filter.judge(event.card, event.player, current));
+				list = game.filterPlayer(current => lib.filter.judge(card, source, current));
 			}
-			let list2 = list.filter(current => get.effect(current, event.card, player, player) > eff);
-			let list3 = list.filter(current => get.effect(current, event.card, player, player) > 0);
+			if (list.length == 1 && !player.storage.mpmaotao_gained) {
+				return true;
+			}
+			if (eff > 0) {
+				return false;
+			}
+			let list2 = list.filter(current => get.effect(current, card, source, player) > eff);
+			let list3 = list.filter(current => get.effect(current, card, source, player) > 0);
 			return list2.length >= list.length / 2 || (player.countMark("mpjiusong") >= 2 && list3.length >= list.length / 2);
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.removeMark("mpjiusong", 1);
-			var list,
+			const card = trigger.card;
+			const source = trigger.player;
+			let target = trigger.target;
+			let list,
 				oriTarget = trigger.target;
 			trigger.targets.remove(oriTarget);
 			trigger.getParent().triggeredTargets1.remove(oriTarget);
 			trigger.untrigger();
-			game.delayx();
+			await game.delayx();
 			if (get.type(trigger.card) != "delay") {
 				list = game.filterPlayer(current => {
-					return lib.filter.targetEnabled2(trigger.card, trigger.player, current);
+					return lib.filter.targetEnabled2(card, source, current);
 				});
 			} else {
-				list = game.filterPlayer(current => lib.filter.judge(trigger.card, trigger.player, current));
+				list = game.filterPlayer(current => lib.filter.judge(card, source, current));
 			}
 			if (list.length) {
 				target = list.randomGet();
 			}
 			trigger.targets.push(target);
-			trigger.player.line(target, "thunder");
-			game.log(trigger.card, "的目标被改为", target);
+			source.line(target, "thunder");
+			game.log(card, "的目标被改为", target);
 			if (target == oriTarget && !player.storage.mpmaotao_gained) {
-				var card = get.cardPile2(card => get.type2(card) == "trick");
+				const card = get.cardPile2(card => get.type2(card) == "trick");
 				if (card) {
-					if (!player.storage.mpmaotao_gained) {
-						player.when({ global: "phaseAfter" }).step(async () => {
-							delete player.storage.mpmaotao_gained;
-						});
-						player.storage.mpmaotao_gained = true;
-					}
-					player.gain(card, "gain2");
+					player.addTempSkill("mpmaotao_gained");
+					await player.gain(card, "gain2");
 				} else {
-					// player.chat('没酒了！');
-					// game.log('但是牌堆中已经没有','#y酒','了!');
 					player.chat("没牌了！");
 					game.log("但是牌堆中已经没有", "#y锦囊牌", "了!");
 				}
 			}
 		},
-		ai: {
-			combo: "mpjiusong",
+		ai: { combo: "mpjiusong" },
+		subSkill: {
+			gained: {
+				charlotte: true,
+				init(player, skill) {
+					player.storage[skill] ??= true;
+				},
+				onremove: true,
+				mark: true,
+				intro: { content: "本回合已因【酕醄】获得过锦囊牌" },
+			},
 		},
 	},
 	mpbishi: {
