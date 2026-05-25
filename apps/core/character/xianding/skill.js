@@ -5097,25 +5097,28 @@ const skills = {
 	},
 	kunyu: {
 		audio: 2,
-		trigger: { player: "dieBegin" },
+		trigger: { global: "_saveAfter" },
 		filter(event, player) {
-			if (!(event.getParent().name !== "giveup" && player.maxHp > 0)) {
+			if (event.dying != player || !player.isDying()) {
 				return false;
 			}
-			return get.cardPile2(c => get.tag(c, "fireDamage"));
+			return get.cardPile2(card => get.tag(card, "fireDamage") && get.is.damageCard(card));
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const card = get.cardPile2(c => get.tag(c, "fireDamage"));
+			let card = get.cardPile2(card => card.name == "huogong", "bottom");
+			if (!card) {
+				card = get.cardPile2(card => get.tag(card, "fireDamage") && card.name == "sha", "bottom");
+			}
+			if (!card) {
+				card = get.cardPile2(card => get.tag(card, "fireDamage") && get.is.damageCard(card), "bottom");
+			}
 			if (!card) {
 				return;
 			}
 			await game.cardsGotoSpecial(card);
 			game.log(player, "将", card, "移出游戏");
 			await player.recoverTo(1);
-			if (player.getHp() > 0) {
-				trigger.cancel();
-			}
 		},
 		group: "kunyu_debuff",
 		subSkill: {
