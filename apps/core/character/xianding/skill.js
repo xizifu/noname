@@ -15095,6 +15095,7 @@ const skills = {
 			dialog(event, player) {
 				const list = [1, 2, 3].map((item, index) => [index + 1, `摸${get.cnNumber(item)}张牌`]).concat([[-1, "弃置至多三张牌"]]);
 				const dialog = ui.create.dialog(`斩绊：请选择是否摸牌或者弃牌`, [list.slice(0, 2), "tdnodes"], [list.slice(2, 4), "tdnodes"], "hidden");
+				return dialog;
 			},
 			filter(button, player) {
 				if (button.link == -1) {

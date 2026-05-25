@@ -3510,7 +3510,7 @@ const skills = {
 						if (current == player) {
 							current.chat(["我和你们开玩笑呢？！", "容我告老还乡", "我就不能歇会儿吗？！"].randomGet());
 						} else {
-							current.chat(["你走了，我们吃什么？"].randomGet());
+							current.chat(["你走了，我们吃什么？", "接着奏乐接着舞！"].randomGet());
 						}
 					} else {
 						current.addExpose(0.3);
