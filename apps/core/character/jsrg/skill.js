@@ -3508,7 +3508,7 @@ const skills = {
 				} else {
 					if (!toDebateList.includes(player)) {
 						if (current == player) {
-							current.chat(["我和你们开玩笑呢？！", "容我告老还乡"].randomGet());
+							current.chat(["我和你们开玩笑呢？！", "容我告老还乡", "我就不能歇会儿吗？！"].randomGet());
 						} else {
 							current.chat(["你走了，我们吃什么？"].randomGet());
 						}
@@ -3552,7 +3552,7 @@ const skills = {
 							const { targets, others } = evt.getParent(2);
 							const att = get.attitude(player, source);
 							if (!others.length) {
-								return color = att > 0 ? "black" : "red";
+								const color = att > 0 ? "black" : "red";
 								if (get.color(card) == color) {
 									return 10;
 								}
