@@ -2417,6 +2417,7 @@ const skills = {
 				}
 				return current.hasCards("h");
 			});
+			const target = player == trigger.player ? trigger.source : trigger.player;
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return get.event().targetx.includes(target);
@@ -2427,6 +2428,8 @@ const skills = {
 					const cards = bottomCards.filter(card => card.isKnownBy(player));
 					const suits = cards.map(card => get.suit(card)).toUniqued();
 					const att = get.attitude(player, target);
+					const hs = player.getCards("h");
+					const ts = target.getCards("h");
 					if (att < 0) {
 						if (cards.length) {
 							if (suits.length > 1) {
@@ -2434,19 +2437,25 @@ const skills = {
 							}
 						}
 						if (player.hasSkillTag("viewHandcard", null, target, true)) {
-							return 5 * Math.min(2, target.countCards("h"));
+							return 1.2 * Math.min(2, ts);
 						}
 						if (target.hasCards("h", card => get.is.shownCard(card))) {
-							return Math.min(2, target.countCards("h"));
+							return 1.1 * Math.min(2, ts);
 						}
-						return 0;
+						if (hs.length <= ts && get.value(hs) <= 7) {
+							return 10;
+						}
+						return Math.max(0.1, 3 - ts);
 					} else {
 						if (cards.length) {
-							if (suits.length > 1 || get.value(cards) >= 7) {
-								return 10;
+							if (get.value(cards) >= 7) {
+								return 11;
+							}
+							if (suits.length > 1) {
+								return 9;
 							}
 						}
-						return att * Math.min(2, target.countCards("h"));
+						return Math.min(2, ts);
 					}
 				})
 				.set("bottomCards", Array.from(ui.cardPile.childNodes).slice(-2))
@@ -2466,31 +2475,37 @@ const skills = {
 					if (player == target) {
 						if (!ui.selected.buttons.length) {
 							if (player.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
-								return 6.5 - get.value(card);
-							}
-						}
-						const card1 = ui.selected.buttons[0].link;
-						if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
-							return 10;
-						}
-						return -get.value(card);
-					} else {
-						if (player.hasSkillTag("viewHandcard", null, target, true)) {
-							if (!ui.selected.buttons.length) {
-								if (target.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
-									return att > 0 ? 6 - get.value(card) : get.value(card);
+								if (card.name == "sha") {
+									return 10;
 								}
+								return 7 - get.value(card);
 							}
+							return 6 - get.value(card);
+						} else {
 							const card1 = ui.selected.buttons[0].link;
 							if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
 								return 10;
 							}
-							return att > 0 ? 6 - get.value(card) : get.value(card);
+							return -get.value(card);
 						}
-						if (get.is.shownCard(card) && player.hasValueTarget(link, null, false)) {
-							return 10;
+					} else {
+						if (player.hasSkillTag("viewHandcard", null, target, true)) {
+							if (!ui.selected.buttons.length) {
+								if (target.hasCards("h", cardx => get.suit(card) !== get.suit(cardx))) {
+									return att > 0 ? 6.5 - get.value(card) : get.value(card);
+								}
+								if (get.is.shownCard(card) && player.hasValueTarget(link, null, false)) {
+									return 10;
+								}
+								return att > 0 ? 6 - get.value(card) : get.value(card);
+							} else {
+								const card1 = ui.selected.buttons[0].link;
+								if (get.suit(card) !== get.suit(card1) && [card1, card].some(cardx => player.hasValueTarget(cardx, null, false))) {
+									return 10;
+								}
+								return att > 0 ? 6 - get.value(card) : get.value(card);
+							}
 						}
-						return Math.random();
 					}
 				})
 				.forResult();
