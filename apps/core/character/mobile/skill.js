@@ -16894,10 +16894,10 @@ const skills = {
 					}
 					const [targetx] = result.targets;
 					target.line(targetx);
-					if (targetx.countCards("he", { type: type })) {
+					if (targetx.countCards("he", card => get.type2(card) == type)) {
 						await targetx
 							.chooseToGive(player, `交给${get.translation(player)}一张${get.translation(type)}牌`, "he", true, card => {
-								return get.type(card) == get.event().cardtype;
+								return get.type2(card) == get.event().cardtype;
 							})
 							.set("ai", card => 10 - get.value(card))
 							.set("cardtype", type);
