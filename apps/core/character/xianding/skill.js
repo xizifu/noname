@@ -9180,8 +9180,8 @@ const skills = {
 	},
 	dcweiwei: {
 		audio: 2,
-		usable: 1,
 		trigger: { target: "useCardToTargeted" },
+		usable: 1,
 		filter(event, player) {
 			return event.player != player;
 		},
@@ -9190,9 +9190,10 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const targets = [player, trigger.player];
+			const target = event.targets[0];
+			const targets = [player, target];
 			await game.asyncDraw(targets, 2);
-			if (!trigger.player.countCards("h") || !player.countCards("h")) {
+			if (!target.countCards("h") || !player.countCards("h")) {
 				return;
 			}
 			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseCard, [targets, player]).forResult();
@@ -9204,27 +9205,31 @@ const skills = {
 					card2 = map.get(target).cards[0];
 				}
 			}
-			await player.swapHandcards(trigger.player, [card1], [card2]);
-			trigger.player.addGaintag([card1], "eternal_dcweiwei_effect");
-			player.setStorage("dcweiwei_effect", [trigger.player, card1], true);
-			player.addTempSkill("dcweiwei_effect");
-			const card = card2;
+			if (!card1 || !card2) {
+				return;
+			}
+			await player.swapHandcards(target, [card1], [card2]);
+			const effect = "dcweiwei_effect";
+			const tag = `dcweiwei_${player.playerid}`;
+			game.addTempTag(tag, `维卫·${get.translation(player)}`);
+			if (target.getCards("h").includes(card1)) {
+				target.addGaintag([card1], tag);
+			}
+			player.addTempSkill(effect);
+			player.markAuto(effect, [target]);
 			player
 				.when({
 					global: "useCardAfter",
 				})
 				.filter(evt => evt == trigger.getParent())
 				.step(async (event, trigger, player) => {
-					if (!player.getCards("h").includes(card)) {
+					if (!player.getCards("h").includes(card2)) {
 						return;
 					}
-					if (player.hasUseTarget(card)) {
-						await player.chooseUseTarget(card);
+					if (player.hasUseTarget(card2)) {
+						await player.chooseUseTarget(card2);
 					}
 				});
-			/*if (player.hasUseTarget(card2)) {
-				await player.chooseUseTarget(card2);
-			}*/
 		},
 		chooseCard(player, targets, source, eventId) {
 			const target = targets[0] == player ? targets[1] : targets[0];
@@ -9258,24 +9263,34 @@ const skills = {
 			effect: {
 				charlotte: true,
 				onremove(player, skill) {
-					const [target, card] = player.getStorage(skill);
-					if (card) {
-						card.removeGaintag(`eternal_${skill}`);
+					for (const target of player.getStorage(skill)) {
+						target.removeGaintag(`dcweiwei_${player.playerid}`);
 					}
+					delete player.storage[skill];
 				},
+				intro: { content: "本回合结束时，你可以对$中的手牌中仍有你因【维卫】交换给其的牌的角色造成1点伤害" },
 				trigger: { global: "phaseEnd" },
 				filter(event, player) {
-					return event.player == player.getStorage("dcweiwei_effect")[0];
+					return player.getStorage("dcweiwei_effect").includes(event.player);
 				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					const [target, card] = player.getStorage(event.name);
-					player.removeSkill(event.name);
-					if (target.hasCard(cardx => cardx == card, "h")) {
-						await player.logSkill("dcweiwei", target);
-						await target.damage(player);
+					for (const target of player.getStorage(event.name).sortBySeat()) {
+						if (!target.isIn()) {
+							continue;
+						}
+						if (target.hasCards("h", card => card.hasGaintag(`dcweiwei_${player.playerid}`))) {
+							const result = await player
+								.chooseBool(`维卫：你可以对${get.translation(target)}造成1点伤害`)
+								.set("choice", get.damageEffect(target, player, player) > 0)
+								.forResult();
+							if (result.bool) {
+								await target.damage(player);
+							}
+						}
 					}
+					player.removeSkill(event.name);
 				},
 			},
 		},
