@@ -8598,25 +8598,28 @@ const skills = {
 				if (!event.isMine() && !event.isOnline()) {
 					game.delayx();
 				}
-				const result = await player
-					.chooseTarget(get.prompt("dchuiling"), "弃置一名角色的一张牌", (card, player, target) => {
-						return target.countDiscardableCards(player, "he") > 0;
-					})
-					.set("ai", target => {
-						return get.effect(target, { name: "guohe_copy2" }, _status.event.player);
-					})
-					.forResult();
 				if (get.color(trigger.card) == "red") {
 					mark = true;
 				}
-				if (result.bool) {
-					const target = result.targets[0];
-					if (!event.logged) {
-						player.logSkill("dchuiling", target);
-					} else {
-						player.line(target);
+				if (game.hasPlayer(current => current != player && current.hasDiscardableCards(player, "he"))) {
+					const result = await player
+						.chooseTarget(get.prompt("dchuiling"), "你可以弃置一名其他角色的一张牌", (card, player, target) => {
+							return target != player && target.hasDiscardableCards(player, "he");
+						})
+						.set("ai", target => {
+							return get.effect(target, { name: "guohe_copy2" }, _status.event.player);
+						})
+						.forResult();
+
+					if (result?.bool) {
+						const target = result.targets[0];
+						if (!event.logged) {
+							player.logSkill("dchuiling", target);
+						} else {
+							player.line(target);
+						}
+						await player.discardPlayerCard(target, "he", true);
 					}
-					await player.discardPlayerCard(target, "he", true);
 				}
 			}
 			if (mark) {
@@ -8750,16 +8753,16 @@ const skills = {
 		derivation: ["dctaji", "dcqinghuang"],
 		manualConfirm: true,
 		prompt() {
-			return "限定技。你可以失去〖汇灵〗，增加" + Math.min(game.countPlayer2(), _status.event.player.countMark("dchuiling")) + "点体力上限，然后获得〖踏寂〗和〖清荒〗。";
+			return "限定技。你可以失去〖汇灵〗，增加" + Math.min(game.players.length, _status.event.player.countMark("dchuiling")) + "点体力上限，然后获得〖踏寂〗和〖清荒〗。";
 		},
 		filter(event, player) {
 			return player.countMark("dchuiling") >= 4;
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.removeSkills("dchuiling");
-			player.gainMaxHp(Math.min(game.countPlayer2(), player.countMark("dchuiling")));
-			player.addSkills(["dctaji", "dcqinghuang"]);
+			await player.removeSkills("dchuiling");
+			await player.gainMaxHp(Math.min(game.players.length, player.countMark("dchuiling")));
+			await player.addSkills(["dctaji", "dcqinghuang"]);
 		},
 		ai: {
 			combo: "dchuiling",
@@ -8787,8 +8790,8 @@ const skills = {
 	dctaji: {
 		audio: 2,
 		trigger: {
-			player: "loseAfter",
-			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+			player: "loseEnd",
+			global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
 		},
 		forced: true,
 		locked: false,
@@ -8818,7 +8821,7 @@ const skills = {
 							})
 							.forResult();
 
-						if (result.bool) {
+						if (result?.bool) {
 							const target = result.targets[0];
 							player.line(target);
 							await player.discardPlayerCard(target, "he", true);
@@ -8887,8 +8890,8 @@ const skills = {
 					return event.player != player;
 				},
 				async content(event, trigger, player) {
-					trigger.num += player.countMark("dctaji_damage");
-					player.removeSkill("dctaji_damage");
+					trigger.num += player.countMark(event.name);
+					player.removeSkill(event.name);
 				},
 				intro: {
 					content: "下次对其他角色造成伤害时，此伤害+#",
