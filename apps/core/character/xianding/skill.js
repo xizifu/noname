@@ -2045,9 +2045,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
+			await player.loseMaxHp(9);
 			await player.removeSkills("jiufa");
 			player.addSkill("pingxiang_effect");
-			await player.loseMaxHp(9);
 			for (let i = 0; i < 9; i++) {
 				const result = await player
 					.chooseUseTarget(
