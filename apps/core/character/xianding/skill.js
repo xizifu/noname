@@ -5980,48 +5980,121 @@ const skills = {
 		},
 	},
 	dcczchouxi: {
+		getList(player, event) {
+			const num = player.countRoundHistory("useSkill", evt => get.sourceSkillFor(evt.skill) == "dcczchouxi") + 1;
+			const vcards = get.inpileVCardList(info => {
+				if (!get.is.damageCard({ name: info[2], nature: info[3] })) {
+					return false;
+				}
+				if (typeof get.cardNameLength({ name: info[2] }) != "number" || get.cardNameLength({ name: info[2] }) > num) {
+					return false;
+				}
+				if (!event) {
+					return player.hasUseTarget({ name: info[2], nature: info[3], storage: { dcczchouxi: true } });
+				}
+				return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3], storage: { dcczchouxi: true } }, "unsure"), player, event);
+			});
+			return vcards;
+		},
 		audio: 2,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "orange",
 		enable: "phaseUse",
-		trigger: {
-			player: "damageEnd",
+		onChooseToUse(event) {
+			if (game.online || event.dcczchouxi) {
+				return;
+			}
+			const player = event.player;
+			const list = get.info("dcczchouxi").getList(player, event);
+			event.set("dcczchouxi", list);
 		},
 		filter(event, player) {
-			const card = get.autoViewAs({ name: "sha", isCard: true });
-			return game.hasPlayer(target => player.canUse(card, target, false, false));
+			return event.dcczchouxi?.length > 0;
 		},
-		filterTarget(card, player, target) {
-			const cardx = get.autoViewAs({ name: "sha", isCard: true });
-			return target != player && player.canUse(cardx, target, false, false);
+		chooseButton: {
+			dialog(event, player) {
+				const list = event.dcczchouxi;
+				const dialog = ui.create.dialog("仇隙", [list, "vcard"], "hidden");
+				dialog.direct = true;
+				return dialog;
+			},
+			check(button) {
+				const player = get.player(),
+					card = get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { dcchouxi: true } });
+				return player.getUseValue(card);
+			},
+			backup(links, player) {
+				return {
+					audio: "dcczchouxi",
+					popname: true,
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						isCard: true,
+						storage: { dcczchouxi: true },
+					},
+					filterCard: () => false,
+					selectCard: -1,
+					async precontent(event, trigger, player) {
+						player.awakenSkill("dcczchouxi");
+						player.addSkill("dcczchouxi_refresh");
+						player.addTempSkill("dcczchouxi_effect");
+						event.getParent().addCount = false;
+					},
+				};
+			},
+			prompt(links, player) {
+				return `视为使用${get.translation(links[0][3] || "")}【${get.translation(links[0][2])}】`;
+			},
 		},
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), get.info(event.skill).filterTarget)
-				.set("ai", target => get.effect(target, get.autoViewAs({ name: "sha", isCard: true }), get.player(), get.player()))
-				.forResult();
-		},
-		async content(event, trigger, player) {
-			player.awakenSkill(event.name);
-			const {
-				targets: [target],
-			} = event;
-			player.addSkill(`${event.name}_refresh`);
-			await player.useCard(get.autoViewAs({ name: "sha", isCard: true }), target, false);
-			if (player.getRoundHistory("damage", evt => evt.source == target).length && target.countDiscardableCards(target, "h")) {
-				await target.randomDiscard("h");
-			}
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.dcczchouxi) {
+					return Infinity;
+				}
+			},
 		},
 		ai: {
 			order: 7,
-			result: {
-				target(player, target) {
-					return -get.effect(target, get.autoViewAs({ name: "sha", isCard: true }), player, player);
+			result: { player: 1 },
+		},
+		group: "dcczchouxi_damage",
+		subSkill: {
+			backup: {},
+			damage: {
+				audio: "dcczchouxi",
+				trigger: { player: "damageEnd" },
+				filter(event, player) {
+					const list = get.info("dcczchouxi").getList(player);
+					return list.length > 0;
+				},
+				async cost(event, trigger, player) {
+					const list = get.info("dcczchouxi").getList(player);
+					const result = await player
+						.chooseButton([`###${get.prompt(event.skill)}###你可以视为使用其中一张牌`, [list, "vcard"]])
+						.set("ai", button => {
+							const player = get.player();
+							return player.getUseValue({
+								name: button.link[2],
+								nature: button.link[3],
+							});
+						})
+						.forResult();
+					event.result = {
+						bool: result?.bool,
+						cost_data: result?.links,
+					};
+				},
+				async content(event, trigger, player) {
+					player.awakenSkill("dcczchouxi");
+					player.addSkill("dcczchouxi_refresh");
+					player.addTempSkill("dcczchouxi_effect");
+					const card = get.autoViewAs({ name: event.cost_data[0][2], nature: event.cost_data[0][3], isCard: true, storage: { dcczchouxi: true } });
+					await player.chooseUseTarget(card, true, false).set("prompt", `选择${get.translation(card)}的目标`);
 				},
 			},
-		},
-		subSkill: {
 			refresh: {
 				charlotte: true,
 				audio: "dcczchouxi",
@@ -6037,6 +6110,48 @@ const skills = {
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
 					player.refreshSkill("dcczchouxi");
+				},
+			},
+			effect: {
+				charlotte: true,
+				audio: "dcczchouxi",
+				trigger: { player: "useCard2" },
+				filter(event, player) {
+					if (!event.card?.storage?.dcczchouxi) {
+						return false;
+					}
+					return game.hasPlayer(current => {
+						if (!current.hasRoundHistory("sourceDamage", evt => evt.player, 0)) {
+							return false;
+						}
+						return !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current);
+					});
+				},
+				async cost(event, trigger, player) {
+					const targets = game.filterPlayer(current => {
+						if (!current.hasRoundHistory("sourceDamage", evt => evt.player, 0)) {
+							return false;
+						}
+						return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current);
+					});
+					event.result = await player
+						.chooseTarget(get.prompt(event.skill), `额外指定任意个本轮对你造成过伤害的角色为${get.translation(trigger.card)}的目标`, (card, player, target) => {
+							return get.event().targets.includes(target);
+						})
+						.set("ai", target => {
+							const player = get.player();
+							const trigger = get.event().getTrigger();
+							return get.effect(target, trigger.card, player, player);
+						})
+						.set("targets", targets)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					if (!event.isMine() && !event.isOnline()) {
+						await game.delayx();
+					}
+					trigger.targets.addArray(event.targets);
+					game.log(event.targets, "成为了", trigger.card, "的目标");
 				},
 			},
 		},
