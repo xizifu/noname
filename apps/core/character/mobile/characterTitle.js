@@ -1,4 +1,5 @@
 export default {
+	//mb_shen_machao: "",
 	//mb_caochun: "",
 	//mb_zhugeguo: "",
 	//mb_xiahoumao: "",
