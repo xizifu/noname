@@ -1,4 +1,7 @@
 export default {
+	//mb_caochun: "",
+	//mb_zhugeguo: "",
+	//mb_xiahoumao: "",
 	mb_tw_zhangji: "边安人宁",
 	//o_tanshihuai: "", 
 	//o_lvbu: "", 

@@ -1122,6 +1122,9 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		"clan_luyusheng",
+		"mb_caochun",
+		"mb_xiahoumao",
 		"tw_dm_zhouyu",
 		"zhuji",
 		"ylyg_dianwei",
@@ -1669,6 +1672,7 @@ window.noname_character_rank = {
 		"v_liubei",
 	],
 	bm: [
+		"mb_zhugeguo",
 		"dc_sb_zhangren",
 		"v_zhangxingcai",
 		"liuxuan",
@@ -2637,6 +2641,9 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"clan_luyusheng",
+			"mb_zhugeguo",
+			"mb_caochun",
 			"dc_shen_caopi",
 			"dm_zhangfei",
 			"tw_dm_zhouyu",
@@ -3178,6 +3185,7 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"mb_xiahoumao",
 			"o_chenlan",
 			"o_meicheng",
 			"zhuji",
