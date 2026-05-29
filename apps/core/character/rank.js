@@ -101,6 +101,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"mb_shen_machao",
 		"dm_zhangfei",
 		"mb_shen_jiangwei",
 		"ol_sb_dongzhao",
@@ -2641,6 +2642,7 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"mb_shen_machao",
 			"clan_luyusheng",
 			"mb_zhugeguo",
 			"mb_caochun",
