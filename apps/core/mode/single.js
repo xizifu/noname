@@ -2096,6 +2096,7 @@ export default () => {
 				inherit: "xingshang",
 			},
 			cangji: {
+				audio: 2,
 				trigger: { player: "die" },
 				filter: function (event, player) {
 					return player.countCards("e") > 0;
@@ -2778,6 +2779,8 @@ export default () => {
 			suzi: "肃资",
 			cangji: "藏机",
 			cangji_info: "当你死亡时，你可以将装备区内的所有牌移动到游戏外。若如此做，你的下一名角色登场时，你将这些牌置入你的装备区。",
+			"#cangji1": "乾坤之道，我也略知一二。",
+			"#cangji2": "聪慧之人，自有藏巧之计。",
 			sgrenwang: "仁望",
 			sgrenwang_info: "当你于一名其他角色的出牌阶段内成为该角色使用的【杀】或普通锦囊牌的目标后，若此牌不是其本阶段内对你使用的第一张【杀】或普通锦囊牌，则你可以弃置该角色的一张牌。",
 			sgduanliang: "断粮",
