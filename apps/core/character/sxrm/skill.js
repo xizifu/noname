@@ -2063,10 +2063,14 @@ const skills = {
 			result: {
 				target(player, target) {
 					let eff = get.damageEffect(target, player, player);
+					const att = get.attitude(player, target);
 					if (eff <= 0) {
 						const numbers = [4, 5, 6, 8, 9, 12];
-						if (player.hasSkillTag("rejudge") && target.hp + target.hujia >= 5 && eff >= -2 && player.hasCards("he", card => numbers.includes(get.number(card)))) {
+						if (att > 0 && player.hasSkillTag("rejudge") && target.hp + target.hujia >= 5 && eff >= -2 && player.hasCards("he", card => numbers.includes(get.number(card)))) {
 							return 0.1;
+						}
+						if (eff == 0 && att < 0) {
+							return -0.1;
 						}
 						return 0;
 					}
