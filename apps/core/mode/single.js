@@ -393,7 +393,7 @@ export default () => {
 					sex: "female",
 					group: "wu",
 					hp: 3,
-					skills: ["xiaoji", "yinli"],
+					skills: ["sgxiaoji", "yinli"],
 				},
 				huatuo: {
 					sex: "male",
@@ -2233,6 +2233,35 @@ export default () => {
 					}
 				},
 			},
+			sgxiaoji: {
+				audio: 2,
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				frequent: true,
+				getIndex(event, player) {
+					const evt = event.getl(player);
+					if (evt && evt.player === player && evt.es) {
+						return evt.es.length;
+					}
+					return false;
+				},
+				async content(event, trigger, player) {
+					await player.chooseDrawRecover(2, true);
+				},
+				ai: {
+					noe: true,
+					reverseEquip: true,
+					effect: {
+						target(card, player, target, current) {
+							if (get.type(card) == "equip" && !get.cardtag(card, "gifts")) {
+								return [1, 3];
+							}
+						},
+					},
+				},
+			},
 			yinli: {
 				audio: 2,
 				trigger: { global: "loseEnd" },
@@ -2789,6 +2818,10 @@ export default () => {
 			sgqingguo_info: "你可以将一张装备区内的牌当做【闪】使用或打出。",
 			pianyi: "翩仪",
 			pianyi_info: "锁定技，当你于对手的回合内登场时，你结束此回合。",
+			sgxiaoji: "枭姬",
+			sgxiaoji_info: "当你失去一张装备区内的牌后，你可以摸两张牌或回复1点体力。",
+			"#sgxiaoji1": "你可要看好了！",
+			"#sgxiaoji2": "谁说女子不如男！",
 			yinli: "姻礼",
 			yinli_info: "其他角色的装备牌于其回合内进入弃牌堆后，你可以获得之。",
 			shenju: "慎拒",
