@@ -1,5 +1,4 @@
 export default {
-	"#tw_shen_guanyu:die": "夙愿已了，魂归地府……",
 	"#huan_caochong:die": "骨肉至亲，何必至此……",
 	"#twfushu1": "东风不吝回青意，当还病树万木春。",
 	"#twfushu2": "常怀仁爱之心，天必不绝其路。",
