@@ -126,7 +126,7 @@ const translates = {
 	oltianen_effect: "不计上限",
 	oltianen_info: `锁定技，每回合各限一次，你使用牌指定唯一目标后：若本轮你与其选择的“权御”效果不同，你随机弃置其一张牌，对其发动一次${get.poptip("olquanyu")}；若与你相同，你从牌堆获得一张不计入手牌上限的【杀】。`,
 	olqiangang: "乾纲",
-	olqiangang_info: `出牌阶段，你可${get.poptip("olrumo")}，失去${get.poptip("oltianen")}，然后本局你使用指定唯一目标的【杀】均执行目标所选择过的所有“权御”效果。`,
+	olqiangang_info: `出牌阶段，你可${get.poptip("rule_rumo")}，失去${get.poptip("oltianen")}，然后本局你使用指定唯一目标的【杀】均执行目标所选择过的所有“权御”效果。`,
 	ol_sb_guojia: "OL谋郭嘉",
 	ol_sb_guojia_prefix: "OL谋",
 	olsbdinglun: "定论",
