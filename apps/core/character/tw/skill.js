@@ -90,7 +90,7 @@ const skills = {
 		subSkill: { phase: { charlotte: true } },
 	},
 	twwuhun: {
-		audio: 2,
+		audio: "wuhun",
 		trigger: { player: "die" },
 		forceDie: true,
 		skillAnimation: true,
@@ -150,7 +150,7 @@ const skills = {
 		group: "twwuhun_gain",
 		subSkill: {
 			gain: {
-				audio: "twwuhun",
+				audio: "wuhun",
 				trigger: {
 					player: "damageEnd",
 					source: "damageSource",
