@@ -110,7 +110,7 @@ const skills = {
 			judge.set("judge2", result => result.bool);
 
 			const judgeResult = await judge.forResult();
-			if (!judgeResult.bool) {
+			if (!judgeResult?.bool) {
 				return;
 			}
 
