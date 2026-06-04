@@ -8104,7 +8104,7 @@ const skills = {
 					async target => {
 						const card = get.cardPile2(card => get.type(card) == "equip", "random");
 						if (card) {
-							await target.gain(card, "gain2");
+							await target.gain(card, "draw");
 						}
 					},
 					() => 0
