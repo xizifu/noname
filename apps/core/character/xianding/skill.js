@@ -35048,7 +35048,6 @@ const skills = {
 			return ui.cardPile.childNodes.length > 0;
 		},
 		frequent: true,
-		locked: false,
 		async content(event, trigger, player) {
 			while (true) {
 				let card = false;
@@ -35072,10 +35071,10 @@ const skills = {
 						let closestNum;
 						for (let i = event.numx + 1; i <= 13; i++) {
 							card = get.cardPile2(card => {
-								return get.number(card, false) == numx;
+								return get.number(card, false) == i;
 							});
 							if (card) {
-								closestNum = numx;
+								closestNum = i;
 								break;
 							}
 						}
@@ -35092,7 +35091,7 @@ const skills = {
 					? { index: 1 }
 					: await player
 							.chooseControl()
-							.set("choiceList", [`使用${get.translation(card)}（无距离限制）`, "令本回合使用的下一张牌可以多选择一个目标"])
+							.set("choiceList", [`使用${get.translation(card)}（无距离限制）`, "令本回合使用的下一张牌可以多选择一个目标（有距离限制）"])
 							.set("ai", () => {
 								const player = get.player(),
 									{ card } = get.event().getParent();
@@ -35131,7 +35130,7 @@ const skills = {
 					if (trigger.targets && !info.multitarget) {
 						if (
 							game.hasPlayer(current => {
-								return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current);
+								return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current) && lib.filter.targetInRange(trigger.card, player, current);
 							})
 						) {
 							goon = true;
@@ -35141,7 +35140,7 @@ const skills = {
 					event.result = await player
 						.chooseTarget(get.prompt(event.skill), `为${get.translation(trigger.card)}增加至多${get.cnNumber(num)}个目标`, [1, num], (card, player, target) => {
 							const evt = get.event().getTrigger();
-							return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target);
+							return !evt.targets.includes(target) && lib.filter.targetEnabled2(evt.card, player, target) && lib.filter.targetInRange(evt.card, player, target);
 						})
 						.set("ai", target => {
 							return get.effect(target, get.event().getTrigger().card, get.player());
