@@ -1911,7 +1911,7 @@ const skills = {
 				}
 			} else {
 				const evt = event.getParent();
-				if (evt.relatedEvent && evt.relatedEvent.name == "useCard") {
+				if (evt?.relatedEvent?.name == "useCard") {
 					return false;
 				}
 			}
@@ -1946,9 +1946,12 @@ const skills = {
 		subSkill: {
 			maxHp: {
 				audio: "tianren",
-				trigger: { player: ["tianrenAfter", "gainMaxHpAfter", "loseMaxHpAfter"] },
+				trigger: { player: "addMark" },
 				forced: true,
 				filter(event, player) {
+					if (event.markName !== "tianren") {
+						return false;
+					}
 					return player.countMark("tianren") >= player.maxHp;
 				},
 				async content(event, trigger, player) {
