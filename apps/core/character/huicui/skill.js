@@ -8770,15 +8770,16 @@ const skills = {
 		derivation: ["dctaji", "dcqinghuang"],
 		manualConfirm: true,
 		prompt() {
-			return "限定技。你可以失去〖汇灵〗，增加" + Math.min(game.players.length, _status.event.player.countMark("dchuiling")) + "点体力上限，然后获得〖踏寂〗和〖清荒〗。";
+			return "限定技。你可以失去〖汇灵〗，增加" + Math.min(game.players.length, _status.event.player.countMark("dchuiling")) + "点体力上限，然后获得〖踏寂〗和〖青荒〗。";
 		},
 		filter(event, player) {
 			return player.countMark("dchuiling") >= 4;
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
+			const num = Math.min(game.players.length, player.countMark("dchuiling"));
 			await player.removeSkills("dchuiling");
-			await player.gainMaxHp(Math.min(game.players.length, player.countMark("dchuiling")));
+			await player.gainMaxHp(num);
 			await player.addSkills(["dctaji", "dcqinghuang"]);
 		},
 		ai: {

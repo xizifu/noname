@@ -357,7 +357,7 @@ const translates = {
 	dcchongxu_info: `限定技。出牌阶段，若“灵”数不小于4，你可以失去${get.poptip("dchuiling")}，增加X点体力上限（X为你的“灵”数且至多为游戏人数），然后获得${get.poptip("dctaji")}和${get.poptip("dcqinghuang")}。`,
 	dctaji: "踏寂",
 	dctaji_info: "当你失去手牌时，根据你失去牌的原因执行以下效果：1.使用：你弃置其他角色一张牌；2.打出：你摸一张牌；3.弃置：你回复1点体力；4.其他：你下一次对其他角色造成伤害时，此伤害+1。",
-	dcqinghuang: "清荒",
+	dcqinghuang: "青荒",
 	dcqinghuang_info: `出牌阶段开始时，你可以减1点体力上限，然后你于本回合发动${get.poptip("dctaji")}时额外随机执行一种效果。`,
 	dc_huojun: "霍峻",
 	dcgue: "孤扼",
