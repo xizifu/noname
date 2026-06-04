@@ -940,7 +940,7 @@ const translates = {
 	mbfunan_rewrite: "复难·改",
 	mbfunan_rewrite_info: "其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌，且你使用以此法获得的牌结算结束后，若没有其他角色响应此牌，你摸一张牌。",
 	mbjiexun: "诫训",
-	mbjiexun_info: `结束阶段，你可以选择一种花色，令一名其他角色摸等同于场上此花色数量的牌（至多为5），然后弃置X张牌（X为此技能此前发动过的次数）。若其以此法弃置了所有手牌，你修改${get.poptip("mbfunan")}`,
+	mbjiexun_info: `结束阶段，你可以选择一种花色，令一名其他角色摸等同于场上此花色数量的牌（至多为5），然后弃置X张牌（X为此技能发动次数）。若其以此法弃置了所有手牌，你修改${get.poptip("mbfunan")}`,
 	friendgongli: "共砺",
 	friendgongli_info: "空技能，唯一作用是引用确认阵营一致判断时字符写少一些。",
 	friend_zhugeliang: "友诸葛亮",
