@@ -6886,9 +6886,9 @@ const skills = {
 						const trigger = get.event().getTrigger();
 						const chosen = [player.hasSkill("dcmanzhi_1"), player.hasSkill("dcmanzhi_2")];
 						if (button.link === "give") {
-							return game.hasPlayer(current => current != player && current.countCards("he") >= 1 && (!chosen[0] || trigger.name == "phaseZhunbei"));
+							return game.hasPlayer(current => current != player && current.countCards("he") >= 2 && (!chosen[0] || trigger.name == "phaseZhunbei"));
 						}
-						return game.hasPlayer(current => current != player && current.countCards("hej") && (!chosen[1] || trigger.name == "phaseZhunbei"));
+						return game.hasPlayer(current => current != player && current.hasCards("hej") && (!chosen[1] || trigger.name == "phaseZhunbei"));
 					},
 					filterTarget(card, player, target) {
 						if (!ui.selected.buttons.length || player == target) {
@@ -6898,16 +6898,16 @@ const skills = {
 						const chosen = [player.hasSkill("dcmanzhi_1"), player.hasSkill("dcmanzhi_2")];
 						const link = ui.selected.buttons[0].link;
 						if (link === "give") {
-							return target.countCards("he") >= 1 && (!chosen[0] || trigger.name == "phaseZhunbei");
+							return target.countCards("he") >= 2 && (!chosen[0] || trigger.name == "phaseZhunbei");
 						}
-						return target.countCards("hej") && (!chosen[1] || trigger.name == "phaseZhunbei");
+						return target.hasCards("hej") && (!chosen[1] || trigger.name == "phaseZhunbei");
 					},
 					ai1(button) {
 						const player = get.player();
 						const link = button.link;
 						const trigger = get.event().getTrigger();
 						if (link == "gain") {
-							if (trigger.name == "phaseZhunbei" && !player.hasShan() && !game.hasPlayer(current => current != player && current.countCards("he") >= 1 && get.attitude(player, current) > 0)) {
+							if (trigger.name == "phaseZhunbei" && !player.hasShan() && !game.hasPlayer(current => current != player && current.countCards("he") >= 2 && get.attitude(player, current) > 0)) {
 								return 2.5;
 							}
 							return 1.5;
@@ -6961,7 +6961,6 @@ const skills = {
 				if (!result?.bool) {
 					return;
 				}
-				await target.give(result.cards, player);
 				await target.chooseUseTarget("sha", true, "nodistance");
 			} else {
 				player.addTempSkill("dcmanzhi_2");
