@@ -6098,7 +6098,7 @@ const skills = {
 							.set("createDialog", [`###许身###令一名令你回复过体力的角色获得【${get.translation(skill)}】`, [[skill], "skill"]])
 							.set("filterTarget", (card, player, target) => {
 								const { targetx } = get.event();
-								return targetx.includes(target);
+								return targetx?.includes(target);
 							})
 							.set("ai", target => {
 								const { gainSkill: skill, player } = get.event();
@@ -6124,6 +6124,9 @@ const skills = {
 			},
 		},
 	},
+	wusheng_re_baosanniang: { audio: 1 },
+	zhiman_re_baosanniang: { audio: 1 },
+	dangxian_re_baosanniang: { audio: 1 },
 	mbzhennan: {
 		audio: "xinfu_zhennan",
 		trigger: { global: "useCardToPlayered" },
