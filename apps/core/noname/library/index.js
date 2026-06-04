@@ -7569,7 +7569,7 @@ export class Library {
 				check_extension: {
 					name: "禁止扩展玩家进房",
 					init: false,
-					intro: "禁止开启了扩展的的玩家进入房间",
+					intro: "禁止开启了扩展的玩家进入房间",
 				},
 				reset_banBlacklist: {
 					name: "重置黑名单",
