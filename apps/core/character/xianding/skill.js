@@ -21008,12 +21008,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseEnd" },
 		filter(event, player) {
-			return game.hasPlayer(current => current != player && current.countCards("h"));
+			return player.hasCards("h") && game.hasPlayer(current => current != player && current.hasCards("h"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
-					return target != player && target.countCards("h");
+					return target != player && target.hasCards("h");
 				})
 				.set("ai", target => {
 					const player = get.player();
