@@ -25102,78 +25102,52 @@ const skills = {
 	dcsbmingshi: {
 		audio: 2,
 		audioname: ["dc_sb_lusu_shadow"],
-		trigger: { player: "phaseDrawBegin2" },
-		filter(event, player) {
-			return !event.numFixed;
-		},
+		trigger: { player: "phaseDrawEnd" },
 		frequent: true,
 		async content(event, trigger, player) {
-			trigger.num += 2;
-			player.addTempSkill(event.name + "_effect");
-			player.markAuto(event.name + "_effect", [trigger]);
-		},
-		subSkill: {
-			effect: {
-				charlotte: true,
-				onremove: true,
-				trigger: { player: "phaseDrawEnd" },
-				filter(event, player) {
-					return player.getStorage("dcsbmingshi_effect").includes(event);
-				},
-				forced: true,
-				popup: false,
-				async content(event, trigger, player) {
-					player.markAuto(!event.name, [trigger]);
-					if (!player.getStorage(event.name).length) {
-						player.removeSkill(event.name);
-					}
-					if (player.countCards("h") < 3 || !game.hasPlayer(current => player != current)) {
-						return;
-					}
-					const result = await player
-						.chooseCardTarget({
-							prompt: "明势：请展示三张手牌并令一名其他角色选择获得其中的一张牌",
-							filterTarget: lib.filter.notMe,
-							filterCard: true,
-							selectCard: 3,
-							position: "h",
-							forced: true,
-							ai1(card) {
-								return -get.value(card);
-							},
-							ai2(target) {
-								const player = _status.event.player;
-								if (player.hasSkill("dcsbmengmou") && !get.is.blocked("dcsbmengmou", player) && player.storage.dcsbmengmou && get.attitude(player, target) < 0) {
-									return get.effect(target, { name: "losehp" }, player, player);
-								}
-								return get.attitude(player, target);
-							},
-						})
-						.forResult();
-					if (!result?.bool) {
-						return;
-					}
-					const target = result.targets[0];
-					const cards = result.cards;
-					player.showCards(cards, get.translation(player) + "发动了【明势】");
-					const result2 = await target
-						.chooseButton(["明势：请获得其中一张牌", cards], true)
-						.set("filterButton", button => {
-							return lib.filter.canBeGained(button.link, _status.event.source, _status.event.player);
-						})
-						.set("ai", button => get.value(button.link))
-						.set("source", player)
-						.forResult();
-					if (result2?.bool) {
-						const card = result2.links[0];
-						if (lib.filter.canBeGained(card, player, target)) {
-							await target.gain(card, player, "giveAuto");
-						} else {
-							game.log("但", card, "不能被", player, "获得！");
+			await player.draw(2);
+			if (player.countCards("h") < 3 || !game.hasPlayer(current => player != current)) {
+				return;
+			}
+			const result = await player
+				.chooseCardTarget({
+					prompt: "明势：请展示三张手牌并令一名其他角色选择获得其中的一张牌",
+					filterTarget: lib.filter.notMe,
+					filterCard: true,
+					selectCard: 3,
+					position: "h",
+					forced: true,
+					ai1(card) {
+						return -get.value(card);
+					},
+					ai2(target) {
+						const player = _status.event.player;
+						if (player.hasSkill("dcsbmengmou") && !get.is.blocked("dcsbmengmou", player) && player.storage.dcsbmengmou && get.attitude(player, target) < 0) {
+							return get.effect(target, { name: "losehp" }, player, player);
 						}
-					}
-				},
-			},
+						return get.attitude(player, target);
+					},
+				})
+				.forResult();
+			if (!result?.bool) {
+				return;
+			}
+			const target = result.targets[0];
+			const cards = result.cards;
+			await player.showCards(cards, get.translation(player) + "发动了【明势】");
+			const result2 = await target
+				.chooseButton(["明势：请获得其中一张牌", cards], true)
+				.set("ai", button => get.value(button.link))
+				.set("source", player)
+				.forResult();
+			if (result2?.bool) {
+				const card = result2.links[0];
+				if (lib.filter.canBeGained(card, player, target)) {
+					await target.gain(card, player, "giveAuto");
+				} else {
+					game.log("但", card, "不能被", player, "获得！");
+				}
+			}
 		},
 	},
 	dcsbmengmou: {
