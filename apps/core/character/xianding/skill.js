@@ -7315,7 +7315,7 @@ const skills = {
 			const link = event.hongceEvts?.[0]?.link;
 			switch (link) {
 				case "sha": {
-					return "令一名角色将半数手牌替换为伤害牌，视为使用一张【杀】";
+					return "令一名角色弃置半数手牌（向上取整）并获得等量张伤害牌，视为使用一张【杀】";
 				}
 				case "recast": {
 					return "令一名角色重铸一张手牌，视为使用一张单目标普通锦囊牌";
@@ -7355,7 +7355,7 @@ const skills = {
 							`宏策：选择一项执行`,
 							[
 								[
-									["sha", "将半数手牌替换为伤害牌，视为使用一张【杀】"],
+									["sha", "弃置半数手牌（向上取整）并获得等量张伤害牌，视为使用一张【杀】"],
 									["recast", "重铸一张手牌，视为使用一张单目标普通锦囊牌"],
 									["draw", "摸三张牌，这些牌不计入手牌上限"],
 								],
@@ -7365,7 +7365,7 @@ const skills = {
 						true
 					)
 					.set("filterButton", button => {
-						return button.link == "draw" || get.player().countCards("h");
+						return button.link == "draw" || get.player().hasCards("h");
 					})
 					.set("ai", () => Math.random())
 					.forResult();
@@ -7388,7 +7388,7 @@ const skills = {
 					const num = Math.ceil(player.countCards("h") / 2);
 					if (num > 0) {
 						const result = await target
-							.chooseCard("将半数手牌替换为伤害牌", num, true, "allowChooseAll")
+							.chooseToDiscard("宏策：弃置半数手牌（向上取整）并获得等量张伤害牌", num, true, "allowChooseAll")
 							.set("ai", card => {
 								return 7 - get.value(card);
 							})
@@ -7396,31 +7396,16 @@ const skills = {
 						if (result?.bool && result.cards?.length) {
 							const cards = [];
 							while (cards.length < result.cards.length) {
-								const card = get.cardPile2(card => get.is.damageCard(card) && !cards.includes(card));
+								const card = get.cardPile2(card => get.is.damageCard(card) && !cards.includes(card), "random");
 								if (card) {
 									cards.add(card);
 								} else {
 									break;
 								}
 							}
-							const cards2 = result.cards.slice(0, cards.length);
-							target.$throw(cards2, 1000);
-							await target
-								.lose(cards2, ui.cardPile)
-								.set("insert_index", (event, card) => {
-									const { cards1, cards2 } = get.event();
-									const index = cards2.indexOf(card),
-										replaceCard = cards1[index];
-									if (replaceCard) {
-										const num = Array.from(ui.cardPile.childNodes).indexOf(replaceCard);
-										return ui.cardPile.childNodes[num];
-									}
-									const num = get.rand(0, ui.cardPile.childNodes.length - 1);
-									return ui.cardPile.childNodes[num];
-								})
-								.set("cards1", cards)
-								.set("cards2", cards2);
-							await target.gain(cards, "gain2").set("log", false);
+							if (cards.length) {
+								await target.gain(cards, "gain2").set("log", false);
+							}
 						}
 					}
 					const card = new lib.element.VCard({ name: "sha", isCard: true });
@@ -7430,9 +7415,9 @@ const skills = {
 					break;
 				}
 				case "recast": {
-					if (target.countCards("h", lib.filter.cardRecastable)) {
+					if (target.hasCards("h", lib.filter.cardRecastable)) {
 						const result = await target
-							.chooseCard("h", true, "重铸一张手牌", lib.filter.cardRecastable)
+							.chooseCard("h", true, "宏策：请重铸一张手牌", lib.filter.cardRecastable)
 							.set("ai", card => {
 								return 8 - get.value(card);
 							})
@@ -7477,7 +7462,7 @@ const skills = {
 					const result =
 						list.length > 1
 							? await target
-									.chooseButton(["视为使用一张单目标普通锦囊牌", [list, "vcard"]], true)
+									.chooseButton(["宏策：视为使用一张单目标普通锦囊牌", [list, "vcard"]], true)
 									.set("ai", button => {
 										const card = new lib.element.VCard({ name: button.link[2], isCard: true });
 										return get.player().getUseValue(card);
