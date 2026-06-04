@@ -6028,9 +6028,9 @@ const skills = {
 			content(storage) {
 				let str = "转换技。每名角色Ａ的出牌阶段限一次。";
 				if (!storage) {
-					str += "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色不同，则你的手牌上限-1。";
+					str += "Ａ可以重铸一张牌，然后你可以重铸一张牌。若这两张牌颜色相同，则你的手牌上限+1。";
 				} else {
-					str += "Ａ可以令你选择一名在你或Ａ攻击范围内的另一名其他角色Ｂ，然后Ａ和你可依次选择是否对Ｂ使用一张【杀】。若这两张【杀】颜色相同，则你的手牌上限+1";
+					str += "Ａ可以令你选择一名在你或Ａ攻击范围内的另一名其他角色Ｂ，然后Ａ和你可依次选择是否对Ｂ使用一张【杀】。若这两张【杀】颜色不同，则你的手牌上限-1";
 				}
 				return str;
 			},
@@ -6224,12 +6224,10 @@ const skills = {
 								usedCards.push(result.card);
 							}
 						}
-
-						if (usedCards.length > 1) {
-							const colors = usedCards.map(card => get.color(card, false)).toUniqued();
-							if (colors.length > 1 && !colors.includes("none")) {
-								lib.skill.chenliuwushi.change(target, -1);
-							}
+						const bool1 = usedCards.length == 0;
+						const bool2 = usedCards.length == 2 && get.color(usedCards[0], false) === get.color(usedCards[1], false);
+						if (!bool1 && !bool2) {
+							lib.skill.chenliuwushi.change(target, -1);
 						}
 					}
 				},
