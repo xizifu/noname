@@ -5599,8 +5599,10 @@ const skills = {
 				game.broadcastAll(() => {
 					_status.olhuanhuo = lib.filter.filterEnable;
 					lib.filter.filterEnable = function (event, player, skill) {
-						const cards = player.getCards("h", card => player.hasUseTarget(card, null, event));
-						if (event.name === "chooseToUse" && event.type === "phase" && player.hasMark("olhuanhuo_debuff") && cards.length) {
+						if (event.type !== "phase" || event.name !== "chooseToUse") {
+							return _status.olhuanhuo(event, player, skill);
+						}
+						if (player.hasMark("olhuanhuo_debuff") && player.hasCards("h", card => player.hasUseTarget(card, null, event))) {
 							return false;
 						}
 						return _status.olhuanhuo(event, player, skill);

@@ -10156,6 +10156,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await game.doAsyncInOrder(event.targets, async target => await target.damage());
 		},
+		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
 				const num1 = get.info(card).selectTarget ?? 0,

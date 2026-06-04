@@ -24182,8 +24182,10 @@ const skills = {
 				await target.draw("nodelay");
 			}
 			await game.delayx();
-			const luckyOne = targets.filter(current => current.isMinHp(false, false, targets.includes(current))).randomGet();
-			await luckyOne.recover();
+			const targetsx = targets.filter(current => current.isMinHp(false, false, targets.includes(current)));
+			if (targetsx.length) {
+				await targetsx.randomGet().recover();
+			}
 		},
 	},
 	//诸葛梦雪
