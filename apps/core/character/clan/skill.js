@@ -6882,7 +6882,7 @@ const skills = {
 		},
 		derivation: "clansankuang",
 		ai: { combo: "clansankuang" },
-		intro: { content: "三框目标：$" },
+		intro: { content: ["每当$失去最后的手牌，你回复1点体力", '<span style="font-family:yuanli">“唉，我本袁氏故吏，又能做些什么呢……”</span>'].join("<br><br>") },
 		subSkill: {
 			mark: {
 				trigger: { player: "logSkillBegin" },
