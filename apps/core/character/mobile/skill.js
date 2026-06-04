@@ -5654,15 +5654,18 @@ const skills = {
 		filter(event, player) {
 			return game.roundNumber < 3 || player.hasSkill("mblingfa", null, false, false);
 		},
-		prompt2(event, player) {
+		async cost(event, trigger, player) {
 			switch (game.roundNumber) {
-				case 1:
-					return "本轮其他角色使用【杀】时，其需弃置一张牌，否则你对其造成1点伤害";
-				case 2:
-					return "本轮其他角色使用【桃】结算结束后，其需交给你一张牌，否则你对其造成1点伤害";
+				case 1: {
+					event.result = await player.chooseBool(get.prompt(event.skill), "本轮其他角色使用【杀】时，其需弃置一张牌，否则你对其造成1点伤害").forResult();
+					break;
+				}
+				case 2: {
+					event.result = await player.chooseBool(get.prompt(event.skill), "本轮其他角色使用【桃】结算结束后，其需交给你一张牌，否则你对其造成1点伤害").forResult();
+					break;
+				}
 				default: {
-					const skills = lib.skill["mblingfa"].derivation.filter(i => !player.hasSkill(i, null, false, false));
-					return `失去【${get.translation("mblingfa")}】${skills.length > 0 ? `并获得${skills.map(i => `【${get.translation(i)}】`).join("、")}` : ""}`;
+					event.result = { bool: true };
 				}
 			}
 		},
@@ -5692,21 +5695,21 @@ const skills = {
 				},
 				forced: true,
 				logTarget: "player",
-				content() {
-					"step 0";
-					game.delayx();
-					trigger.player
+				async content(event, trigger, player) {
+					await game.delayx();
+					const target = event.targets[0];
+					const result = await target
 						.chooseToDiscard("he", "令法：弃置一张牌，或受到来自" + get.translation(player) + "的1点伤害")
-						.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
+						.set("goon", get.damageEffect(target, player, target) < 0)
 						.set("ai", function (card) {
 							if (!_status.event.goon) {
 								return 0;
 							}
 							return 8 - get.value(card);
-						});
-					"step 1";
-					if (!result.bool) {
-						trigger.player.damage();
+						})
+						.forResult();
+					if (!result?.bool) {
+						await target.damage();
 					}
 				},
 				mark: true,
@@ -5722,23 +5725,21 @@ const skills = {
 				},
 				forced: true,
 				logTarget: "player",
-				content() {
-					"step 0";
-					game.delayx();
-					trigger.player
-						.chooseCard("he", "令法：交给" + get.translation(player) + "一张牌，否则受到来自其的1点伤害")
-						.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
+				async content(event, trigger, player) {
+					await game.delayx();
+					const target = event.targets[0];
+					const result = await target
+						.chooseToGive("he", player, "令法：交给" + get.translation(player) + "一张牌，否则受到来自其的1点伤害")
+						.set("goon", get.damageEffect(target, player, target) < 0)
 						.set("ai", function (card) {
 							if (!_status.event.goon) {
 								return 0;
 							}
 							return 8 - get.value(card);
-						});
-					"step 1";
-					if (!result.bool) {
-						trigger.player.damage();
-					} else {
-						trigger.player.give(result.cards, player);
+						})
+						.forResult();
+					if (!result?.bool) {
+						await target.damage();
 					}
 				},
 				mark: true,
