@@ -14115,6 +14115,9 @@ const skills = {
 		trigger: { global: ["loseAfter", "loseAsyncAfter"] },
 		forced: true,
 		filter(event, player) {
+			if (event.getParent("lieyi")) {
+				return false;
+			}
 			if (event.type != "discard" || event.getlx === false || player.getExpansions("xunli").length >= 9) {
 				return false;
 			}
