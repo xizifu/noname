@@ -28654,7 +28654,7 @@ const skills = {
 						return false;
 					}
 					const source = evt.targets[0];
-					return event.changedHp < 0 && event.getParent().source == source && evt.getParent(3).player == source;
+					return event.changedHp < 0 && event.getParent().source == source && event.getParent(3).player == source;
 				},
 				forced: true,
 				popup: false,
