@@ -25013,7 +25013,11 @@ const skills = {
 		audio: 3,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
-			var type = get.type(event.card);
+			const target = event.player;
+			if (player == target || !target.isIn()) {
+				return false;
+			}
+			const type = get.type(event.card);
 			if (type != "delay" && type != "equip") {
 				return false;
 			}
@@ -25027,7 +25031,7 @@ const skills = {
 					}
 				}
 			}
-			return event.player.isIn();
+			return true;
 		},
 		async cost(event, trigger, player) {
 			let [choiceList, choices] = [[], []];
@@ -25043,10 +25047,7 @@ const skills = {
 				}
 				choiceList.push(choice1);
 				let choice2 = `弃置一张手牌，获得${str}`;
-				if (
-					player.hasCard(card => lib.filter.cardDiscardable(card, player, event.skill), "h") &&
-					lib.filter.canBeGained(card, player, owner)
-				) {
+				if (player.hasCard(card => lib.filter.cardDiscardable(card, player, event.skill), "h") && lib.filter.canBeGained(card, player, owner)) {
 					choices.push("获得卡牌");
 				} else {
 					choice2 = `<span style="opacity:0.5">${choice2}</span>`;
@@ -25095,12 +25096,7 @@ const skills = {
 						if (choice == "弃置卡牌") {
 							return result;
 						}
-						if (
-							player.hasCard(
-								cardx => lib.filter.cardDiscardable(cardx, player, "twzhian") && get.value(cardx, player) < get.value(card, player),
-								"h"
-							)
-						) {
+						if (player.hasCard(cardx => lib.filter.cardDiscardable(cardx, player, "twzhian") && get.value(cardx, player) < get.value(card, player), "h")) {
 							return result * 1.2;
 						}
 						return 0;
@@ -25152,9 +25148,7 @@ const skills = {
 							if (get.type(card) !== "delay" && get.type(card) !== "equip") {
 								return 1;
 							}
-							let za = game.findPlayer(
-								cur => cur.hasSkill("twzhian") && !cur.storage.counttrigger?.twzhian && get.attitude(player, cur) <= 0
-							);
+							let za = game.findPlayer(cur => cur.hasSkill("twzhian") && !cur.storage.counttrigger?.twzhian && get.attitude(player, cur) <= 0);
 							if (za) {
 								return [0.5, -0.8];
 							}
