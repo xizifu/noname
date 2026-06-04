@@ -18366,7 +18366,7 @@ const skills = {
 			}
 			if (result?.moved?.[0]?.length) {
 				const moved = result.moved[0].reverse();
-				const next = player.addToExpansion(moved, "gain2");
+				const next = player.addToExpansion(moved, "give");
 				next.gaintag.add(event.name);
 				await next;
 			}
@@ -18433,44 +18433,13 @@ const skills = {
 					if (["suit", "number", "name"].some(func => get[func](card) == get[func](trigger.card))) {
 						await player.loseToDiscardpile(card);
 						await player.draw(2);
-					} else if (cards.length < 5 && trigger.cards?.someInD("ode")) {
-						const puts = trigger.cards.filterInD("ode");
-						const expansions = player.getExpansions("dczhengyue");
-						await game.cardsGotoOrdering(puts.filterInD("od"));
-						const next = player.chooseToMove("征越：将这些牌以任意顺序置于武将牌上", true);
-						next.set("list", [
-							["武将牌", expansions],
-							["实体牌", puts],
-						]);
-						next.set("processAI", list => {
-							const cards = list[1][1].randomGets(5 - list[0][1].length, list[1][1].length);
-							return [list[0][1].slice(0).addArray(cards), list[1][1].slice(0).removeArray(cards)];
-						});
-						next.set("filterOk", moved => {
-							const { list } = get.event();
-							return moved[0].length === Math.min(5, list[0][1].length + list[1][1].length);
-						});
-						const result = await next.forResult();
-						if (result?.moved?.length) {
-							const cards = result.moved[0].reverse();
-							const targets = game.filterPlayer(current => {
-								if (current === player && expansions.length) {
-									return true;
-								}
-								return puts.filterInD("d").some(card => get.owner(card) === current);
-							});
-							if (targets.length) {
-								const lose_list = [];
-								for (const current of targets) {
-									const loseCard = puts.filterInD("d").filter(card => get.owner(card) === current);
-									lose_list.push([current, (current === player ? expansions : []).concat(loseCard)]);
-								}
-								await game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
-							}
-							const next = player.addToExpansion(cards, "gain2");
+					} else {
+						if (cards.length < 5 && trigger.cards?.someInD("odej")) {
+							const puts = trigger.cards.filterInD("odej").randomGets(5 - cards.length);
+							const next = player.addToExpansion(puts, "give");
 							next.gaintag.add("dczhengyue");
 							await next;
-							const num = cards.filter(card => puts.includes(card)).length;
+							const num = puts.length;
 							if (num) {
 								player.addTempSkill("dczhengyue_count");
 								player.addMark("dczhengyue_count", num, false);
@@ -18479,16 +18448,17 @@ const skills = {
 								}
 							}
 						}
-					} else if (cards.length > 1 && cards.length <= 5) {
-						const next = player.chooseToMove("征越：你可以调整“征越”牌的顺序", true);
-						next.set("list", [["武将牌", cards]]);
-						next.set("processAI", list => [list[0][1].slice(0).randomSort()]);
-						const result = await next.forResult();
-						if (result?.moved?.[0]?.length) {
-							const moved = result.moved[0].reverse();
-							player.$gain2(moved);
-							player.$addToExpansion(moved, null, ["dczhengyue"], false);
-							player.markSkill("dczhengyue");
+						if (player.hasExpansions("dczhengyue")) {
+							const next = player.chooseToMove("征越：你可以调整“征越”牌的顺序", true);
+							next.set("list", [["武将牌", player.getExpansions("dczhengyue")]]);
+							next.set("processAI", list => [list[0][1].slice(0).randomSort()]);
+							const result = await next.forResult();
+							if (result?.moved?.[0]?.length) {
+								const moved = result.moved[0].reverse();
+								player.$gain2(moved);
+								player.$addToExpansion(moved, null, ["dczhengyue"], false);
+								player.markSkill("dczhengyue");
+							}
 						}
 					}
 					lib.skill["dczhengyue"].update(player, "dczhengyue");
@@ -18523,12 +18493,12 @@ const skills = {
 					if (event.name == "lose" && event.getlx !== false) {
 						return Object.values(event.gaintag_map).flat().includes("dczhengyue");
 					}
-					return game.getGlobalHistory("cardMove", evt => {
+					return game.hasGlobalHistory("cardMove", evt => {
 						if (evt.name != "lose" || event != evt.getParent()) {
 							return false;
 						}
 						return Object.values(evt.gaintag_map).flat().includes("dczhengyue") && evt.player == player;
-					}).length;
+					});
 				},
 				forced: true,
 				popup: false,
