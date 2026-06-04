@@ -14188,137 +14188,121 @@ const skills = {
 		},
 	},
 	dcyuanrong: {
+		getCards() {
+			return get.discarded().filterInD("d");
+		},
 		audio: 2,
-		trigger: {
-			player: "phaseEnd",
-		},
+		trigger: { player: "phaseEnd" },
 		filter(event, player) {
-			if (!player.getHistory("lose").length) {
-				return false;
-			}
-			let cardsLost = [];
-			game.getGlobalHistory("cardMove", evt => {
-				if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
-					cardsLost.addArray(evt.cards);
-				}
-			});
-			cardsLost = cardsLost.filterInD("d");
-			return cardsLost.some(card => get.color(card) == "black");
+			const cards = get.info("dcyuanrong").getCards();
+			return ["black", "red"].some(color => cards.some(card => get.color(card) == color));
 		},
-		async cost(event, trigger, player) {
-			let cardsLost = [];
-			game.getGlobalHistory("cardMove", evt => {
-				if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
-					cardsLost.addArray(evt.cards);
-				}
-			});
-			cardsLost = cardsLost.filterInD("d").filter(card => get.color(card) == "black");
-			let cards = get.inpileVCardList(info => {
-				if (get.type(info[2]) != "trick") {
-					return false;
-				}
-				return cardsLost.some(card => {
-					const cardx = get.autoViewAs({ name: info[2] }, [card]);
-					return player.hasUseTarget(cardx, true, true);
-				});
-			});
-			if (!cards.length) {
-				return;
-			}
-			const result = await player
-				.chooseButton([`###${get.prompt(event.skill)}###弃牌堆`, cardsLost, "###可转化锦囊牌###", [cards, "vcard"]], 2)
-				.set("filterButton", button => {
-					if (!Array.isArray(button.link)) {
-						return ui.selected.buttons.length == 0;
-					}
-					if (ui.selected.buttons.length != 1) {
-						return false;
-					}
-					const cardx = get.autoViewAs(
-						{ name: button.link[2] },
-						ui.selected.buttons.map(i => i.link)
-					);
-					return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
-				})
-				.set("complexSelect", true)
-				.set("ai", button => {
-					if (ui.selected.buttons.length == 0) {
-						return Math.random();
-					}
-					if (!Array.isArray(button.link)) {
-						return 0;
-					}
-					const cardx = get.autoViewAs({ name: button.link[2] });
-					return get.player().getUseValue(cardx, true, true);
-				})
-				.forResult();
-			event.result = {
-				bool: result?.bool,
-				cards: [result?.links?.[0]],
-				cost_data: result?.links?.[1][2],
-			};
-		},
+		direct: true,
 		async content(event, trigger, player) {
-			const { cards, cost_data: name } = event;
-			const card = get.autoViewAs({ name: name }, cards);
-			if (player.hasUseTarget(card, true, true)) {
-				await player.chooseUseTarget(card, true, cards);
-			}
-			let red = [];
-			game.getGlobalHistory("cardMove", evt => {
-				if (evt.name === "cardsDiscard" || (evt.name === "lose" && evt.position === ui.discardPile)) {
-					red.addArray(evt.cards);
-				}
-			});
-			red = red.filterInD("d").filter(card => get.color(card) == "red");
-			if (!red.length) {
-				return;
-			}
-			let cardxs = get.inpileVCardList(info => {
-				if (get.type(info[2]) != "basic") {
-					return false;
-				}
-				return red.some(card => {
-					const cardx = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
-					return player.hasUseTarget(cardx, true, true);
-				});
-			});
-			if (!cardxs.length) {
-				return;
-			}
-			const result = await player
-				.chooseButton([`###圆融：你可以将一张红色牌当基本牌使用###弃牌堆`, red, "###可转化基本牌###", [cardxs, "vcard"]], 2)
-				.set("filterButton", button => {
-					if (!Array.isArray(button.link)) {
-						return ui.selected.buttons.length == 0;
-					}
-					if (ui.selected.buttons.length != 1) {
+			let cards = get.info("dcyuanrong").getCards();
+			const blackCards = cards.filter(card => get.color(card) == "black");
+			if (blackCards.length) {
+				const vcards = get.inpileVCardList(info => {
+					if (get.type(info[2]) != "trick") {
 						return false;
 					}
-					const cardx = get.autoViewAs(
-						{ name: button.link[2], nature: button.link[3] },
-						ui.selected.buttons.map(i => i.link)
-					);
-					return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
-				})
-				.set("complexSelect", true)
-				.set("ai", button => {
-					if (ui.selected.buttons.length == 0) {
-						return Math.random();
+					return blackCards.some(card => {
+						const cardx = get.autoViewAs({ name: info[2] }, [card]);
+						return player.hasUseTarget(cardx, true, true);
+					});
+				});
+				if (vcards.length) {
+					const result = await player
+						.chooseButton([`###圆融：你可以将本回合进入弃牌堆的一张黑色牌当任意普通锦囊牌使用###弃牌堆`, blackCards, "###可转化锦囊牌###", [vcards, "vcard"]], 2)
+						.set("filterButton", button => {
+							if (!Array.isArray(button.link)) {
+								return ui.selected.buttons.length == 0;
+							}
+							if (ui.selected.buttons.length != 1) {
+								return false;
+							}
+							const cardx = get.autoViewAs(
+								{ name: button.link[2] },
+								ui.selected.buttons.map(i => i.link)
+							);
+							return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
+						})
+						.set("complexSelect", true)
+						.set("ai", button => {
+							if (ui.selected.buttons.length == 0) {
+								return Math.random();
+							}
+							if (!Array.isArray(button.link)) {
+								return 0;
+							}
+							const cardx = get.autoViewAs({ name: button.link[2] });
+							return get.player().getUseValue(cardx, true, true);
+						})
+						.forResult();
+					if (result?.bool) {
+						const cardsx = [result.links[0]];
+						const name = result.links[1][2];
+						const card = get.autoViewAs({ name }, cardsx);
+						const next = player.chooseUseTarget(card, true, cardsx);
+						if (!event.logged) {
+							event.logged = true;
+							next.set("logSkill", event.name);
+						}
+						await next;
 					}
-					if (!Array.isArray(button.link)) {
-						return 0;
-					}
-					const cardx = get.autoViewAs({ name: button.link[2] });
-					return get.player().getUseValue(cardx, true, true);
-				})
-				.forResult();
-			if (!result?.bool) {
-				return;
+				}
 			}
-			const cardx = get.autoViewAs({ name: result.links[1][2], nature: result.links[1][3] }, [result.links[0]]);
-			if (player.hasUseTarget(cardx, true, true)) {
-				await player.chooseUseTarget(cardx, true, [result.links[0]]);
+			cards = get.info("dcyuanrong").getCards();
+			const redCards = cards.filter(card => get.color(card) == "red");
+			if (redCards.length) {
+				const vcards = get.inpileVCardList(info => {
+					if (get.type(info[2]) != "basic") {
+						return false;
+					}
+					return redCards.some(card => {
+						const cardx = get.autoViewAs({ name: info[2] }, [card]);
+						return player.hasUseTarget(cardx, true, true);
+					});
+				});
+				if (vcards.length) {
+					const result = await player
+						.chooseButton([`###圆融：你可以将本回合进入弃牌堆的一张红色牌当任意基本使用###弃牌堆`, redCards, "###可转化基本牌###", [vcards, "vcard"]], 2)
+						.set("filterButton", button => {
+							if (!Array.isArray(button.link)) {
+								return ui.selected.buttons.length == 0;
+							}
+							if (ui.selected.buttons.length != 1) {
+								return false;
+							}
+							const cardx = get.autoViewAs(
+								{ name: button.link[2] },
+								ui.selected.buttons.map(i => i.link)
+							);
+							return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
+						})
+						.set("complexSelect", true)
+						.set("ai", button => {
+							if (ui.selected.buttons.length == 0) {
+								return Math.random();
+							}
+							if (!Array.isArray(button.link)) {
+								return 0;
+							}
+							const cardx = get.autoViewAs({ name: button.link[2] });
+							return get.player().getUseValue(cardx, true, true);
+						})
+						.forResult();
+					if (result?.bool) {
+						const cardsx = [result.links[0]];
+						const card = get.autoViewAs({ name: result.links[1][2], nature: result.links[1][3] }, cardsx);
+						const next = player.chooseUseTarget(card, true, cardsx);
+						if (!event.logged) {
+							event.logged = true;
+							next.set("logSkill", event.name);
+						}
+						await next;
+					}
+				}
 			}
 		},
 	},
