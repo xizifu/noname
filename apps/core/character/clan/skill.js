@@ -6549,8 +6549,17 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = event.targets;
 			await game.doAsyncInOrder(targets, target => target.link(true));
-			player.addSkill(event.name + "_effect");
-			player.markAuto(event.name + "_effect", targets);
+			targets.forEach(target => {
+				target
+					.when({ player: "phaseUseEnd" })
+					.filter(evt => evt != trigger)
+					.step(async (event, trigger, player) => {
+						trigger.clanlianhe_check = true;
+					});
+			});
+			const effect = event.name + "_effect";
+			player.addSkill(effect);
+			player.setStorage(effect, player.getStorage(effect).concat(targets), true);
 		},
 		subSkill: {
 			effect: {
@@ -6562,12 +6571,15 @@ const skills = {
 				popup: false,
 				onremove: true,
 				filter(event, player) {
-					return player.getStorage("clanlianhe_effect").includes(event.player);
+					return player.getStorage("clanlianhe_effect").includes(event.player) && event.clanlianhe_check;
 				},
 				marktext: "连",
-				intro: { content: "已选择目标：$" },
+				intro: { content: (storage = [], player) => `已选择目标：${get.translation(storage.toUniqued())}` },
 				async content(event, trigger, player) {
 					player.unmarkAuto(event.name, [trigger.player]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
+					}
 					if (trigger.name == "die") {
 						return;
 					}
