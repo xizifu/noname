@@ -22818,37 +22818,36 @@ const skills = {
 				audio: "dcwuyou",
 				forceaudio: true,
 				enable: "phaseUse",
-				usable: 1,
 				filter(event, player) {
-					if (!player.countCards("h")) {
+					if (!player.hasCards("h")) {
 						return false;
 					}
 					return game.hasPlayer(current => {
-						return current.hasSkill("dcwuyou");
+						return current.hasSkill("dcwuyou") && !current.hasSkill("dcwuyou_targeted");
 					});
 				},
 				filterCard: true,
 				chessForceAll: true,
 				filterTarget(card, player, target) {
-					return target.hasSkill("dcwuyou");
+					return target.hasSkill("dcwuyou") && !target.hasSkill("dcwuyou_targeted");
 				},
 				selectTarget() {
 					const count = game.countPlayer(current => {
-						return current.hasSkill("dcwuyou");
+						return current.hasSkill("dcwuyou") && !current.hasSkill("dcwuyou_targeted");
 					});
 					return count > 1 ? 1 : -1;
 				},
 				check(card) {
 					const player = get.player();
 					const hasFriend = game.hasPlayer(current => {
-						return current.hasSkill("dcwuyou") && get.attitude(player, current) > 0;
+						return current.hasSkill("dcwuyou") && !current.hasSkill("dcwuyou_targeted") && get.attitude(player, current) > 0;
 					});
 					return (hasFriend ? 7 : 1) - get.value(card);
 				},
 				prompt() {
 					const player = get.player(),
 						list = game.filterPlayer(current => {
-							return current.hasSkill("dcwuyou");
+							return current.hasSkill("dcwuyou") && !current.hasSkill("dcwuyou_targeted");
 						}),
 						list2 = list.filter(current => current !== player);
 					const moreThanOne = list.length > 1,
@@ -22868,6 +22867,7 @@ const skills = {
 				delay: false,
 				async content(event, trigger, player) {
 					const { target } = event;
+					target.addTempSkill("dcwuyou_targeted", "phaseUseAfter");
 					const isMe = target === player;
 					let { cards } = event;
 					if (!isMe) {
@@ -22879,7 +22879,9 @@ const skills = {
 						})
 						.randomGets(5);
 					if (names.includes("sha")) {
-						names.splice(names.indexOf("sha") + 1, 0, ...lib.inpile_nature.map(nature => ["sha", nature]));
+						const natures = lib.inpile_nature.slice(0);
+						natures.unshift(null);
+						names[names.indexOf("sha")] = ["sha", natures.randomGet()];
 					}
 					const vcard = names.map(namex => {
 						let name = namex,
@@ -22890,7 +22892,7 @@ const skills = {
 						const info = [get.type(name), "", name, nature];
 						return info;
 					});
-					let str = `###武佑：${isMe ? "请" : "你可以"}选择一个牌名###<div class='text center'>${isMe ? `${get.translation(cards)}视为你选择牌名的牌且无距离和次数限制` : `然后交给${get.translation(player)}一张手牌，此牌视为你选择牌名的牌且无距离和次数限制`}</div>`;
+					let str = `###武佑：你可以选择一个牌名###<div class='text center'>${isMe ? `令${get.translation(cards)}视为你选择牌名的牌且无距离和次数限制` : `然后交给${get.translation(player)}一张手牌，此牌视为你选择牌名的牌且无距离和次数限制`}</div>`;
 					const next = target
 						.chooseButton([str, [vcard, "vcard"]])
 						.set("user", player)
@@ -22899,9 +22901,6 @@ const skills = {
 								user = get.event().user;
 							return user.getUseValue({ name: button.link[2], nature: button.link[3] }) * get.attitude(player, user);
 						});
-					if (isMe) {
-						next.set("forced", true);
-					}
 					const result = await next.forResult();
 					if (!result?.links?.length) {
 						return;
@@ -22921,7 +22920,7 @@ const skills = {
 									return 6 - get.value(card);
 								})
 								.forResult()
-						).cards;
+						)?.cards;
 					}
 					if (!cards) {
 						return;
@@ -23009,6 +23008,7 @@ const skills = {
 					},
 				},
 			},
+			targeted: { charlotte: true },
 		},
 	},
 	dcyixian: {
