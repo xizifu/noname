@@ -10559,6 +10559,10 @@ export class Library {
 			identity_mingcha: "明察",
 			identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
 			visible_sxrm_connect_tag: "连接牌",
+			cardPile: "牌堆",
+			discardPile: "弃牌堆",
+			special: "s区",
+			ordering: "处理区",
 		},
 		{
 			// get(target, prop, receiver) {

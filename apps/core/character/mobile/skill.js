@@ -8413,7 +8413,7 @@ const skills = {
 			await game.delayx();
 			await player.viewHandcards(target);
 			// 基本牌名
-			const names = lib.inpile.filter(name => get.type(name) === "basic");
+			let names = lib.inpile.filter(name => get.type(name) === "basic");
 			// 共同拥有的牌名
 			const allNames = player
 				.getCards("h", card => target.hasCards("h", { name: get.name(card) }))
@@ -8430,49 +8430,44 @@ const skills = {
 				return !target.hasCards("h", { name: info[2] });
 			});
 			const goon = list.length > 0;
-			if (!goon && !allNames.length) {
-				return;
-			}
-			let result;
-			if (!goon) {
-				result = { index: 1 };
-			} else if (!allNames.length) {
-				result = { index: 0 };
-			} else {
-				const listx = names.filter(name => !target.hasCards("h", { name }));
-				result = await player
-					.chooseControl()
-					.set("choiceList", [`视为使用两张${listx.map(name => `【${get.translation(name)}】`).join("、")}${listx.length > 1 ? "中的牌" : ""}（不计入次数且无次数限制）`, `将你与其手牌中的${allNames.map(name => `【${get.translation(name)}】`).join("、")}替换为牌堆中等量的【杀】且你的这些牌不计入手牌上限直到你的结束阶段`])
-					.set("ai", () => {
-						const {
-							player,
-							list: [target, names, allNames],
-						} = get.event();
-						const list = get
-							.inpileVCardList(info => {
-								if (info[0] !== "basic") {
-									return false;
-								}
-								if (info[3]) {
-									return false;
-								}
-								return !target.hasCards("h", { name: info[2] });
-							})
-							.filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), true, false));
-						return Math.max(...list.map(info => player.getUseValue(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), false))) >
-							(() => {
-								let sum = 0;
-								sum += target.getCards("h", { name: allNames }).reduce((num, card) => num + get.value(card, target), 0);
-								sum -= player.getCards("h", { name: allNames }).reduce((num, card) => num + get.value(card, player), 0);
-								return sum;
-							})() *
-								Math.sign(get.attitude(player, target))
-							? 0
-							: 1;
-					})
-					.set("list", [target, names, allNames])
-					.forResult();
-			}
+			const listx = names.filter(name => !target.hasCards("h", { name }));
+			const choiceList = [];
+			choiceList.push(goon ? `视为使用两张${listx.map(name => `【${get.translation(name)}】`).join("、")}${listx.length > 1 ? "中的牌" : ""}（不计入次数且无次数限制）` : "视为使用空气");
+			choiceList.push(allNames.length ? `将你与其手牌中的${allNames.map(name => `【${get.translation(name)}】`).join("、")}替换为牌堆中等量的【杀】且你的这些牌不计入手牌上限直到你的结束阶段` : "替换空气");
+			let result = await player
+				.chooseControl()
+				.set("choiceList", choiceList)
+				.set("ai", () => {
+					const {
+						player,
+						goon,
+						list: [target, names, allNames],
+					} = get.event();
+					const list = get
+						.inpileVCardList(info => {
+							if (info[0] !== "basic") {
+								return false;
+							}
+							if (info[3]) {
+								return false;
+							}
+							return !target.hasCards("h", { name: info[2] });
+						})
+						.filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), true, false));
+					return Math.max(...list.map(info => player.getUseValue(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), false))) >
+						(() => {
+							let sum = 0;
+							sum += target.getCards("h", { name: allNames }).reduce((num, card) => num + get.value(card, target), 0);
+							sum -= player.getCards("h", { name: allNames }).reduce((num, card) => num + get.value(card, player), 0);
+							return sum;
+						})() *
+							Math.sign(get.attitude(player, target))
+						? 0
+						: 1;
+				})
+				.set("list", [target, names, allNames])
+				.set("goon", goon)
+				.forResult();
 			if (result?.index === 0) {
 				const used = [];
 				for (let i = 0; i < 2; i++) {
@@ -8508,6 +8503,7 @@ const skills = {
 							[player, cards[0]],
 							[target, cards[1]],
 						],
+						position: ui.cardPile,
 					})
 					.setContent("loseToDiscardpileMultiple");
 				let gains = [[], []];
@@ -8544,6 +8540,7 @@ const skills = {
 					}
 				}
 			}
+			names = names.filter(name => !target.storage?.["mbzengou_debuff"]?.[name]);
 			if (names.length && target.isIn()) {
 				const choose =
 					names.length > 1
