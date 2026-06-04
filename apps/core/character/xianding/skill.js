@@ -37962,37 +37962,32 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
 		filter(event, player) {
-			return game.countPlayer(current => current.isDamaged()) > player.hp;
+			return game.countPlayer(current => current.isDamaged()) > player.getHp();
 		},
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "wood",
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.gainMaxHp(3);
-			player.recover(3);
-			//player.removeSkill('zhukou');
-			//player.addSkill('yuyun');
-			player.changeSkills(["yuyun"], ["zhukou"]);
+			await player.gainMaxHp(3);
+			await player.recover(3);
+			await player.changeSkills(["yuyun"], ["zhukou"]);
 		},
-		derivation: "yuyun",
+		derivation: ["yuyun", "zhukou"],
 	},
 	yuyun: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		locked: true,
-		filter(event, player) {
-			return player.hp > 0 || player.maxHp > 1;
-		},
 		async cost(event, trigger, player) {
 			if (player.maxHp <= 1) {
-				event.result = { bool: true, cost_data: 1 };
+				event.result = { bool: true, cost_data: 0 };
 			} else {
 				const result = await player
 					.chooseControl("失去体力", "减体力上限")
-					.set("prompt", "玉陨：失去1点体力或减1点体力上限")
-					.set("ai", function () {
-						var player = _status.event.player;
+					.set("prompt", "玉陨：请选择一项")
+					.set("ai", () => {
+						const player = get.player();
 						if (player.hp < 2 || player.getDamagedHp() > 2) {
 							return 1;
 						}
@@ -38031,8 +38026,8 @@ const skills = {
 						return !get.event().selected.includes(button.link);
 					})
 					.set("selected", selected)
-					.set("ai", function (button) {
-						let player = _status.event.player;
+					.set("ai", button => {
+						const player = get.player();
 						switch (button.link) {
 							case 0:
 								return 2;
@@ -38040,17 +38035,17 @@ const skills = {
 								return (
 									Math.max(
 										0.5,
-										player.countCards("hs", function (card) {
+										player.countCards("hs", card => {
 											return get.name(card) == "sha" && player.hasValueTarget(card);
 										}) - player.getCardUsable({ name: "sha" })
 									) +
 									Math.max.apply(
 										Math,
 										game
-											.filterPlayer(function (current) {
+											.filterPlayer(current => {
 												return current != player;
 											})
-											.map(function (target) {
+											.map(target => {
 												return get.damageEffect(target, player, player);
 											})
 									)
@@ -38064,17 +38059,17 @@ const skills = {
 									Math.max.apply(
 										Math,
 										game
-											.filterPlayer(function (current) {
+											.filterPlayer(current => {
 												return current != player && current.hasCard(card => lib.filter.canBeGained(card, current, player), "hej");
 											})
-											.map(function (target) {
+											.map(target => {
 												return get.effect(target, { name: "shunshou_copy" }, player, player);
 											})
 									)
 								);
 							case 4:
 								var num = 0;
-								game.countPlayer(function (current) {
+								game.countPlayer(current => {
 									if (current != player && get.attitude(player, current) > 0) {
 										var num2 = Math.min(5, current.maxHp) - current.countCards("h");
 										if (num2 > num) {
@@ -38086,7 +38081,7 @@ const skills = {
 						}
 					})
 					.forResult();
-				if (result.bool) {
+				if (result?.bool) {
 					const choice = result.links[0];
 					selected.add(choice);
 					game.log(player, "选择了", "#g【玉陨】", "的", "#y选项" + get.cnNumber(1 + choice, true));
@@ -38097,13 +38092,13 @@ const skills = {
 						case 1: {
 							if (game.hasPlayer(current => current != player)) {
 								const result2 = await player
-									.chooseTarget(lib.filter.notMe, true, "对一名其他角色造成1点伤害")
-									.set("ai", function (target) {
-										let player = _status.event.player;
+									.chooseTarget(lib.filter.notMe, true, "请选择一名其他角色，你对其造成1点伤害且本回合你对其使用【杀】无距离和次数限制")
+									.set("ai", target => {
+										const player = get.player();
 										return get.damageEffect(target, player, player);
 									})
 									.forResult();
-								if (result2.bool) {
+								if (result2?.bool) {
 									const target = result2.targets[0];
 									player.line(target, "green");
 									await target.damage();
@@ -38118,20 +38113,20 @@ const skills = {
 							break;
 						case 3: {
 							if (
-								game.hasPlayer(function (current) {
-									return current != player && current.hasCard(card => lib.filter.canBeGained(card, current, player), "hej");
+								game.hasPlayer(current => {
+									return current != player && current.hasGainableCards(player, "hej");
 								})
 							) {
 								const result2 = await player
-									.chooseTarget(true, "获得一名其他角色区域内的一张牌", function (card, player, current) {
-										return current != player && current.hasCard(card => lib.filter.canBeGained(card, current, player), "hej");
+									.chooseTarget(true, "获得一名其他角色区域内的一张牌", (card, player, current) => {
+										return current != player && current.hasGainableCards(player, "hej");
 									})
-									.set("ai", function (target) {
-										let player = _status.event.player;
+									.set("ai", target => {
+										const player = get.player();
 										return get.effect(target, { name: "shunshou_copy" }, player, player);
 									})
 									.forResult();
-								if (result2.bool) {
+								if (result2?.bool) {
 									const target = result2.targets[0];
 									player.line(target, "green");
 									await player.gainPlayerCard(target, "hej", true);
@@ -38141,16 +38136,17 @@ const skills = {
 						}
 						case 4: {
 							if (
-								game.hasPlayer(function (current) {
+								game.hasPlayer(current => {
 									return current != player && current.countCards("h") < Math.min(5, current.maxHp);
 								})
 							) {
 								const result2 = await player
-									.chooseTarget(true, "令一名其他角色将手牌数摸至体力上限", function (card, player, current) {
+									.chooseTarget(true, "令一名其他角色将手牌数摸至体力上限", (card, player, current) => {
 										return current != player && current.countCards("h") < Math.min(5, current.maxHp);
 									})
-									.set("ai", function (target) {
-										let att = get.attitude(_status.event.player, target);
+									.set("ai", target => {
+										const player = get.player();
+										let att = get.attitude(player, target);
 										if (target.hasSkillTag("nogain")) {
 											att /= 6;
 										}
@@ -38160,7 +38156,7 @@ const skills = {
 										return att / 3;
 									})
 									.forResult();
-								if (result2.bool) {
+								if (result2?.bool) {
 									const target = result2.targets[0];
 									player.line(target, "green");
 									await target.drawTo(Math.min(5, target.maxHp));
@@ -38182,6 +38178,8 @@ const skills = {
 					},
 				},
 				charlotte: true,
+				mark: true,
+				intro: { content: "本回合手牌上限无限" },
 			},
 			sha: {
 				mod: {
@@ -38198,6 +38196,7 @@ const skills = {
 				},
 				charlotte: true,
 				onremove: true,
+				intro: { content: "本回合对$使用【杀】无距离和次数限制" },
 			},
 		},
 	},
