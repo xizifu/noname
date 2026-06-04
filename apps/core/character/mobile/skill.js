@@ -13407,17 +13407,24 @@ const skills = {
 			//let num = get.mode() == "identity" ? 3 : 4;
 			let num = 3;
 			const history = game.getAllGlobalHistory("everything");
+			let index;
 			for (let i = history.length - 1; i >= 0; i--) {
 				const evt = history[i];
 				if (evt.name == "jieyu" && evt.player == player) {
 					if (!event || evt != event) {
+						index = i;
 						break;
 					}
 				}
-				if (evt.name == "useCard" && evt.player != player && evt.targets && evt.targets.includes(player) && get.tag(evt.card, "damage")) {
-					num--;
-					if (num == 1) {
-						break;
+			}
+			if (index) {
+				for (let i = index + 1; i < history.length; i++) {
+					const evt = history[i];
+					if (evt.name == "useCard" && evt.player != player && evt.targets?.includes(player) && get.is.damageCard(evt.card)) {
+						num--;
+						if (num == 1) {
+							break;
+						}
 					}
 				}
 			}
