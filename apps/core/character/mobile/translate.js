@@ -969,7 +969,7 @@ const translates = {
 	friend_pangtong: "友庞统",
 	friend_pangtong_prefix: "友",
 	friendmanjuan: "漫卷",
-	friendmanjuan_info: "当你不因本技能一次性获得至少两张牌后，你可以将这些牌中的任意张牌以任意顺序置于牌堆顶。若如此做，你每放置一张牌，便从弃牌堆中随机获得一张与此牌类别不同的牌（至多获得五张）。",
+	friendmanjuan_info: "每轮限五次。当你不因本技能一次性获得至少两张牌后，你可以将这些牌中的任意张牌以任意顺序置于牌堆顶。若如此做，你每放置一张牌，便从弃牌堆中随机获得一张与此牌类别不同的牌（至多获得五张）。",
 	friendyangming: "养名",
 	friendyangming_info: "出牌阶段结束时，若你本阶段失去过至少两张手牌，则你可以将牌堆顶的四张牌置于你的武将牌上，然后使用其中任意张花色各不相同的牌（无次数限制），将剩余牌置入弃牌堆。",
 	friendpangtonggongli: "共砺",
