@@ -9923,51 +9923,27 @@ const skills = {
 				if (!cards.length) {
 					return;
 				}
-				const result =
-					cards.length > 1
-						? await player
-								.chooseButtonTarget({
-									createDialog: [`博鉴：请选择要分配的牌`, cards],
-									selectButton: [1, Infinity],
-									forced: true,
-									filterTarget: true,
-									ai1(button) {
-										return get.value(button.link);
-									},
-									canHidden: true,
-									ai2(target) {
-										const player = get.player();
-										const card = ui.selected.buttons[0].link;
-										if (card) {
-											return get.value(card, target) * get.attitude(player, target);
-										}
-										return 1;
-									},
-								})
-								.forResult()
-						: await player
-								.chooseTarget(`博鉴：令一名角色获得${get.translation(cards)}`, true)
-								.set("ai", target => {
-									const { player, enemy } = get.event();
-									const att = get.attitude(player, target);
-									if (enemy) {
-										return -att;
-									} else if (att > 0) {
-										return att / (1 + target.countCards("h"));
-									} else {
-										return att / 100;
-									}
-								})
-								.set("enemy", get.value(cards[0], player, "raw") < 0)
-								.forResult();
+				const result = await player
+					.chooseButtonTarget({
+						createDialog: [`博鉴：请将其中一张牌交给一名角色`, cards],
+						forced: true,
+						filterTarget: true,
+						ai1(button) {
+							return get.value(button.link);
+						},
+						canHidden: true,
+						ai2(target) {
+							const player = get.player();
+							const card = ui.selected.buttons[0].link;
+							if (card) {
+								return get.value(card, target) * get.attitude(player, target);
+							}
+							return 1;
+						},
+					})
+					.forResult();
 				if (result?.bool) {
-					let links;
-					if (!result.links?.length) {
-						links = cards.slice();
-					} else {
-						links = result.links;
-					}
-					await result.targets[0].gain(links, "gain2");
+					await result.targets[0].gain(result.links, "gain2");
 				}
 			}
 		},
