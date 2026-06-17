@@ -2463,9 +2463,9 @@ export class Game {
 			args.length === 1 && get.objtype(args[0]) === "object"
 				? args[0]
 				: {
-						path: args.filter(arg => typeof arg === "string" || typeof arg === "number").join("/"),
-						onError: args.find(arg => typeof arg === "function"),
-					};
+					path: args.filter(arg => typeof arg === "string" || typeof arg === "number").join("/"),
+					onError: args.find(arg => typeof arg === "function"),
+				};
 
 		const {
 			path = "",
@@ -5086,7 +5086,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 		}
 		if (!callback) {
-			callback = function () {};
+			callback = function () { };
 		}
 		//try{
 		//	if(noinput){
@@ -9447,59 +9447,59 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		return new Promise(
 			query
 				? (resolve, reject) => {
-						lib.status.reload++;
-						const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).get(query);
-						idbRequest.onerror = event => {
-							if (typeof onError == "function") {
-								onError(event);
-								game.reload2();
-								resolve();
-							} else {
-								game.reload2();
-								reject(event);
-							}
-						};
-						idbRequest.onsuccess = event => {
-							const result = event.target.result;
-							if (typeof onSuccess == "function") {
-								_status.dburgent = true;
-								onSuccess(result);
-								delete _status.dburgent;
-							}
+					lib.status.reload++;
+					const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).get(query);
+					idbRequest.onerror = event => {
+						if (typeof onError == "function") {
+							onError(event);
 							game.reload2();
-							resolve(result);
-						};
-					}
+							resolve();
+						} else {
+							game.reload2();
+							reject(event);
+						}
+					};
+					idbRequest.onsuccess = event => {
+						const result = event.target.result;
+						if (typeof onSuccess == "function") {
+							_status.dburgent = true;
+							onSuccess(result);
+							delete _status.dburgent;
+						}
+						game.reload2();
+						resolve(result);
+					};
+				}
 				: (resolve, reject) => {
-						lib.status.reload++;
-						const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).openCursor(),
-							object = {};
-						idbRequest.onerror = event => {
-							if (typeof onError == "function") {
-								onError(event);
-								game.reload2();
-								resolve();
-							} else {
-								game.reload2();
-								reject(event);
-							}
-						};
-						idbRequest.onsuccess = event => {
-							const result = event.target.result;
-							if (result) {
-								object[result.key] = result.value;
-								result.continue();
-								return;
-							}
-							if (typeof onSuccess == "function") {
-								_status.dburgent = true;
-								onSuccess(object);
-								delete _status.dburgent;
-							}
+					lib.status.reload++;
+					const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).openCursor(),
+						object = {};
+					idbRequest.onerror = event => {
+						if (typeof onError == "function") {
+							onError(event);
 							game.reload2();
-							resolve(object);
-						};
-					}
+							resolve();
+						} else {
+							game.reload2();
+							reject(event);
+						}
+					};
+					idbRequest.onsuccess = event => {
+						const result = event.target.result;
+						if (result) {
+							object[result.key] = result.value;
+							result.continue();
+							return;
+						}
+						if (typeof onSuccess == "function") {
+							_status.dburgent = true;
+							onSuccess(object);
+							delete _status.dburgent;
+						}
+						game.reload2();
+						resolve(object);
+					};
+				}
 		);
 	}
 	/**
@@ -9544,47 +9544,47 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 		return query
 			? new Promise((resolve, reject) => {
-					lib.status.reload++;
-					const record = lib.db.transaction([storeName], "readwrite").objectStore(storeName).delete(query);
-					record.onerror = event => {
-						if (typeof onError == "function") {
-							onError(event);
-							game.reload2();
-							resolve();
-						} else {
-							game.reload2();
-							reject(event);
-						}
-					};
-					record.onsuccess = event => {
-						if (typeof onSuccess == "function") {
-							onSuccess(event);
-						}
+				lib.status.reload++;
+				const record = lib.db.transaction([storeName], "readwrite").objectStore(storeName).delete(query);
+				record.onerror = event => {
+					if (typeof onError == "function") {
+						onError(event);
 						game.reload2();
-						resolve(event);
-					};
-				})
+						resolve();
+					} else {
+						game.reload2();
+						reject(event);
+					}
+				};
+				record.onsuccess = event => {
+					if (typeof onSuccess == "function") {
+						onSuccess(event);
+					}
+					game.reload2();
+					resolve(event);
+				};
+			})
 			: game.getDB(storeName).then(object => {
-					const keys = Object.keys(object);
-					lib.status.reload += keys.length;
-					const store = lib.db.transaction([storeName], "readwrite").objectStore(storeName);
-					return Promise.allSettled(
-						keys.map(
-							key =>
-								new Promise((resolve, reject) => {
-									const request = store.delete(key);
-									request.onerror = event => {
-										game.reload2();
-										reject(event);
-									};
-									request.onsuccess = event => {
-										game.reload2();
-										resolve(event);
-									};
-								})
-						)
-					);
-				});
+				const keys = Object.keys(object);
+				lib.status.reload += keys.length;
+				const store = lib.db.transaction([storeName], "readwrite").objectStore(storeName);
+				return Promise.allSettled(
+					keys.map(
+						key =>
+							new Promise((resolve, reject) => {
+								const request = store.delete(key);
+								request.onerror = event => {
+									game.reload2();
+									reject(event);
+								};
+								request.onsuccess = event => {
+									game.reload2();
+									resolve(event);
+								};
+							})
+					)
+				);
+			});
 	}
 	/**
 	 * @param { string } key
@@ -10174,7 +10174,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		return game.players.concat(game.dead).some(value => (includeOut || !value.isOut()) && func(value));
 	}
 	/**
-	 * @param { (player: Player) => boolean } [func]
+	 * @param { (player: Player) => number | boolean } [func]
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer(func, includeOut) {
@@ -10195,7 +10195,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}, 0);
 	}
 	/**
-	 * @param { (player: Player) => boolean } func
+	 * @param { (player: Player) => number | boolean } func
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer2(func = lib.filter.all, includeOut) {
@@ -10515,7 +10515,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			ui.arena.setNumber(parseInt(ui.arena.dataset.number) + 1);
 			let position = !isNext ? parseInt(target.dataset.position) : parseInt(target.dataset.position) + 1;
 			if (position == 0) {
-				position = players.length;
+				position = parseInt(ui.arena.dataset.number) - 1;
 			}
 			players.forEach(value => {
 				if (parseInt(value.dataset.position) >= position) {
@@ -10627,7 +10627,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						)
 						.finished.then(() => wave.remove());
 					list.push(shockWave);
-					return Promise.all(list);
+					return Promise.allSettled(list);
 				});
 			};
 			await animate(player);
@@ -10661,11 +10661,25 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			custom: [],
 			useSkill: [],
 		});
+		for (let i = 0; i < players[0].actionHistory.length; i++) {
+			["isRound", "isSkipped"].forEach(key => {
+				if (players[0].actionHistory[i][key]) {
+					player.actionHistory[i][key] = true;
+				}
+			});
+		}
 		player.stat = new Array(players[0].stat.length).fill({
 			card: {},
 			skill: {},
 			triggerSkill: {},
 		});
+		for (let i = 0; i < players[0].stat.length; i++) {
+			["isRound", "isSkipped"].forEach(key => {
+				if (players[0].stat[i][key]) {
+					player.stat[i][key] = true;
+				}
+			});
+		}
 		return player;
 	}
 	/**
@@ -10725,7 +10739,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		if (_status.connectMode) {
 			delete lib.playerOL[player.playerid];
 		}
-		//如果被移除角色为当前角色，需要特殊处理
+		//如果被移除角色为当前回合角色，需要特殊处理
 		const evt = get.event();
 		const loop = evt.getParent("phaseLoop", true);
 		if (loop?.player == player) {
@@ -10811,7 +10825,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					);
 				}
 
-				//玩家dom自身的溃散动画（缩小并变灰），建议removePlayer的不要加onfinish后续移除角色的dom需要用到onfinish
+				//玩家dom自身的溃散动画（缩小并变灰）
 				const animation = player.animate(
 					[
 						{ transform: "scale(1)", filter: "brightness(1) grayscale(0)", opacity: 1 },
@@ -10826,51 +10840,51 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				list.push(animation);
 				return Promise.allSettled(list);
 			};
-			await animate(player).then(() => {
-				//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
-				player.classList.add("dead");
-				player.classList.add("out");
-				player.style.display = "none";
-				player.delete();
-				//调整布局
-				const players = game.players.concat(game.dead);
-				const position = parseInt(player.dataset.position);
-				players.forEach(value => {
-					if (parseInt(value.dataset.position) > position) {
-						value.dataset.position = parseInt(value.dataset.position) - 1;
-					}
-				});
-				ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
-				player.removed = true;
-				if (player == game.me) {
-					//把角色移入旁观，主机不可能真的进旁观的，所以不必在意
-					const func = (player, config) => {
-						game.swapPlayer(game.players.find(i => i != player));
-						const replacePlayer = function (e) {
-							if (!_status.auto || !game.notMe) {
-								return;
-							}
-							game.swapPlayer(this || e.target.parentElement);
-						};
-						game.players.forEach(p => p.addEventListener(lib.config.touchscreen ? "touchend" : "click", replacePlayer));
-						game.notMe = true;
-						_status.auto = true;
-						if (game.online) {
-							if (!config.observe_handcard) {
-								ui.arena.classList.add("observe");
-							}
-							game.observe = true;
-						}
-					};
-					func(player, configOL);
-					//ui.me.hide();
-					ui.auto.hide();
-					ui.wuxie.hide();
+			await animate(player);
+			//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
+			player.classList.add("dead");
+			player.classList.add("out");
+			player.style.display = "none";
+			player.delete();
+			await game.delay(1);
+			//调整布局
+			const players = game.players.concat(game.dead);
+			const position = parseInt(player.dataset.position);
+			players.forEach(value => {
+				if (parseInt(value.dataset.position) > position) {
+					value.dataset.position = parseInt(value.dataset.position) - 1;
 				}
-				setTimeout(() => {
-					player.removeAttribute("style");
-				}, 500);
 			});
+			ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
+			player.removed = true;
+			if (player == game.me) {
+				//把角色移入旁观，主机不可能真的进旁观的，所以不必在意
+				const func = (player, config) => {
+					game.swapPlayer(game.players.find(i => i != player));
+					const replacePlayer = function (e) {
+						if (!_status.auto || !game.notMe) {
+							return;
+						}
+						game.swapPlayer(this || e.target.parentElement);
+					};
+					game.players.forEach(p => p.addEventListener(lib.config.touchscreen ? "touchend" : "click", replacePlayer));
+					game.notMe = true;
+					_status.auto = true;
+					if (game.online) {
+						if (!config.observe_handcard) {
+							ui.arena.classList.add("observe");
+						}
+						game.observe = true;
+					}
+				};
+				func(player, configOL);
+				//ui.me.hide();
+				ui.auto.hide();
+				ui.wuxie.hide();
+			}
+			setTimeout(() => {
+				player.removeAttribute("style");
+			}, 500);
 		};
 		game.broadcast(removePlayer, player, config, get.copy(lib.configOL));
 		await removePlayer(player, config, get.copy(lib.configOL));
