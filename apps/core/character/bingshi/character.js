@@ -1,4 +1,29 @@
 const characters = {
+	pot_xiahouba: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["potlibing", "potpoxi"],
+		names: "夏侯|霸",
+	},
+	pot_chenqun: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["potfaen", "potdingpin"],
+	},
+	pot_caozhen: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["potsifeng"],
+	},
+	pot_lvyi: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["pothuilv", "potsongyan", "potshishi"],
+	},
 	pot_caoshuang: {
 		sex: "male",
 		group: "wei",
@@ -16,12 +41,6 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["potnigu", "potlulian"],
-	},
-	zhuji: {
-		sex: "male",
-		group: "wu",
-		hp: 4,
-		skills: ["potjiezhu", "pothuanshi"],
 	},
 	sp_zhonghui: {
 		sex: "male",
