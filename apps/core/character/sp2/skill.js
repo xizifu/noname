@@ -319,12 +319,8 @@ const skills = {
 				audio: "starfanglang",
 				charlotte: true,
 				onremove: true,
-				intro: {
-					content: "cards",
-				},
-				trigger: {
-					player: ["useCard", "respond"],
-				},
+				intro: { content: "cards" },
+				trigger: { player: ["useCard", "respond"] },
 				forced: true,
 				filter(event, player) {
 					const storage = player.getStorage("starfanglang_draw");
@@ -343,29 +339,24 @@ const skills = {
 			},
 			gain: {
 				audio: "starfanglang",
-				trigger: {
-					player: "phaseJieshuBegin",
-				},
+				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
-					return player.countDiscardableCards(player, "he") > 0 && player.getStorage("starfanglang_draw").length > 0;
+					return player.hasDiscardableCards(player, "he");
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseToDiscard(`###${get.prompt(event.skill)}###你可以弃置一张牌，然后你获得弃牌堆中与放浪展示牌类别、点数、花色相同的牌各一张牌。`, "he", "chooseonly")
-						.set("ai", card => 6 - get.value(card))
+						.chooseToDiscard(`###${get.prompt(event.skill)}###你可以弃置一张牌，然后你获得弃牌堆中与此牌类别、点数、花色相同的牌各一张牌。`, "he", "chooseonly")
+						.set("ai", card => 7 - get.value(card))
 						.forResult();
 				},
 				async content(event, trigger, player) {
 					const { cards } = event;
 					await player.discard(cards);
-					const getList = get.info("starxisong").getList;
 					const gain = [];
 					const keys = ["type2", "suit", "number"];
-					const list = player.getStorage("starfanglang_draw").map(i => getList(i));
 					keys.forEach((key, idx) => {
 						const card = get.discardPile(card => {
-							const val = get[key](card);
-							return !gain.includes(card) && list.some(i => i[idx] == val);
+							return !gain.includes(card) &&get[key](card)==get[key](cards[0]);
 						});
 						if (card) {
 							gain.push(card);
