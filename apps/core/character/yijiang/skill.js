@@ -3259,6 +3259,12 @@ const skills = {
 					return triggername === "dyingAfter" ? player.storage.juexiang_lie : 1;
 				},
 				async cost(event, trigger, player) {
+					if (event.triggername == "dyingAfter") {
+						if (!player.countMark("juexiang_lie")) {
+							return;
+						}
+						player.storage.juexiang_lie--;
+					}
 					event.result = await player
 						.chooseTarget({
 							prompt: get.prompt2("juexiang_lie"),
@@ -3269,7 +3275,6 @@ const skills = {
 						})
 						.forResult();
 				},
-				logTarget: "targets",
 				async content(event, trigger, player) {
 					const target = event.targets[0];
 					await target.loseHp();
