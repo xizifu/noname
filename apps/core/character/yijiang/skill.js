@@ -210,21 +210,24 @@ const skills = {
 			global: "loseAsyncAfter",
 		},
 		filter(event, player) {
-			return event.type == "discard" && event.getl(player).cards2.length > 0 && player.countCards("h") > 0 && !player.hasSkill("olbingyi_blocker", null, null, false);
+			return event.type == "discard" && event.getl(player).cards2.length > 0 && player.hasCards("h") && !player.hasSkill("olbingyi_blocker", null, null, false);
 		},
 		prompt2(event, player) {
 			let str = "展示所有手牌，然后";
 			const hs = player.getCards("h");
-			const color = get.color(hs);
-			if (color === "none") {
+			const colors = hs.map(card => get.color(card)).toUniqued();
+			if (colors.length != 1) {
 				return str + "无事发生";
 			}
 			str += "令至多" + get.cnNumber(hs.length) + "名其他角色和自己各摸一张牌";
 			return str;
 		},
 		check(event, player) {
-			var color = get.color(player.getCards("h"));
-			return color != "none";
+			const colors = player
+				.getCards("h")
+				.map(card => get.color(card))
+				.toUniqued();
+			return colors.length == 1;
 		},
 		async content(event, trigger, player) {
 			player.addTempSkill("olbingyi_blocker", ["phaseZhunbeiAfter", "phaseJudgeAfter", "phaseDrawAfter", "phaseUseAfter", "phaseDiscardAfter", "phaseJieshuAfter"]);
@@ -232,30 +235,33 @@ const skills = {
 			const cards = player.getCards("h");
 			await player.showCards(cards, `${get.translation(player)}发动了【秉壹】`);
 
-			if (get.color(cards) === "none") {
+			const colors = cards.map(card => get.color(card)).toUniqued();
+			if (colors.length != 1) {
 				return;
 			}
 
 			const num = cards.length;
-			const result = await player
-				.chooseTarget({
-					prompt: `令至多${get.cnNumber(num)}名角色也各摸一张牌`,
-					filterTarget(card, player, target) {
-						return player !== target;
-					},
-					selectTarget: [1, num],
-					ai(target) {
-						const player = get.player();
-						let att = get.attitude(player, target) / Math.sqrt(1 + target.countCards("h"));
-						if (target.hasSkillTag("nogain")) {
-							att /= 10;
-						}
-						return att;
-					},
-				})
-				.forResult();
+			const result = !game.hasPlayer(current => current !== player)
+				? { bool: false }
+				: await player
+						.chooseTarget({
+							prompt: `秉壹：令至多${get.cnNumber(num)}名其他角色也各摸一张牌`,
+							filterTarget(card, player, target) {
+								return player !== target;
+							},
+							selectTarget: [1, num],
+							ai(target) {
+								const player = get.player();
+								let att = get.attitude(player, target) / Math.sqrt(1 + target.countCards("h"));
+								if (target.hasSkillTag("nogain")) {
+									att /= 10;
+								}
+								return att;
+							},
+						})
+						.forResult();
 
-			if (!result.bool || !result.targets?.length) {
+			if (!result?.bool || !result.targets?.length) {
 				await player.draw();
 				return;
 			}
@@ -5773,6 +5779,9 @@ const skills = {
 
 			let num = 1;
 			for (const target of targets) {
+				if (!target.isIn()) {
+					continue;
+				}
 				const res = get.damageEffect(target, player, target, "fire");
 				const result = await target
 					.chooseToDiscard({
@@ -5799,7 +5808,7 @@ const skills = {
 					.set("res", res)
 					.set("num", num)
 					.forResult();
-				if (result.bool && result.cards?.length) {
+				if (result?.bool && result.cards?.length) {
 					num = result.cards.length + 1;
 				} else {
 					await target.damage({
@@ -9852,7 +9861,7 @@ const skills = {
 				.set("res", res)
 				.set("num", num)
 				.forResult();
-			if (!result.bool) {
+			if (!result?.bool) {
 				await target.damage({ nature: "fire" });
 			}
 		},

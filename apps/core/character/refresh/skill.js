@@ -2518,7 +2518,7 @@ const skills = {
 							.set("res", get.damageEffect(target, player, target, "fire"))
 							.forResult();
 
-						if (!result.bool) {
+						if (!result?.bool) {
 							await target.damage(2, "fire");
 							num = 1;
 						} else {
