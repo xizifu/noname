@@ -36,7 +36,6 @@ const skills = {
 			} else {
 				game.log(trigger.card, "被无效了");
 				trigger.getParent().all_excluded = true;
-				trigger.getParent().targets.length = 0;
 			}
 			const playerResult = result.bool;
 			const lastResult = player.getStorage(event.name + "_last", void 0);
