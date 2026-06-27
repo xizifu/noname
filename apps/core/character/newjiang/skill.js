@@ -5550,13 +5550,17 @@ const skills = {
 						if (!card.cards) {
 							return;
 						}
-						return card.cards.some(i => i.hasGaintag("cibei_mark"));
+						if (card.cards.some(i => i.hasGaintag("cibei_mark"))) {
+							return true;
+						}
 					},
 					cardUsable(card, player) {
 						if (!card.cards) {
 							return;
 						}
-						return card.cards.some(i => i.hasGaintag("cibei_mark"));
+						if (card.cards.some(i => i.hasGaintag("cibei_mark"))) {
+							return true;
+						}
 					},
 				},
 			},
