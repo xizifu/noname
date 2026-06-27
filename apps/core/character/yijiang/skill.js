@@ -8590,11 +8590,16 @@ const skills = {
 				const next = current
 					.chooseToRespond({
 						prompt: "是否替" + get.translation(player) + "打出一张杀？",
-						card: get.autoViewAs({ name: "sha" }),
 						ai() {
 							const event = get.event();
 							return get.attitude(event.player, event.source) - 2;
 						},
+					})
+					.set("filterCard", function (card, player) {
+						if (get.name(card) !== "sha") {
+							return false;
+						}
+						return lib.filter.cardRespondable(card, player);
 					})
 					.set("source", player)
 					.set("jijiang", true)
