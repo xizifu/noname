@@ -7007,7 +7007,7 @@ const skills = {
 						if (![player, targetx].includes(target)) {
 							return false;
 						}
-						return target.hasCards("he");
+						return target.hasCards("he", cardx => targetx.canAddJudge(get.autoViewAs({ name: "lebu" }, [cardx])));
 					},
 					ai(target) {
 						// 如果是队友就随机盖一方的牌（若残血盖自己的）
@@ -7031,10 +7031,18 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			if (!target.hasCards("he", card => trigger.player.canAddJudge(get.autoViewAs({ name: "lebu" }, [card])))) {
+				return;
+			}
 			const result = await player
 				.choosePlayerCard({
 					prompt: `选择一张牌当作【乐不思蜀】置入${get.translation(trigger.player)}的判定区`,
+					filterButton(button) {
+						const targetx = get.event().targetx;
+						return targetx.canAddJudge(get.autoViewAs({ name: "lebu" }, [button.link]));
+					},
 					target,
+					targetx: trigger.player,
 					position: "he",
 					forced: true,
 					ai(button) {
@@ -7065,7 +7073,7 @@ const skills = {
 					return event.card?.name === "lebu" && !event.result?.bool;
 				},
 				prompt2(event, player) {
-					return `将${get.translation(event.player)}的此【乐不思蜀】改为跳过弃牌阶段？`;
+					return `将${get.translation(event.player)}的${get.translation(event.card)}的效果改为跳过弃牌阶段？`;
 				},
 				check(event, player) {
 					return get.attitude(player, event.player) > 0;
