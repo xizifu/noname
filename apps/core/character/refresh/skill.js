@@ -5778,7 +5778,7 @@ const skills = {
 			var needRecover = false;
 			result = await target.draw("visible").forResult();
 
-			var card = result[0];
+			var card = result?.cards?.[0];
 			if (get.type(card) == "basic") {
 				player.draw();
 			}

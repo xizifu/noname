@@ -2479,10 +2479,10 @@ const skills = {
 				}
 				return 2;
 			},
-			backup(result, player) {
+			backup(links, player) {
 				return {
 					audio: "dcfuxie",
-					choice: result[0],
+					choice: links[0],
 					filterCard(card) {
 						const { choice } = get.info("dcfuxie_backup");
 						if (Array.isArray(choice)) {
@@ -2520,8 +2520,8 @@ const skills = {
 					},
 				};
 			},
-			prompt(result, player) {
-				let prompt = Array.isArray(result[0]) ? "弃置一张武器牌" : `失去【${get.translation(result[0])}】`;
+			prompt(links, player) {
+				let prompt = Array.isArray(links[0]) ? "弃置一张武器牌" : `失去【${get.translation(links[0])}】`;
 				return `${prompt}，令一名角色弃置两张牌`;
 			},
 		},

@@ -33472,7 +33472,7 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					const result = (await player.draw(2).forResult()).cards;
-					if (Array.isArray(result) && result.length) {
+					if (get.itemtype(result) == "cards") {
 						player.addTempSkill("jdlongdan_mark", ["phaseChange", "phaseAfter"]);
 					}
 				},

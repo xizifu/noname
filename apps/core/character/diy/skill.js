@@ -9063,7 +9063,7 @@ const skills = {
 			await player.gain(card, target, "giveAuto", "bySelf");
 			result = await player.draw().forResult();
 
-			if (Array.isArray(result) && get.color(card) != get.color(result[0])) {
+			if (Array.isArray(result?.cards) && get.color(card) != get.color(result.cards[0])) {
 				await player.loseHp();
 			}
 		},

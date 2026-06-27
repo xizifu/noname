@@ -16922,7 +16922,7 @@ const skills = {
 			"step 0";
 			target.draw();
 			"step 1";
-			var card = result[0];
+			var card = result?.cards?.[0];
 			if (
 				card &&
 				game.hasPlayer(function (current) {
@@ -16972,7 +16972,7 @@ const skills = {
 			"step 0";
 			player.draw();
 			"step 1";
-			event.card = result[0];
+			event.card = result?.cards?.[0];
 			var ablers = player.getLastUsed(1).targets.slice(0);
 			for (var i = 0; i < ablers.length; i++) {
 				if (ablers[i] == player || !trigger.targets.includes(ablers[i])) {
