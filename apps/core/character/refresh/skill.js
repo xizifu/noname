@@ -5922,7 +5922,13 @@ const skills = {
 
 			while (current != player) {
 				if (current.group == "shu") {
-					var next = current.chooseToRespond("是否替" + get.translation(player) + "打出一张杀？", { name: "sha" });
+					var next = current.chooseToRespond("是否替" + get.translation(player) + "打出一张杀？");
+					next.set("filterCard", function (card, player) {
+                        if (get.name(card) !== "sha") {
+                            return false;
+                        }
+                        return lib.filter.cardRespondable(card, player);
+                    });
 					next.set("ai", function () {
 						var event = _status.event;
 						return get.attitude(event.player, event.source) - 2;
