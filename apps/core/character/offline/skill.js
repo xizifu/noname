@@ -39445,15 +39445,15 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var evt = trigger.getParent("phaseUse");
+			const evt = trigger.getParent("phaseUse");
 			if (evt && evt.name == "phaseUse") {
 				evt.skipped = true;
 			}
-			const evt = trigger.getParent("phase");
-			if (evt) {
-				game.log(evt.player, "结束了回合");
-				evt.num = evt.phaseList.length;
-				evt.goto(11);
+			const evtx = trigger.getParent("phase");
+			if (evtx) {
+				game.log(evtx.player, "结束了回合");
+				evtx.num = evtx.phaseList.length;
+				evtx.goto(11);
 			}
 			_status._pszhonghu = player;
 		},
