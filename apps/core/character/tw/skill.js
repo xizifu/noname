@@ -16436,7 +16436,7 @@ const skills = {
 			}
 			return (Math.max(4, 7.1 - num) - get.value(card)) / num;
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		content() {
 			player.draw();

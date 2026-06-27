@@ -10853,7 +10853,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		position: "he",
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		selectCard: 2,
 		prompt: "弃置两张牌并摸一张牌",
 		check(card) {
