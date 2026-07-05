@@ -1,4 +1,16 @@
 const characters = {
+	dc_sb_guanyu: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["dcsbguanwu", "dcsbweishi", "dcsbjuao"],
+	},
+	wu_zhangfei: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["dczisheng", "dcxianlve", "dchaoxian"],
+	},
 	dc_sb_zhugeliang: {
 		sex: "male",
 		group: "shu",
@@ -9,16 +21,14 @@ const characters = {
 	dc_shen_guanyu: {
 		sex: "male",
 		group: "shen",
-		hp: 4,
-		maxHp: 5,
+		hp: 5,
 		skills: ["dcwushen", "dcwuhun"],
 		groupInGuozhan: "shu",
 	},
 	dc_shen_liubei: {
 		sex: "male",
 		group: "shen",
-		hp: 4,
-		maxHp: 6,
+		hp: 6,
 		skills: ["dclongnu", "dcjieying"],
 		groupInGuozhan: "shu",
 	},

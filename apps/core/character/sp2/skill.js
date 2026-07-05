@@ -1889,7 +1889,7 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			const discardedCards = event.cards || [];
-			const num = discaredCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
+			const num = discardedCards.length - ((await player.drawTo(5).forResult()).cards || []).length;
 			switch (get.sgn(num)) {
 				case 1: {
 					const result = await player
@@ -3195,7 +3195,7 @@ const skills = {
 			if (!get.is.damageCard(event.card)) {
 				return false;
 			}
-			if (event.targets.length !== 1) {
+			if (event.targets?.length !== 1) {
 				return false;
 			}
 			if (!player.hasCards("he", card => get.info("starweigu").isSelf(card, player) && lib.filter.cardDiscardable(card, player, "starweigu"))) {
@@ -16313,6 +16313,7 @@ const skills = {
 				sub: true,
 			},
 			discard: {
+				audio: "xinfu_bijing",
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},
