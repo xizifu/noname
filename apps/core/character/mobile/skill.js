@@ -1593,7 +1593,7 @@ const skills = {
 		group: "mbshefu_exclude",
 		subSkill: {
 			exclude: {
-				audio: "mbshefu",
+				audio: "shefu",
 				trigger: {
 					global: ["useCard"],
 				},
@@ -1954,7 +1954,7 @@ const skills = {
 	},
 	// 诸葛果
 	mbqirang: {
-		audio: 2,
+		audio: "qirang",
 		trigger: { player: "equipEnd" },
 		frequent: true,
 		async content(event, trigger, player) {
@@ -1990,7 +1990,7 @@ const skills = {
 						}
 					},
 				},
-				audio: "mbqirang",
+				audio: "qirang",
 				trigger: { player: "useCard" },
 				filter(event, player) {
 					if (get.type2(event.card) != "trick") {
@@ -2011,7 +2011,7 @@ const skills = {
 		},
 	},
 	mbyuhua: {
-		audio: 2,
+		audio: "yuhua",
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
 		filter(event, player) {
@@ -2043,7 +2043,7 @@ const skills = {
 	},
 	// 曹纯
 	mbshanjia: {
-		audio: 2,
+		audio: "shanjia",
 		enable: "phaseUse",
 		usable: 1,
 		init(player) {
@@ -10991,6 +10991,7 @@ const skills = {
 									player.addMark("friendyance", Math.min(7 - player.countMark("friendyance"), 1 + num), false);
 								}
 								if (storage[4] && storage[3] >= 3) {
+									player.logSkill("friendfangqiu", null, null, null, [3]);
 									player.restoreSkill("friendfangqiu");
 								}
 							}
@@ -11003,10 +11004,11 @@ const skills = {
 	},
 	friendfangqiu: {
 		audio: 3,
+		logAudio: index => (typeof index === "number" ? "friendfangqiu" + index + ".mp3" : 2),
 		limited: true,
 		trigger: { player: "friendyance_minigame" },
 		check(event, player) {
-			return event.player === player;
+			return _status.currentPhase === player;
 		},
 		skillAnimation: true,
 		animationColor: "metal",
@@ -28539,7 +28541,7 @@ const skills = {
 		},
 	},
 	reshanxi: {
-		audio: 2,
+		audio: "shanxi",
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -32368,7 +32370,7 @@ const skills = {
 		},
 	},
 	mbjieyuan: {
-		audio: 2,
+		audio: ["jieyuan_more.mp3", "jieyuan_less.mp3"],
 		trigger: {
 			source: "damageBegin1",
 			player: "damageBegin3",
@@ -32446,7 +32448,6 @@ const skills = {
 					const result = await player
 						.chooseToDiscard({
 							position: "he",
-							forced: true,
 							prompt: "竭缘：请选择一张" + get.translation(color) + "牌弃置",
 							filterCard(card) {
 								return get.color(card) === get.event().color;
@@ -32454,7 +32455,7 @@ const skills = {
 						})
 						.set("color", color)
 						.forResult();
-					if (result.bool && result.cards?.length > 0) {
+					if (result?.bool && result.cards?.length > 0) {
 						if (isSource) {
 							trigger.num += effectNum;
 							game.log(player, "令此次伤害+" + effectNum);
@@ -32487,7 +32488,7 @@ const skills = {
 	},
 	mbfenxin: {
 		mode: ["identity", "doudizhu"],
-		audio: 2,
+		audio: "fenxin",
 		trigger: {
 			source: "dieBegin",
 		},
