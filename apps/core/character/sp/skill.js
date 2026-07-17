@@ -253,7 +253,7 @@ const skills = {
 						case "p":
 							cell.setBackground("ol_peixiu", "character");
 							lib.skill.olremaozhu.createArrow(cell);
-							dialog.playerPositon = cell;
+							dialog.playerPosition = cell;
 							break;
 						default:
 							throw new Error(`请检查棍母地图数据: ${item[i]}`);
@@ -319,7 +319,7 @@ const skills = {
 				const cells = row.querySelectorAll(".olremaozhuCell");
 				cells.forEach((cell, x) => {
 					// 玩家当前位置
-					if (cell === dialog.playerPositon) {
+					if (cell === dialog.playerPosition) {
 						rowStr += "p";
 					}
 					// 尚未触发的事件格
@@ -356,7 +356,7 @@ const skills = {
 			// 黑桃东、红心西、梅花南、方块北
 			const list = { spade: [1, 0], heart: [-1, 0], club: [0, 1], diamond: [0, -1] }[suit];
 			// 定位
-			const cell = dialog.querySelector(`[data-x='${Number(dialog.playerPositon.dataset.x) + list[0]}'][data-y='${Number(dialog.playerPositon.dataset.y) + list[1]}']`);
+			const cell = dialog.querySelector(`[data-x='${Number(dialog.playerPosition.dataset.x) + list[0]}'][data-y='${Number(dialog.playerPosition.dataset.y) + list[1]}']`);
 			return cell && cell.style.visibility !== "hidden";
 		},
 		prompt2(event, player) {
@@ -374,10 +374,10 @@ const skills = {
 			}
 			function moveCell(playerid, targetCellX, targetCellY) {
 				const dialog = ui[`olremaozhuMap_${playerid}`];
-				if (!dialog?.playerPositon) {
+				if (!dialog?.playerPosition) {
 					return;
 				}
-				const old = dialog.playerPositon;
+				const old = dialog.playerPosition;
 				const targetCell = dialog.querySelector(`[data-x='${targetCellX}'][data-y='${targetCellY}']`);
 				if (!targetCell) {
 					return;
@@ -399,14 +399,14 @@ const skills = {
 				targetCell.setBackground("ol_peixiu", "character");
 				lib.skill.olremaozhu.createArrow(targetCell);
 				// 更新当前位置记录
-				dialog.playerPositon = targetCell;
+				dialog.playerPosition = targetCell;
 				const map = dialog.querySelector(".olremaozhuTitle").innerHTML;
 				const city = lib.skill.olremaozhu.updateCityString(dialog);
 				lib.skill.olremaozhu.updateReconnect(playerid, map, city);
 			}
 			let effect = [];
 			while (true) {
-				const oldCell = dialog.playerPositon;
+				const oldCell = dialog.playerPosition;
 				if (!oldCell) {
 					break;
 				}
@@ -437,7 +437,7 @@ const skills = {
 						if (!dialog) {
 							return;
 						}
-						const oldCell = dialog.playerPositon;
+						const oldCell = dialog.playerPosition;
 						const list2 = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[eventName];
 						const cell = dialog.querySelector(`[data-x='${Number(oldCell.dataset.x) + list2[0]}'][data-y='${Number(oldCell.dataset.y) + list2[1]}']`);
 						if (cell && cell.style.visibility !== "hidden") {
@@ -556,11 +556,11 @@ const skills = {
 		audio: 2,
 		trigger: { player: "changeSkillsAfter" },
 		filter(event, player) {
-			return event.addSkill.includes("pxbingzhou") && player.hasUseTarget({ name: "judou", isCard: true });
+			return event.addSkill.includes("pxbingzhou") && player.hasUseTarget({ name: "juedou", isCard: true });
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			await await player.chooseUseTarget(get.prompt2(event.name), { name: "judou", isCard: true }).set("logSkill", event.name);
+			await player.chooseUseTarget(get.prompt2(event.name), { name: "juedou", isCard: true }).set("logSkill", event.name);
 		},
 	},
 	// 雁门
