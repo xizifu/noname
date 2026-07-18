@@ -1639,7 +1639,7 @@ const translates = {
 			["pxyouzhou", ["pxxuantu", "pxbeiping", "pxfanyang", "pxdaifang"]],
 			["pxyuzhou", ["pxxuchang", "pxpeixian", "pxqiaoxian", "pxrunan"]],
 		]);
-		return "<br>" + [...mapSkill].map(([mapName, cities]) => `<li>${get.poptip(mapName)}：${cities.map(city => get.poptip(city)).join("、")}`).join("<br>");
+		return "<br>" + [...mapSkill].map(([mapName, cities]) => `<li>${get.poptip(mapName)}：${cities.map(get.poptip).join("、")}`).join("<br>");
 	},
 	olrejinlan: "尽览",
 	olrejinlan_info: "当你于回合内使用♠/♥/♣/♦牌时，你可以绘制东/西/南/北方位的所有“地图”。你绘制一处城市后，执行对应城市的效果。",
