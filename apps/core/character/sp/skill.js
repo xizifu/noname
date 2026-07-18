@@ -38,8 +38,10 @@ const skills = {
 			game.broadcastAll(lib.skill.olremaozhu.createDialog, player.playerid, get.translation(map), city);
 		},
 		ai: { combo: "olrejinlan" },
+		derivation: "olremaozhu_faq",
 		group: "olremaozhu_gain",
 		subSkill: {
+			faq: {},
 			effect: {
 				charlotte: true,
 				init(player, skill) {
@@ -229,18 +231,30 @@ const skills = {
 						start: "2,3",
 						suit: "heart",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxlongxi']`);
+							return dialog.querySelector(`[data-city-name='pxlongxi']`) && dialog.querySelector(`[data-city-name='pxtianshui']`) && dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
 						},
 					},
 					{
 						start: "2,3",
 						suit: "spade",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxlongxi']`);
+							return !dialog.querySelector(`[data-city-name='pxlongxi']`) && dialog.querySelector(`[data-city-name='pxtianshui']`) && dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
 						},
 					},
-					{ start: "4,3", suit: "club" },
-					{ start: "4,2", suit: "heart" },
+					{
+						start: "4,3",
+						suit: "club",
+						filter(dialog) {
+							return !dialog.querySelector(`[data-city-name='pxlongxi']`) && !dialog.querySelector(`[data-city-name='pxtianshui']`) && dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
+						},
+					},
+					{
+						start: "4,2",
+						suit: "heart",
+						filter(dialog) {
+							return !dialog.querySelector(`[data-city-name='pxlongxi']`) && !dialog.querySelector(`[data-city-name='pxtianshui']`) && !dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
+						},
+					},
 					{ start: "2,2", suit: "club" },
 					{ start: "2,1", suit: "heart" },
 				],
@@ -250,29 +264,35 @@ const skills = {
 						start: "2,3",
 						suit: "spade",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxlongxi']`);
+							return dialog.querySelector(`[data-city-name='pxlongxi']`) && dialog.querySelector(`[data-city-name='pxtianshui']`) && dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
 						},
 					},
 					{
 						start: "4,3",
 						suit: "club",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxwudu']`);
+							return dialog.querySelector(`[data-city-name='pxlongxi']`) && !dialog.querySelector(`[data-city-name='pxtianshui']`) && dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
 						},
 					},
-					{ start: "4,2", suit: "diamond" },
+					{
+						start: "4,2",
+						suit: "diamond",
+						filter(dialog) {
+							return dialog.querySelector(`[data-city-name='pxlongxi']`) && !dialog.querySelector(`[data-city-name='pxtianshui']`) && !dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
+						},
+					},
 					{
 						start: "4,3",
 						suit: "heart",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxwudu']`);
+							return dialog.querySelector(`[data-city-name='pxlongxi']`) && !dialog.querySelector(`[data-city-name='pxtianshui']`) && !dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
 						},
 					},
 					{
 						start: "2,3",
 						suit: "club",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxlongxi']`);
+							return !dialog.querySelector(`[data-city-name='pxlongxi']`) && !dialog.querySelector(`[data-city-name='pxtianshui']`) && !dialog.querySelector(`[data-city-name='pxwudu']`) && dialog.querySelector(`[data-city-name='pxyinping']`);
 						},
 					},
 					{ start: "2,1", suit: "heart" },
@@ -287,7 +307,7 @@ const skills = {
 						start: "1,3",
 						suit: "diamond",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxlean']`);
+							return dialog.querySelector(`[data-city-name='pxlean']`) && dialog.querySelector(`[data-city-name='pxdonglai']`) && !dialog.querySelector(`[data-city-name='pxlinzi']`) && !dialog.querySelector(`[data-city-name='pxbaihai']`);
 						},
 					},
 					{ start: "1,4", suit: "club" },
@@ -295,10 +315,16 @@ const skills = {
 						start: "1,3",
 						suit: "spade",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxlean']`);
+							return !dialog.querySelector(`[data-city-name='pxlean']`) && dialog.querySelector(`[data-city-name='pxdonglai']`) && !dialog.querySelector(`[data-city-name='pxlinzi']`) && !dialog.querySelector(`[data-city-name='pxbaihai']`);
 						},
 					},
-					{ start: "4,3", suit: "diamond" },
+					{
+						start: "4,3",
+						suit: "diamond",
+						filter(dialog) {
+							return !dialog.querySelector(`[data-city-name='pxlean']`) && dialog.querySelector(`[data-city-name='pxdonglai']`) && !dialog.querySelector(`[data-city-name='pxlinzi']`) && !dialog.querySelector(`[data-city-name='pxbaihai']`);
+						},
+					},
 				],
 				[
 					// 北海→东莱→临淄→乐安（♠♠♦♣♥♦右右上下左上）
@@ -308,7 +334,7 @@ const skills = {
 						start: "4,3",
 						suit: "diamond",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxdonglai']`);
+							return dialog.querySelector(`[data-city-name='pxlean']`) && dialog.querySelector(`[data-city-name='pxdonglai']`) && dialog.querySelector(`[data-city-name='pxlinzi']`) && !dialog.querySelector(`[data-city-name='pxbaihai']`);
 						},
 					},
 					{ start: "4,5", suit: "club" },
@@ -316,10 +342,16 @@ const skills = {
 						start: "4,3",
 						suit: "heart",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxdonglai']`);
+							return dialog.querySelector(`[data-city-name='pxlean']`) && !dialog.querySelector(`[data-city-name='pxdonglai']`) && dialog.querySelector(`[data-city-name='pxlinzi']`) && !dialog.querySelector(`[data-city-name='pxbaihai']`);
 						},
 					},
-					{ start: "1,3", suit: "diamond" },
+					{
+						start: "1,3",
+						suit: "diamond",
+						filter(dialog) {
+							return dialog.querySelector(`[data-city-name='pxlean']`) && !dialog.querySelector(`[data-city-name='pxdonglai']`) && !dialog.querySelector(`[data-city-name='pxlinzi']`) && !dialog.querySelector(`[data-city-name='pxbaihai']`);
+						},
+					},
 				],
 			],
 			司州: [
@@ -445,14 +477,14 @@ const skills = {
 						start: "2,4",
 						suit: "club",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxrunan']`);
+							return !dialog.querySelector(`[data-city-name='pxxuchang']`) && dialog.querySelector(`[data-city-name='pxpeixian']`) && dialog.querySelector(`[data-city-name='pxqiaoxian']`) && dialog.querySelector(`[data-city-name='pxrunan']`);
 						},
 					},
 					{
 						start: "2,4",
 						suit: "spade",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxrunan']`);
+							return !dialog.querySelector(`[data-city-name='pxxuchang']`) && dialog.querySelector(`[data-city-name='pxpeixian']`) && dialog.querySelector(`[data-city-name='pxqiaoxian']`) && !dialog.querySelector(`[data-city-name='pxrunan']`);
 						},
 					},
 					{ start: "4,4", suit: "club" },
@@ -465,14 +497,14 @@ const skills = {
 						start: "2,4",
 						suit: "club",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxrunan']`);
+							return !dialog.querySelector(`[data-city-name='pxxuchang']`) && !dialog.querySelector(`[data-city-name='pxpeixian']`) && dialog.querySelector(`[data-city-name='pxqiaoxian']`) && dialog.querySelector(`[data-city-name='pxrunan']`);
 						},
 					},
 					{
 						start: "2,4",
 						suit: "spade",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxrunan']`);
+							return !dialog.querySelector(`[data-city-name='pxxuchang']`) && !dialog.querySelector(`[data-city-name='pxpeixian']`) && dialog.querySelector(`[data-city-name='pxqiaoxian']`) && !dialog.querySelector(`[data-city-name='pxrunan']`);
 						},
 					},
 					{ start: "4,4", suit: "club" },
@@ -486,14 +518,14 @@ const skills = {
 						start: "2,4",
 						suit: "club",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxrunan']`);
+							return !dialog.querySelector(`[data-city-name='pxxuchang']`) && dialog.querySelector(`[data-city-name='pxpeixian']`) && !dialog.querySelector(`[data-city-name='pxqiaoxian']`) && dialog.querySelector(`[data-city-name='pxrunan']`);
 						},
 					},
 					{
 						start: "2,4",
 						suit: "spade",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxrunan']`);
+							return !dialog.querySelector(`[data-city-name='pxxuchang']`) && dialog.querySelector(`[data-city-name='pxpeixian']`) && !dialog.querySelector(`[data-city-name='pxqiaoxian']`) && !dialog.querySelector(`[data-city-name='pxrunan']`);
 						},
 					},
 				],
@@ -505,14 +537,14 @@ const skills = {
 						start: "2,4",
 						suit: "heart",
 						filter(dialog) {
-							return dialog.querySelector(`[data-city-name='pxxuchang']`);
+							return dialog.querySelector(`[data-city-name='pxxuchang']`) && dialog.querySelector(`[data-city-name='pxpeixian']`) && dialog.querySelector(`[data-city-name='pxqiaoxian']`) && !dialog.querySelector(`[data-city-name='pxrunan']`);
 						},
 					},
 					{
 						start: "2,4",
 						suit: "spade",
 						filter(dialog) {
-							return !dialog.querySelector(`[data-city-name='pxxuchang']`);
+							return !dialog.querySelector(`[data-city-name='pxxuchang']`) && dialog.querySelector(`[data-city-name='pxpeixian']`) && !dialog.querySelector(`[data-city-name='pxqiaoxian']`) && !dialog.querySelector(`[data-city-name='pxrunan']`);
 						},
 					},
 					{ start: "4,4", suit: "club" },
@@ -529,7 +561,7 @@ const skills = {
 			// 凉州
 			["pxliangzhou", "oo(left,2,pxjuyan)xx;(draw,3,pxdunhuang)oxxx;x(up,2,pxyumen)o(draw,2,pxwuwei)x;xoxoo;xoxxp"],
 			// 梁州
-			["pxliangzhoux", "xo(down,2,pxhanzhong)x;o(draw,1,pxbaxi)ox;(recover,1,pxmianzhu)pox;xoo(draw,2,pxfuling);xxox"],
+			["pxliangzhoux", "xo(down,3,pxhanzhong)x;o(draw,1,pxbaxi)ox;(recover,1,pxmianzhu)pox;xoo(draw,2,pxfuling);xxox"],
 			// 宁州
 			["pxningzhou", "pxxxx;oo(recover,1,pxdianchi)xx;(draw,3,pxailao)oo(left,2,pxquting)o;x(recover,1,pxnanfu)oox"],
 			// 秦州
@@ -965,11 +997,16 @@ const skills = {
 				},
 			},
 		},
-		get derivation() {
-			return [...get.info("olremaozhu").mapSkill].flatMap(([key, value]) => [key, ...value]);
-		},
 	},
 	olcaifeng: {
+		onChooseToUse(event) {
+			if (!game.online && !event.olcaifeng) {
+				event.set(
+					"olcaifeng",
+					["cardPile", "discardPile"].flatMap(pos => Array.from(ui[pos].childNodes))
+				);
+			}
+		},
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
@@ -988,10 +1025,18 @@ const skills = {
 		position: "he",
 		check(card) {
 			const player = get.player();
-			if (ui.selected.cards.map(card => get.suit(card, player)).toUniqued().length >= 3) {
+			const list = get.event().olcaifeng || [];
+			if (lib.skill.olrejinlan.canJinlan(card, player) && player.getUseValue(card) > 0) {
 				return 0;
 			}
-			return 6 - get.value(card, player);
+			const suits = ui.selected.cards.map(card => get.suit(card, player)).toUniqued();
+			if (suits.length >= 3) {
+				return 0;
+			}
+			if (ui.selected.cards.length > list.filter(card => !suits.includes(get.suit(card))).length) {
+				return 0;
+			}
+			return 10 - get.useful(card);
 		},
 		allowChooseAll: true,
 		async content(event, trigger, player) {
@@ -1056,11 +1101,11 @@ const skills = {
 		locked: false,
 		async content(event, trigger, player) {
 			const cards = [];
-			const card = get.cardPile2(card => get.subtypes(card, player).includes("equip4"));
+			const card = get.cardPile2(card => get.subtypes(card).includes("equip4"));
 			if (card) {
 				cards.push(card);
 			}
-			const card2 = get.cardPile2(card => get.subtypes(card, player).includes("equip1"));
+			const card2 = get.cardPile2(card => get.subtypes(card).includes("equip1"));
 			if (card2) {
 				cards.push(card2);
 			}
@@ -1307,7 +1352,7 @@ const skills = {
 						return false;
 					}
 					const number = get.number(card);
-					return number >= 2 && number <= 9;
+					return typeof number == "number" && number >= 2 && number <= 9;
 				})
 			);
 		},
@@ -1400,21 +1445,23 @@ const skills = {
 		audio: 2,
 		trigger: { player: "changeSkillsAfter" },
 		filter(event, player) {
-			return event.addSkill.includes("pxnanyang") && player.hasCards("he") && game.hasPlayer(current => current != player);
+			return event.addSkill.includes("pxnanyang") && player.hasCards("he", card => get.type2(card) == "trick") && game.hasPlayer(current => current != player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCardTarget({
 					prompt: get.prompt2(event.skill),
 					position: "he",
-					filterCard: lib.filter.cardRecastable,
+					filterCard(card, player) {
+						return get.type2(card) == "trick" && lib.filter.cardRecastable(card, player);
+					},
 					filterTarget: lib.filter.notMe,
 					ai1(card) {
 						return 6 - get.value(card);
 					},
 					ai2(target) {
 						const player = get.player();
-						return get.recoverEffect(player, player, player) + get.effect(target, player, player);
+						return get.recoverEffect(player, player, player) + get.recoverEffect(target, player, player);
 					},
 				})
 				.forResult();
@@ -1494,7 +1541,6 @@ const skills = {
 			await target.chooseToGive({
 				target: player,
 				position: "he",
-				selectCard: 2,
 				forced: true,
 			});
 		},
@@ -1711,7 +1757,7 @@ const skills = {
 				},
 				mod: {
 					cardUsable(card, player) {
-						if ([card].concat(card.cards || []).every(cardx => get.itemtype(cardx) === "card" && cardx.hasGaintag("pxbaxi_effect"))) {
+						if ([card].concat(card.cards || []).some(cardx => get.itemtype(cardx) === "card" && cardx.hasGaintag("pxbaxi_effect"))) {
 							return Infinity;
 						}
 					},
@@ -1809,7 +1855,6 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
-					filterTarget: true,
 					ai(target) {
 						const player = get.player();
 						return -get.attitude(player, target);
@@ -1873,7 +1918,7 @@ const skills = {
 		prompt2: "失去1点体力，然后视为使用一张【杀】",
 		async content(event, trigger, player) {
 			await player.loseHp();
-			await player.draw(3, "nodelay");
+			await player.chooseUseTarget({ name: "sha", isCard: true }, true, false);
 		},
 	},
 	// 秦州
@@ -1962,7 +2007,7 @@ const skills = {
 				})
 				.forResult();
 			if (result?.links?.length) {
-				if (get.name(result.links[0], target) == "sha") {
+				if (get.name(result.links[0], target) !== "sha") {
 					await player.draw(2);
 				}
 			}
@@ -2061,7 +2106,6 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
-					filterTarget: true,
 					ai(target) {
 						const player = get.player();
 						return (1 + target.countCards("h")) * get.attitude(player, target);
@@ -2137,12 +2181,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "changeSkillsAfter" },
 		filter(event, player) {
-			return event.addSkill.includes("pxbeihai") && player.countCards("h") < player.getHandcardLimit();
+			return event.addSkill.includes("pxbeihai") && player.countCards("h") < player.maxHp;
 		},
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			await player.drawTo(player.getHandcardLimit());
+			await player.drawTo(player.maxHp);
 		},
 	},
 	// 司州
@@ -2161,7 +2205,7 @@ const skills = {
 					},
 					ai(target) {
 						const player = get.player();
-						return get.effect(target, { name: "shuoshou_copy", position: "h" }, player, player);
+						return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
 					},
 				})
 				.forResult();
@@ -2237,16 +2281,18 @@ const skills = {
 		audio: 2,
 		trigger: { player: "changeSkillsAfter" },
 		filter(event, player) {
-			return event.addSkill.includes("pxhongnong") && player.hasCards("he");
+			return event.addSkill.includes("pxhongnong") && player.hasCards("he", card => get.type(card) == "equip");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCard({
 					prompt: get.prompt2(event.skill),
 					selectCard: [1, Infinity],
-					filterCard: lib.filter.cardRecastable,
+					filterCard(card, player) {
+						return get.type(card) == "equip" && lib.filter.cardRecastable(card, player);
+					},
 					ai(card) {
-						return 7 - get.value(card);
+						return 8 - get.value(card);
 					},
 				})
 				.forResult();
@@ -2305,7 +2351,6 @@ const skills = {
 					return player != _status.currentPhase;
 				},
 				forced: true,
-				popup: false,
 				async content(event, trigger, player) {
 					await player.draw();
 				},
@@ -2374,7 +2419,6 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
-					filterTarget: true,
 					ai(target) {
 						const player = get.player();
 						return get.attitude(player, target);
@@ -2437,7 +2481,29 @@ const skills = {
 		},
 		forced: true,
 		locked: false,
-		async content(event, trigger, player) {},
+		async content(event, trigger, player) {
+			const card = game.createCard("chiwenyupei", "diamond", 4);
+			await player.gain({ cards: [card], animate: "gain2" });
+		},
+	},
+	// 螭纹玉佩
+	chiwenyupei: {
+		equipSkill: true,
+		trigger: { player: ["phaseUseEnd", "phaseDrawBegin2"] },
+		filter(event, player) {
+			if (event.name == "phaseUse") {
+				return player.isDamaged();
+			}
+			return player.isHealthy() && !event.numFixed;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			if (trigger.name == "phaseUse") {
+				await player.recover();
+			} else {
+				trigger.num += 2;
+			}
+		},
 	},
 	// 鄄城
 	pxjuancheng: {
@@ -2543,7 +2609,6 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
-					filterTarget: true,
 					ai(target) {
 						const player = get.player();
 						return get.attitude(player, target);
@@ -2792,16 +2857,20 @@ const skills = {
 		},
 		prompt2(event, player) {
 			let str = "摸两张牌";
-			const num = player.getHandcardLimit() - player.countCards("h") - 2;
+			const num = player.countCards("h") + 2 - player.getHandcardLimit();
 			if (num > 0) {
 				str += `，然后弃置${get.cnNumber(num)}张牌`;
 			}
 			str += "。";
 			return str;
 		},
+		check(event, player) {
+			const num = player.countCards("h") + 2 - player.getHandcardLimit();
+			return num <= 0;
+		},
 		async content(event, trigger, player) {
 			await player.draw({ num: 2 });
-			const num = player.getHandcardLimit() - player.countCards("h");
+			const num = player.countCards("h") - player.getHandcardLimit();
 			const disnum = num > 0 ? Math.min(num, player.countDiscardableCards(player, "h")) : 0;
 			if (disnum > 0) {
 				await player.chooseToDiscard({
@@ -2855,7 +2924,7 @@ const skills = {
 				.getCards("h")
 				.map(card => get.type2(card))
 				.toUniqued();
-			const card = get.cardPile2(cardx => !types.inlcudes(get.type2(cardx)));
+			const card = get.cardPile2(cardx => !types.includes(get.type2(cardx)));
 			if (card) {
 				await player.gain({ cards: [card], animate: "gain2" });
 			}
@@ -2867,15 +2936,15 @@ const skills = {
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
 			if (get.name(event.card, false) == "sha") {
-				return game.hasGlobalHistory("useCard", evt => evt.card?.name == "sha" && evt.targets?.includes(player) && evt != event);
+				return game.hasGlobalHistory("useCard", evt => get.type(evt.card, null, false) == "trick" && get.is.damageCard(evt.card) && evt.targets?.includes(player));
 			} else if (get.type(event.card, null, false) == "trick" && get.is.damageCard(event.card)) {
-				return game.hasGlobalHistory("useCard", evt => get.type(evt.card, null, false) == "trick" && get.is.damageCard(evt.card) && evt.targets?.includes(player) && evt != event);
+				return game.hasGlobalHistory("useCard", evt => evt.card.name == "sha" && evt.targets?.includes(player));
 			}
 		},
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			trigger.getParent().exclude.add(player);
+			trigger.getParent().excluded.add(player);
 		},
 	},
 	// 幽州
@@ -2905,7 +2974,7 @@ const skills = {
 			return `获得${get.translation(event.reason.cards.filterInD())}`;
 		},
 		async content(event, trigger, player) {
-			const card = trigger.reason.cards.filterInD();
+			const cards = trigger.reason.cards.filterInD();
 			await player.gain({ cards, animate: "gain2" });
 		},
 	},
@@ -2921,7 +2990,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const cards = [];
 			while (cards.length < 2) {
-				const card = get.cardPile2(card => get.name(card) == "sha");
+				const card = get.cardPile2(cardx => get.name(cardx) == "sha" && !cards.includes(cardx));
 				if (card) {
 					cards.push(card);
 				} else {
@@ -3049,18 +3118,20 @@ const skills = {
 			const num2 = target.getAttackRange();
 			if (num2 < num) {
 				target.addSkill(event.name + "_effect");
-				target.addMark(event.name + "_effect", num, false);
+				target.addMark(event.name + "_effect", num - num2, false);
 			}
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
 				onremove: true,
+				intro: { content: "攻击范围+#" },
 				mod: {
 					attackRange(player, num) {
 						return num + player.countMark("pxxuchang_effect");
 					},
 				},
+				markimage: "image/card/attackRange.png",
 			},
 		},
 	},
@@ -3119,7 +3190,6 @@ const skills = {
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
 					prompt2: `令一名角色摸${get.cnNumber(num)}张牌`,
-					filterTarget: true,
 					ai(target) {
 						const player = get.player();
 						return get.effect(target, { name: "draw" }, player, player);
