@@ -991,7 +991,7 @@ const skills = {
 			if (ui.selected.cards.map(card => get.suit(card, player)).toUniqued().length >= 3) {
 				return 0;
 			}
-			return 8 - get.value(card, player);
+			return 6 - get.value(card, player);
 		},
 		allowChooseAll: true,
 		async content(event, trigger, player) {
@@ -1042,7 +1042,7 @@ const skills = {
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			awaitplayer.chooseUseTarget(get.prompt2(event.name), { name: "juedou", isCard: true }).set("logSkill", event.name);
+			await player.chooseUseTarget(get.prompt2(event.name), { name: "juedou", isCard: true }).set("logSkill", event.name);
 		},
 	},
 	// 雁门
