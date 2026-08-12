@@ -2938,7 +2938,16 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				card.selfDestroy(event);
 				continue;
 			}
-
+			const tags = card.willBeRemovedTags("discardPile", null, event);
+			if (tags.length) {
+				game.broadcastAll(
+					(card, tags) => {
+						tags.forEach(tag => card.removeGaintag(tag));
+					},
+					card,
+					tags
+				);
+			}
 			if (get.position(card, true) == "c") {
 				withPile = true;
 			}
@@ -2976,6 +2985,16 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (card.willBeDestroyed("ordering", null, event)) {
 				card.selfDestroy(event);
 				continue;
+			}
+			const tags = card.willBeRemovedTags("ordering", null, event);
+			if (tags.length) {
+				game.broadcastAll(
+					(card, tags) => {
+						tags.forEach(tag => card.removeGaintag(tag));
+					},
+					card,
+					tags
+				);
 			}
 			if (get.position(card, true) == "c") {
 				withPile = true;
@@ -3027,6 +3046,16 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			if (card.willBeDestroyed("special", null, event)) {
 				card.selfDestroy(event);
 				continue;
+			}
+			const tags = card.willBeRemovedTags("special", null, event);
+			if (tags.length) {
+				game.broadcastAll(
+					(card, tags) => {
+						tags.forEach(tag => card.removeGaintag(tag));
+					},
+					card,
+					tags
+				);
 			}
 			if (get.position(card, true) == "c") {
 				withPile = true;
@@ -11746,8 +11775,8 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 					} else {
 						if (card.gaintag && card.gaintag.length) {
 							event.gaintag_map[card.cardid] = card.gaintag.slice(0);
-							//仅移除非永久标记
-							const tags = card.gaintag.filter(tag => !tag.startsWith("eternal_"));
+							//移除标记
+							const tags = card.willBeRemovedTags(event.position?.id, player, event);
 							tags.forEach(tag => card.removeGaintag(tag));
 						}
 
@@ -11803,11 +11832,11 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 			}
 			ui.updatej(player);
 			game.broadcast(
-				(player, cards, num) => {
+				(player, cards, num, position, event) => {
 					for (const card of cards) {
 						//cards[i].removeGaintag(true);
-						//仅移除非永久标记
-						const tags = card.gaintag.filter(tag => !tag.startsWith("eternal_"));
+						//移除标记
+						const tags = card.willBeRemovedTags(event.position?.id, player, event);
 						tags.forEach(tag => card.removeGaintag(tag));
 						card.classList.remove("glow");
 						card.classList.remove("glows");
@@ -11822,7 +11851,9 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 				},
 				player,
 				cards.slice(),
-				ui.cardPile.childNodes.length
+				ui.cardPile.childNodes.length,
+				event.position?.id,
+				event
 			);
 			game.addVideo("lose", player, [get.cardsInfo(hs), get.cardsInfo(es), get.cardsInfo(js), get.cardsInfo(ss)]);
 			event.cards2 = hs.concat(es);

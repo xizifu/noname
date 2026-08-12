@@ -983,6 +983,18 @@ export class Library {
 							return !card.willBeDestroyed("renku", null, event.relatedEvent);
 						})
 					);
+					for (const card of cards) {
+						const tags = card.willBeRemovedTags("renku", null, event.relatedEvent);
+						if (tags.length) {
+							game.broadcastAll(
+								(card, tags) => {
+									tags.forEach(tag => card.removeGaintag(tag));
+								},
+								card,
+								tags
+							);
+						}
+					}
 					if (_status.renku.length > 6) {
 						const cards2 = _status.renku.splice(0, _status.renku.length - 6);
 						game.log(cards2, "从仁库进入了弃牌堆");
@@ -995,6 +1007,30 @@ export class Library {
 					_status.renku.removeArray(event.cards);
 					game.updateRenku();
 				},
+			},
+		],
+	]);
+
+	filterRemovedTags = new Map([
+		[
+			"sbqiaobian",
+			(card, position, player, event) => {
+				// 从手牌到装备区不移除“巧变”
+				if (card.original !== "h") {
+					return true;
+				}
+				// 使用装备/置入装备区
+				if ((event.type == "use" && position == "ordering" && event.getParent().name == "useCard" && get.subtype(event.getParent().card) == "equip") || (event.type == "equip" && position == "special" && event.getParent().name == "equip")) {
+					return false;
+				}
+				return true;
+			},
+		],
+		[
+			"eternal_dcyunzheng_tag",
+			(card, position, player, event) => {
+				// 仅到弃牌堆移除“筝”
+				return position == "discardPile";
 			},
 		],
 	]);

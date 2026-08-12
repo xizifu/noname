@@ -1623,6 +1623,16 @@ export class Game {
 				cards[i].selfDestroy(event);
 				continue;
 			}
+			const tags = cards[i].willBeRemovedTags("cardPile", null, event);
+			if (tags.length) {
+				game.broadcastAll(
+					(card, tags) => {
+						tags.forEach(tag => card.removeGaintag(tag));
+					},
+					cards[i],
+					tags
+				);
+			}
 			if (event.insert_index) {
 				cards[i].fix();
 				pile.insertBefore(cards[i], event.insert_index(event, cards[i]));

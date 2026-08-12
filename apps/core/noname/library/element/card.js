@@ -150,6 +150,29 @@ export class Card extends HTMLDivElement {
 		}
 		return destroyed;
 	}
+	/**
+	 * 获取一张牌进入某个区域后会被清除的标记
+	 * @param {string} targetPosition 目标区域
+	 * @param { Player | null } player 玩家
+	 * @param { GameEvent } event 当前事件
+	 * @returns { string[] }
+	 */
+	willBeRemovedTags(targetPosition, player, event) {
+		return this.gaintag.filter(tag => {
+			if (lib.filterRemovedTags.has(tag)) {
+				const filter = lib.filterRemovedTags.get(tag);
+				if (typeof filter == "function") {
+					return filter(this, targetPosition, player, event);
+				} else if (typeof filter == "string") {
+					return filter == targetPosition;
+				}
+				return filter;
+			} else if (tag.startsWith("eternal_")) {
+				return false;
+			}
+			return true;
+		});
+	}
 	hasNature(nature, player) {
 		return game.hasNature(this, nature, player);
 	}
