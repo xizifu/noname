@@ -1020,7 +1020,7 @@ export class Library {
 					return true;
 				}
 				// 使用装备/置入装备区
-				if ((event.type == "use" && position == "ordering" && event.getParent().name == "useCard" && get.subtype(event.getParent().card) == "equip") || (event.type == "equip" && position == "special" && event.getParent().name == "equip")) {
+				if ((event.type == "use" && position == "ordering" && event.getParent().name == "useCard" && get.type(event.getParent().card) == "equip") || (event.type == "equip" && position == "special" && event.getParent().name == "equip")) {
 					return false;
 				}
 				return true;

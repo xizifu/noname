@@ -11777,7 +11777,13 @@ export const Content: Record<string, ContentFuncByAll | ContentFuncsByAll> = {
 							event.gaintag_map[card.cardid] = card.gaintag.slice(0);
 							//移除标记
 							const tags = card.willBeRemovedTags(event.position?.id, player, event);
-							tags.forEach(tag => card.removeGaintag(tag));
+							game.broadcastAll(
+								(card, tags) => {
+									tags.forEach(tag => card.removeGaintag(tag));
+								},
+								card,
+								tags
+							);
 						}
 
 						card.style.transform += " scale(0.2)";
