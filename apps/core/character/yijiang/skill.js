@@ -513,7 +513,7 @@ const skills = {
 			trigger.num *= 2;
 			const next = game.createEvent("rejueqing_rewrite", false);
 			next.player = player;
-			next.setContent(() => {
+			next.setContent(async (event, trigger, player) => {
 				if (!player.storage.rejueqing_rewrite) {
 					game.log(player, "修改了", "#g【绝情】");
 					player.popup("绝情");
@@ -648,6 +648,7 @@ const skills = {
 	oldmiji: {
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		audio: 2,
+		frequent: true,
 		filter(event, player) {
 			return player.isDamaged();
 		},
@@ -3659,7 +3660,7 @@ const skills = {
 				return;
 			}
 			const { cards, targets } = result;
-			await player.showCards(cards).setContent(() => {});
+			await player.showCards(cards).setContent(async (event, trigger, player) => {});
 			list.sortBySeat(targets[0]);
 			player.line(list, "green");
 			await player.lose(cards, ui.ordering);
@@ -5001,7 +5002,7 @@ const skills = {
 				_status.event.next.remove(next);
 				evt.after.push(next);
 				next.player = player;
-				next.setContent(() => {
+				next.setContent(async (event, trigger, player) => {
 					game.broadcastAll(player => {
 						delete player.storage.jiyu;
 						delete player.storage.jiyu2;
@@ -6450,16 +6451,14 @@ const skills = {
 			event.next.remove(next);
 			next.forceDie = true;
 			trigger.after.push(next);
-			next.setContent(function () {
+			next.setContent(async (event, trigger, player) => {
 				if (
 					player.isIn() &&
-					player.getHistory("sourceDamage", function (evt) {
-						return evt.getParent(2) == event.parent;
-					}).length > 0
+					player.getHistory("sourceDamage", evt => evt.getParent(2) === event.parent).length > 0
 				) {
 					player.loseHp();
 				}
-				game.setNature(card, [], true);
+				game.setNature(event.card, [], true);
 			});
 		},
 		group: "lihuo2",
@@ -7411,7 +7410,7 @@ const skills = {
 				silent: true,
 				forceDie: true,
 				charlotte: true,
-				content: () => {
+				async content(event, trigger, player) {
 					game.removeGlobalSkill("longyin_order");
 				},
 			},
@@ -11530,13 +11529,13 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			await player.loseMaxHp();
 			await player.chooseDrawRecover(2, true, (event, player) => {
-				if (player.hp == 1 && player.isDamaged()) {
+				if (player.hp == 1 && player.getDamagedHp() > 1) {
 					return "recover_hp";
 				}
 				return "draw_card";
 			});
+			await player.loseMaxHp();
 			await player.addSkills("paiyi");
 		},
 		ai: { combo: "quanji" },
@@ -12565,6 +12564,7 @@ const skills = {
 			player: "phaseJieshuBegin",
 		},
 		locked: false,
+		frequent: true,
 		filter(event, player) {
 			return player.hp < player.maxHp;
 		},
@@ -13621,6 +13621,7 @@ const skills = {
 		audio: 2,
 		audioname2: { sxrm_caocao: "zhiyu_sxrm_caocao", tw_sxrm_caocao: "zhiyu_sxrm_caocao" },
 		trigger: { player: "damageEnd" },
+		frequent: true,
 		preHidden: true,
 		async content(event, trigger, player) {
 			await player.draw();
@@ -15013,19 +15014,21 @@ const skills = {
 					target: trigger.source,
 					position: "e",
 					ai(button) {
-						if (att <= 0) {
+						if (get.event().att <= 0) {
 							return get.equipValue(button.link);
 						}
 						return 0;
 					},
 				})
 				.set("chooseonly", true)
+				.set("att", att)
 				.forResult();
-
-			event.result = {
-				bool: result.bool,
-				cards: result.links,
-			};
+			if (result?.bool && result.links?.length) {
+				event.result = {
+					bool: true,
+					cards: result.links,
+				};
+			}
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {

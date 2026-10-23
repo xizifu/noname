@@ -1,4 +1,32 @@
 const characters = {
+	// 唐棠 by weiqiaocode
+	tangtang: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["zexing", "tt_zhiyi"],
+		img: "image/character/tangtang.png",
+	},
+	// OL孙寒华 by WeiqiaoCode
+	ol_sunhanhua: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["olhuaguang", "olxuanbai"],
+		names: "孙|寒华",
+	},
+	ol_xushao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olshilun", "olzhuoming"],
+	},
+	wangai: {
+		sex: "female",
+		group: "wei",
+		hp: 4,
+		skills: ["qinmian"],
+	},
 	ol_huangfusong: {
 		sex: "male",
 		group: "qun",

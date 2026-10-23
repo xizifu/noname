@@ -1,10 +1,29 @@
 const characters = {
+	ol_zhonghui: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["olquanji", "olzili"],
+	},
+	ol_shen_huangzhong: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["shenyu", "huaren"],
+		groupInGuozhan: "shu",
+	},
 	ol_sb_zhurong: {
 		sex: "female",
 		group: "shu",
 		hp: 4,
 		skills: ["olsbrenche", "olsbyalian"],
 		names: "null|null",
+	},
+	ol_sb_zhouyu: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["olsbguqu", "olsbzuifeng"],
 	},
 	ol_liufeng: {
 		sex: "male",
@@ -35,6 +54,18 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["longyin", "oljieyong"],
+	},
+	ol_jie_zhuran: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["ol_jie_danshou"],
+	},
+	ol_zhuhuan: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["ol_fenli", "ol_pingkou"],
 	},
 	dm_zhangfei: {
 		sex: "male",

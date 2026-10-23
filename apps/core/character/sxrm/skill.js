@@ -2534,6 +2534,7 @@ const skills = {
 			return 15 - get.value(card);
 		},
 		ai: {
+			combo: "sxrmsuwu",
 			save: true,
 			order(item, player) {
 				const num = game.filterPlayer(current => player != current).reduce((sum, current) => sum + current.countConnectedCards() * -get.sgnAttitude(player, current), 0);
@@ -4116,9 +4117,7 @@ const skills = {
 	//伏寿
 	sxrmmitu: {
 		audio: 2,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.hasPlayer(current => current.isDamaged());
 		},
@@ -4145,6 +4144,7 @@ const skills = {
 				target.addTempSkill("sxrmmitu_ai", "phaseChange");
 			}
 			for (const target of event.targets) {
+				if (!player.isIn()) return;
 				if (!game.hasPlayer(current => target.canCompare(current))) {
 					continue;
 				}
@@ -4581,19 +4581,29 @@ const skills = {
 			}
 		},
 		ai: {
-			order: 3,
+			order(skill, player) {
+				//场上存在至少两名态度较为明确的角色才考虑发动技能
+				if (game.countPlayer(current => current !== player && get.attitude(player, current) !== 0) > 1) {
+					return 1;
+				}
+				return 0;
+			},
 			result: {
-				target(player, target) {
-					if (target == player) {
-						return 0.1;
-					}
-					return -2;
-				},
 				player(player, target) {
 					if (player.hp > 2 && player.countCards("h") > 2) {
 						return 1;
 					}
 					return 0;
+				},
+				target(player, target) {
+					//尽量不选择态度不明的角色
+					if (get.attitude(player, target) === 0) {
+						return 0;
+					}
+					if (target == player) {
+						return 0.1;
+					}
+					return -2;
 				},
 			},
 		},

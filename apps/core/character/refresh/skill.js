@@ -688,11 +688,11 @@ const skills = {
 				event.next.remove(next);
 				trigger.after.push(next);
 				next.targets = damages;
-				next.setContent(function () {
-					targets.shift().damage();
-					if (targets.length) {
-						event.redo();
-					}
+				next.setContent(async (event, trigger, player) => {
+					const { targets } = event;
+					do {
+						await targets.shift().damage();
+					} while (!event.finished && targets.length);
 				});
 			}
 		},
@@ -1381,7 +1381,7 @@ const skills = {
 			}
 			const cards = target.getCards("h").randomGets(1),
 				card = cards[0];
-			await target.showCards(cards).setContent(function () {});
+			await target.showCards(cards).setContent(async (event, trigger, player) => {});
 			event.dialog = ui.create.dialog(get.translation(target) + "展示的手牌", cards);
 			event.videoId = lib.status.videoId++;
 
@@ -2335,6 +2335,7 @@ const skills = {
 	rezhiyu: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
+		frequent: true,
 		async content(event, trigger, player) {
 			await player.draw();
 			if (!player.countCards("h")) {
@@ -6705,7 +6706,7 @@ const skills = {
 					player.addTempSkill("xinpaiyi_used", "phaseUseEnd");
 					player.markAuto("xinpaiyi_used", [0]);
 					var card = lib.skill.xinpaiyi_backup.card;
-					player.loseToDiscardpile(card);
+					await player.loseToDiscardpile(card);
 
 					// step 1
 					await target.draw(Math.max(1, player.getExpansions("xinquanji").length)).forResult();
@@ -7047,7 +7048,7 @@ const skills = {
 				silent: true,
 				forceDie: true,
 				charlotte: true,
-				content: () => {
+				async content(event, trigger, player) {
 					game.removeGlobalSkill("relongyin_order");
 				},
 			},
@@ -9034,8 +9035,8 @@ const skills = {
 					if (chooseCardResult.bool && chooseCardResult.links.length) {
 						var link = chooseCardResult.links[0];
 						event.cards.add(link);
-						await event.targets[1].equip(link);
 						event.targets[0].$give(link, event.targets[1]);
+						await event.targets[1].equip(link);
 						await game.delay();
 					} else {
 						break;
@@ -9831,6 +9832,7 @@ const skills = {
 		audio: 2,
 		zhuSkill: true,
 		trigger: { global: "damageSource" },
+		frequent: true,
 		filter(event, player) {
 			if (player == event.source || !event.source || event.source.group != "qun") {
 				return false;
@@ -14452,6 +14454,7 @@ const skills = {
 		audio: "rejianxiong",
 		audioname: ["shen_caopi", "mb_caocao"],
 		audioname2: { caoying: "lingren_jianxiong" },
+		frequent: true,
 		trigger: { player: "damageEnd" },
 		async content(event, trigger, player) {
 			if (get.itemtype(trigger.cards) == "cards" && get.position(trigger.cards[0], true) == "o") {
