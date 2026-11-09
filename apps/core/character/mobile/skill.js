@@ -1830,13 +1830,43 @@ const skills = {
 			if (index % 2 == 0) {
 				await player.draw(2);
 			}
-			if (index > 0) {
-				game.log(trigger.card, "的基础伤害+1");
-				trigger.baseDamage++;
+			if (index > 0 && !trigger.mbhanyong) {
+				game.log(trigger.card, "造成的伤害+1");
+				trigger.mbhanyong = true;
+				_status.mbhanyongCount = (_status.mbhanyongCount || 0) + 1;
+				game.addGlobalSkill("mbhanyong_damage");
+				// 取消用牌会跳过 useCardAfter，交给事件的 after 队列回收。
+				trigger.insertAfter(async (event, trigger, player) => {
+					const evt = event.getParent();
+					if (!evt.mbhanyong) {
+						return;
+					}
+					delete evt.mbhanyong;
+					_status.mbhanyongCount--;
+					if (!_status.mbhanyongCount) {
+						game.removeGlobalSkill("mbhanyong_damage");
+					}
+				}, {});
 			}
 			if (index == 2) {
 				player.addMark("mbranshang");
 			}
+		},
+		subSkill: {
+			damage: {
+				charlotte: true,
+				trigger: { player: "damageBegin1" },
+				forced: true,
+				firstDo: true,
+				popup: false,
+				filter(event, player) {
+					const evt = event.getParent("useCard", true);
+					return evt?.mbhanyong && event.card === evt.card && event.getParent().type === "card";
+				},
+				async content(event, trigger, player) {
+					trigger.num++;
+				},
+			},
 		},
 	},
 	//程昱
@@ -6536,7 +6566,10 @@ const skills = {
 						trigger.num = Math.max(0, trigger.num + record[0]);
 						return;
 					}
-					const list = [2 + record[0], player.getCardUsable("sha", true), player.getHandcardLimit(), player.getHp()];
+					// 无次数限制效果（诸葛连弩、咆哮等）不参与出杀次数的增减：改按基础次数与本技能累计修正计算
+					const usableSha = player.getCardUsable("sha", true);
+					const shaNum = usableSha === Infinity ? 1 + record[1] : usableSha;
+					const list = [2 + record[0], shaNum, player.getHandcardLimit(), player.getHp()];
 					const prompt = trigger.name == "phaseJieshu" ? `是否令一项数值-1并发动一次${get.poptip("mbcaiqiu")}？` : `令一项数值+1`;
 					const choiceList = [
 						["draw", `摸牌阶段摸牌数(${list[0]})`],
@@ -11416,6 +11449,7 @@ const skills = {
 			await next;
 		},
 		group: "mbfunan_draw",
+		global: "mbfunan_globalAI",
 		subSkill: {
 			rewrite: {
 				charlotte: true,
@@ -11459,6 +11493,42 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					await player.draw();
+				},
+			},
+			globalAI: {
+				charlotte: true,
+				ai: {
+					effect: {
+						player(card, player, target) {
+							if (card.name === "juedou" && target.hasSkill("mbfunan") && target.hasCards("h")) {
+								return 0.5;
+							}
+						},
+						target(card, player, target, result2) {
+							const event = get.event();
+							//无懈部分
+							if (event.name === "chooseToUse" && event.type === "wuxie") {
+								const { respondTo } = event;
+								if (!respondTo) {
+									return;
+								}
+								//若被响应者有〖复难〗且响应者对被响应者态度值为负，则改收益为0，不用【无懈】
+								if (respondTo[1].hasSkill("mbfunan") && get.attitude(event.player, respondTo[0]) < 0) {
+									return 0;
+								}
+							}
+							//决斗部分，修改决斗拼杀的受伤收益判断(toRespond)
+							else if (event.name === "juedou") {
+								if (card.name !== "damage") {
+									return;
+								}
+								//若对方有〖复难〗，且伤害收益为负，则改收益为正。不拼【杀】
+								if (player.hasSkill("mbfunan") && result2 < 0) {
+									return -1;
+								}
+							}
+						},
+					},
 				},
 			},
 		},
